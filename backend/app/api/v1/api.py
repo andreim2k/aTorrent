@@ -1,0 +1,10 @@
+from fastapi import APIRouter
+
+from app.api.v1 import auth, torrents, settings
+
+api_router = APIRouter()
+
+# Include route modules for single-user system
+api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
+api_router.include_router(torrents.router, prefix="/torrents", tags=["torrents"])
+api_router.include_router(settings.router, prefix="/settings", tags=["settings"])

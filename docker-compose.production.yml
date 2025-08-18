@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.multiarch
+      platforms:
+        - "linux/amd64"
+        - "linux/arm64"
+    image: atorrent/backend:latest
+    container_name: atorrent-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - ${DOWNLOADS_PATH:-./downloads}:/app/downloads
+      - ./data:/app/data
+      - backend-logs:/app/logs
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///./data/atorrent.db}
+      - SECRET_KEY=${SECRET_KEY}
+      - DOWNLOADS_PATH=/app/downloads
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+    networks:
+      - atorrent-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.multiarch
+      platforms:
+        - "linux/amd64"
+        - "linux/arm64"
+    image: atorrent/frontend:latest
+    container_name: atorrent-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:8000}
+      - NODE_ENV=production
+    depends_on:
+      - backend
+    networks:
+      - atorrent-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => {r.statusCode === 200 ? process.exit(0) : process.exit(1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  atorrent-network:
+    driver: bridge
+
+volumes:
+  backend-logs:

@@ -1,0 +1,73 @@
+# Multi-architecture Dockerfile for aTorrent Backend
+# Supports AMD64, ARM64 (including Apple Silicon and Raspberry Pi)
+
+# Build stage
+FROM --platform=$BUILDPLATFORM python:3.11-slim as builder
+
+# Build arguments for cross-compilation
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+ARG TARGETARCH
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    make \
+    build-essential \
+    libssl-dev \
+    libffi-dev \
+    python3-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+
+# Copy and install Python dependencies
+COPY requirements.txt .
+RUN pip install --upgrade pip wheel && \
+    pip wheel --wheel-dir /build/wheels -r requirements.txt
+
+# Runtime stage
+FROM python:3.11-slim
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN groupadd -r atorrent && useradd -r -g atorrent atorrent
+
+WORKDIR /app
+
+# Copy wheels from builder
+COPY --from=builder /build/wheels /wheels
+
+# Install Python packages from wheels
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir /wheels/*.whl && \
+    rm -rf /wheels
+
+# Copy application code
+COPY --chown=atorrent:atorrent . .
+
+# Create necessary directories
+RUN mkdir -p /app/downloads /app/data /app/logs && \
+    chown -R atorrent:atorrent /app
+
+# Environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PORT=8000
+
+# Switch to non-root user
+USER atorrent
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:${PORT}/docs || exit 1
+
+EXPOSE ${PORT}
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
