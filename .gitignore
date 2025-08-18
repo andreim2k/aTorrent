@@ -73,10 +73,6 @@ out/
 .nuxt/
 dist/
 
-# Docker
-*.pid
-docker-compose.override.yml
-
 # Certificates
 *.pem
 *.key

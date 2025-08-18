@@ -666,12 +666,14 @@ class TorrentService:
                         "upload_speed": torrent.upload_speed,
                         "peers_connected": getattr(torrent, 'peers_connected', 0),
                         "seeds_connected": getattr(torrent, 'seeds_connected', 0),
+                        "num_peers": peers_total,  # Add this for frontend compatibility
+                        "num_seeds": seeds_total,  # Add this for frontend compatibility
                         "ratio": torrent.uploaded / torrent.downloaded if torrent.downloaded > 0 else 0,
                         "eta": eta,
                         "priority": getattr(torrent, 'priority', 1),
                         "label": getattr(torrent, 'label', None),
                         "category": getattr(torrent, 'category', None),
-                        "created_at": torrent.created_at,
+                        "created_at": torrent.created_at.isoformat() if torrent.created_at else None,
                         "updated_from_libtorrent": updated_from_libtorrent
                     })
                 

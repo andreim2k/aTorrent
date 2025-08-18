@@ -61,7 +61,6 @@ aTorrent/
 │   │   └── types/       # TypeScript types
 │   ├── package.json
 │   └── next.config.js
-├── docker-compose.yml   # Docker setup
 └── README.md
 ```
 
@@ -88,9 +87,35 @@ npm install
 npm run dev
 ```
 
-### Docker Setup (Recommended)
+### App Management
+
+Use the included app manager for easy control:
+
 ```bash
-docker-compose up -d
+# Start all services
+./app.sh start all
+
+# Stop all services
+./app.sh stop all
+
+# Restart services
+./app.sh restart all
+
+# Check service status
+./app.sh status
+
+# View logs
+./app.sh logs all
+
+# Clean logs
+./app.sh clean-logs
+```
+
+You can also manage services individually:
+```bash
+./app.sh start backend   # Start only backend
+./app.sh stop frontend    # Stop only frontend
+./app.sh logs backend     # View backend logs
 ```
 
 ## 📖 API Documentation

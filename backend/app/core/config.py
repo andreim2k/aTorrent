@@ -11,7 +11,7 @@ def _generate_secret_key() -> str:
 class Settings(BaseSettings):
     APP_NAME: str = "aTorrent"
     APP_VERSION: str = "1.0.0"
-    DEBUG: bool = True
+    DEBUG: bool = False
     API_V1_STR: str = "/api/v1"
     
     # Security - Generate secure defaults

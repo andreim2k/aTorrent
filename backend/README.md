@@ -185,7 +185,9 @@ pip install gunicorn
 gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
 ```
 
-### Docker (Optional)
+### Containerization (Optional)
+
+If you prefer to use containers, you can create your own Dockerfile:
 
 ```dockerfile
 FROM python:3.11-slim
@@ -196,6 +198,8 @@ COPY . .
 EXPOSE 8000
 CMD ["python", "main.py"]
 ```
+
+**Note**: This project does not include Docker configuration by default. The above is just an example if you want to containerize the backend.
 
 ### Security Considerations
 

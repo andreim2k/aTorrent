@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - aTorrent</title>
+  
+  <!-- Alpine.js from CDN -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
+  
+  <!-- Tailwind CSS from CDN -->
+  <script src="https://cdn.tailwindcss.com?v=3.4.1"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: { main: '#90caf9', light: '#e3f2fd', dark: '#42a5f5' },
+            background: { default: '#121212', paper: '#1e1e1e' },
+            text: { primary: '#ffffff', secondary: '#b3b3b3' }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    .mui-card { background: #1e1e1e; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+    .mui-btn { padding: 10px 20px; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
+    .mui-btn-contained { background: #90caf9; color: #000; }
+    .mui-btn-contained:hover:not(:disabled) { background: #42a5f5; }
+    .mui-btn-contained:disabled { opacity: 0.5; cursor: not-allowed; }
+    .mui-input { width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; }
+    .mui-input:focus { outline: none; border-color: #90caf9; background: rgba(255,255,255,0.08); }
+    .mui-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(144, 202, 249, 0.3); border-top-color: #90caf9; border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="bg-background-default text-text-primary min-h-screen flex items-center justify-center">
+  <div x-data="loginApp()" class="w-full max-w-md px-4">
+    <div class="mui-card p-8">
+      <!-- Logo/Title -->
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold mb-2">aTorrent</h1>
+        <p class="text-text-secondary">Ultra-Lightweight Edition</p>
+      </div>
+
+      <!-- Login Form -->
+      <form @submit.prevent="handleLogin">
+        <div class="mb-4">
+          <input 
+            type="password"
+            x-model="password"
+            class="mui-input"
+            placeholder="Enter password"
+            required
+            :disabled="loading"
+            autofocus
+          >
+        </div>
+
+        <!-- Error Message -->
+        <div x-show="error" x-text="error" class="mb-4 p-3 bg-red-500/20 text-red-400 rounded"></div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="mui-btn mui-btn-contained w-full" :disabled="loading || !password">
+          <span x-show="!loading">Login</span>
+          <div x-show="loading" class="mui-spinner"></div>
+        </button>
+      </form>
+
+    </div>
+
+    <div class="text-center mt-8 text-text-secondary text-xs">
+      <p>Optimized for ARM devices • CubieBoard2 Ready</p>
+      <p class="mt-1">Page size: ~15KB</p>
+    </div>
+  </div>
+
+  <script>
+    function loginApp() {
+      return {
+        password: '',
+        loading: false,
+        error: null,
+        
+        async handleLogin() {
+          if (!this.password) return;
+          
+          this.loading = true;
+          this.error = null;
+          
+          try {
+            const response = await fetch('http://localhost:8000/api/v1/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ password: this.password })
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              
+              // Set cookies
+              const expires = new Date(Date.now() + (data.expires_in || 3600) * 1000);
+              document.cookie = `access_token=${data.access_token}; expires=${expires.toUTCString()}; path=/`;
+              document.cookie = `refresh_token=${data.refresh_token}; expires=${new Date(Date.now() + 30*24*60*60*1000).toUTCString()}; path=/`;
+              
+              window.location.href = '/dashboard.html';
+            } else {
+              this.error = response.status === 401 ? 'Invalid password' : 'Login failed';
+            }
+          } catch (error) {
+            this.error = 'Cannot connect to server';
+          } finally {
+            this.loading = false;
+          }
+        }
+      };
+    }
+  </script>
+</body>
+</html>

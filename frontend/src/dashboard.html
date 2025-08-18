@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - aTorrent</title>
+  
+  <!-- Alpine.js from CDN -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
+  
+  <!-- WebSocket Client -->
+  <script src="/js/websocket-client.js"></script>
+  
+  <!-- Tailwind CSS from CDN (for development, should be built for production) -->
+  <script src="https://cdn.tailwindcss.com?v=3.4.1"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: { main: '#90caf9', light: '#e3f2fd', dark: '#42a5f5' },
+            secondary: { main: '#f48fb1', light: '#fce4ec', dark: '#ad1457' },
+            success: { main: '#66bb6a', light: '#81c784', dark: '#388e3c' },
+            warning: { main: '#ffa726', light: '#ffb74d', dark: '#f57c00' },
+            error: { main: '#f44336', light: '#ef5350', dark: '#c62828' },
+            background: { default: '#121212', paper: '#1e1e1e', elevated: '#272727' },
+            text: { primary: '#ffffff', secondary: '#b3b3b3', disabled: '#666666' }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    /* Minimal custom styles */
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    .mui-card { background: #1e1e1e; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+    .mui-btn { padding: 8px 16px; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
+    .mui-btn-contained { background: #90caf9; color: #000; }
+    .mui-btn-contained:hover { background: #42a5f5; }
+    .mui-btn-outlined { background: transparent; color: #90caf9; border: 1px solid rgba(144, 202, 249, 0.5); }
+    .mui-btn-outlined:hover { background: rgba(144, 202, 249, 0.1); }
+    .mui-chip { display: inline-flex; padding: 0 12px; height: 24px; align-items: center; border-radius: 12px; font-size: 0.75rem; text-transform: capitalize; }
+    .mui-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(144, 202, 249, 0.3); border-top-color: #90caf9; border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="bg-background-default text-text-primary">
+  <div x-data="dashboardApp()" x-init="init()">
+    <!-- Header -->
+    <header class="bg-background-paper border-b border-white/10">
+      <div class="max-w-7xl mx-auto px-4 py-4">
+        <div class="flex justify-between items-center">
+          <h1 class="text-2xl font-bold">aTorrent</h1>
+          <nav class="flex gap-2 items-center">
+            <a href="/dashboard.html" class="px-3 py-2 rounded-lg bg-primary-main/20 text-primary-main">Dashboard</a>
+            <a href="/torrents.html" class="px-3 py-2 rounded-lg hover:bg-white/10 transition-colors">Torrents</a>
+            <a href="/statistics.html" class="px-3 py-2 rounded-lg hover:bg-white/10 transition-colors">Statistics</a>
+            <a href="/settings.html" class="px-3 py-2 rounded-lg hover:bg-white/10 transition-colors">Settings</a>
+            <button @click="logout()" class="mui-btn mui-btn-outlined ml-4">Logout</button>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+      <h2 class="text-3xl font-bold mb-2">Dashboard</h2>
+      <p class="text-text-secondary mb-8">Welcome back! Here's an overview of your torrent activity.</p>
+
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="mui-card p-4">
+          <p class="text-text-secondary text-sm">Total Torrents</p>
+          <p class="text-3xl font-bold" x-text="stats.total_torrents || 0"></p>
+          <p class="text-xs text-text-secondary"><span x-text="stats.active_torrents || 0"></span> active</p>
+        </div>
+        <div class="mui-card p-4">
+          <p class="text-text-secondary text-sm">Download Speed</p>
+          <p class="text-3xl font-bold" x-text="formatSpeed(stats.total_download_speed || 0)"></p>
+          <p class="text-xs text-text-secondary"><span x-text="stats.downloading || 0"></span> downloading</p>
+        </div>
+        <div class="mui-card p-4">
+          <p class="text-text-secondary text-sm">Upload Speed</p>
+          <p class="text-3xl font-bold" x-text="formatSpeed(stats.total_upload_speed || 0)"></p>
+          <p class="text-xs text-text-secondary"><span x-text="stats.seeding || 0"></span> seeding</p>
+        </div>
+        <div class="mui-card p-4">
+          <p class="text-text-secondary text-sm">Total Downloaded</p>
+          <p class="text-3xl font-bold" x-text="formatBytes(stats.total_downloaded || 0)"></p>
+          <p class="text-xs text-text-secondary"><span x-text="formatBytes(stats.total_uploaded || 0)"></span> uploaded</p>
+        </div>
+      </div>
+
+      <!-- Torrents List -->
+      <div class="mui-card p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold">Recent Torrents</h3>
+          <div class="flex gap-2">
+            <button @click="resumeAll()" 
+                    :disabled="!canResumeAll" 
+                    :class="canResumeAll ? '' : 'opacity-50 cursor-not-allowed'"
+                    class="mui-btn mui-btn-outlined">Resume All</button>
+            <button @click="pauseAll()" 
+                    :disabled="!canPauseAll"
+                    :class="canPauseAll ? '' : 'opacity-50 cursor-not-allowed'"
+                    class="mui-btn mui-btn-outlined">Pause All</button>
+            <button @click="deleteAll()" 
+                    :disabled="torrents.length === 0"
+                    :class="torrents.length > 0 ? '' : 'opacity-50 cursor-not-allowed'"
+                    class="mui-btn mui-btn-outlined text-error-main border-error-main/50 hover:bg-error-main/10">Delete All</button>
+            <button @click="showAddDialog = true" class="mui-btn mui-btn-contained">+ Add Torrent(s)</button>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <template x-if="loading">
+            <div class="text-center py-8"><div class="mui-spinner"></div></div>
+          </template>
+          
+          <template x-if="!loading && torrents.length === 0">
+            <div class="text-center py-8 text-text-secondary">No torrents found.</div>
+          </template>
+
+          <template x-for="torrent in torrents" :key="torrent.id">
+            <div class="p-3 border-b border-white/10 flex items-center gap-4">
+              <div class="flex-1">
+                <p class="font-medium" x-text="torrent.name"></p>
+                <div class="flex items-center gap-3 mt-1">
+                  <span class="mui-chip" 
+                        :class="{'bg-primary-main/20 text-primary-main': torrent.status === 'downloading',
+                                 'bg-success-main/20 text-success-main': torrent.status === 'seeding',
+                                 'bg-white/10': torrent.status === 'paused'}"
+                        x-text="torrent.status"></span>
+                  <span class="text-xs text-text-secondary" x-text="formatBytes(torrent.total_size)"></span>
+                  <span x-show="torrent.download_speed > 0" class="text-xs text-primary-main">↓ <span x-text="formatSpeed(torrent.download_speed)"></span></span>
+                  <span x-show="torrent.upload_speed > 0" class="text-xs text-success-main">↑ <span x-text="formatSpeed(torrent.upload_speed)"></span></span>
+                </div>
+              </div>
+              <div class="w-32">
+                <div class="text-xs text-text-secondary mb-1" x-text="Math.round(torrent.progress * 100) + '%'"></div>
+                <div class="h-1 bg-white/20 rounded-full overflow-hidden">
+                  <div class="h-full bg-primary-main transition-all" :style="`width: ${torrent.progress * 100}%`"></div>
+                </div>
+              </div>
+              <button @click="toggleTorrent(torrent)" class="p-2 hover:bg-white/10 rounded-full">
+                <svg x-show="torrent.status !== 'paused'" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                </svg>
+                <svg x-show="torrent.status === 'paused'" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </button>
+            </div>
+          </template>
+        </div>
+      </div>
+    </main>
+
+    <!-- Add Torrent Dialog -->
+    <div x-show="showAddDialog" x-cloak class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="showAddDialog = false">
+      <div class="bg-background-paper rounded-xl p-6 w-full max-w-lg">
+        <h3 class="text-xl font-bold mb-4">Add Torrents</h3>
+        
+        <!-- File Upload Area -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-2">Select Torrent Files</label>
+          <input type="file" @change="handleFileSelect($event)" accept=".torrent" multiple
+                 class="w-full p-3 bg-white/5 border border-white/20 rounded">
+          <div x-show="selectedFiles.length > 0" class="mt-2 text-sm text-text-secondary">
+            Selected: <span x-text="selectedFiles.length + ' file(s)'" ></span>
+          </div>
+        </div>
+        
+        <!-- Auto-start option -->
+        <div class="mb-4">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" x-model="autoStartDownloads" 
+                   class="w-4 h-4 rounded border-gray-600 text-primary-main focus:ring-primary-main">
+            <span class="text-sm">Start downloads automatically</span>
+          </label>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-2 justify-end">
+          <button @click="showAddDialog = false; resetAddForm()" class="mui-btn mui-btn-outlined">Cancel</button>
+          <button @click="addTorrents()" class="mui-btn mui-btn-contained" :disabled="selectedFiles.length === 0">
+            Add <span x-show="selectedFiles.length > 0" x-text="'(' + selectedFiles.length + ')'" ></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // API Configuration
+    const API_BASE = 'http://localhost:8000/api/v1';
+    
+    // Utilities
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+    
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    function formatSpeed(bytesPerSecond) {
+      return formatBytes(bytesPerSecond) + '/s';
+    }
+    
+    // Alpine.js App
+    function dashboardApp() {
+      return {
+        torrents: [],
+        stats: {},
+        loading: false,
+        showAddDialog: false,
+        selectedFiles: [],
+        autoStartDownloads: true,
+        
+        // Computed properties for button states
+        get canResumeAll() {
+          return this.torrents.some(t => t.status === 'paused');
+        },
+        
+        get canPauseAll() {
+          return this.torrents.some(t => t.status !== 'paused');
+        },
+        
+        async init() {
+          const token = getCookie('access_token');
+          if (!token) {
+            window.location.href = '/login.html';
+            return;
+          }
+          
+          // Initial data fetch
+          await this.fetchDashboardData();
+          
+          // Setup WebSocket for real-time updates
+          this.setupWebSocket();
+        },
+        
+        setupWebSocket() {
+          // Store reference to Alpine component
+          const alpineComponent = this;
+          
+          // Try WebSocket connection
+          try {
+            // Create update handler that uses the stored component reference
+            const updateHandler = function(data) {
+              // Update torrents data in real-time
+              if (data && Array.isArray(data)) {
+                // Update using the stored Alpine component reference
+                alpineComponent.torrents = [...data];
+                alpineComponent.calculateStats();
+              }
+            };
+            
+            // Remove any existing listener before adding new one
+            window.torrentWS.off('torrent_update', this.updateHandler);
+            this.updateHandler = updateHandler;
+            window.torrentWS.on('torrent_update', updateHandler);
+            
+            // Handle connection status
+            const connectedHandler = () => {
+              // Stop polling if we have WebSocket
+              if (this.pollingInterval) {
+                clearInterval(this.pollingInterval);
+                this.pollingInterval = null;
+              }
+              // Fetch fresh data on reconnect
+              this.fetchDashboardData();
+            };
+            
+            const disconnectedHandler = () => {
+              // Start fallback polling if WebSocket disconnects
+              this.startPolling();
+            };
+            
+            window.torrentWS.off('connected', this.connectedHandler);
+            window.torrentWS.off('disconnected', this.disconnectedHandler);
+            this.connectedHandler = connectedHandler;
+            this.disconnectedHandler = disconnectedHandler;
+            window.torrentWS.on('connected', connectedHandler);
+            window.torrentWS.on('disconnected', disconnectedHandler);
+            
+            // Connect if not already connected
+            window.torrentWS.connect();
+            
+            // If already connected, stop polling
+            if (window.torrentWS.isConnected) {
+              if (this.pollingInterval) {
+                clearInterval(this.pollingInterval);
+                this.pollingInterval = null;
+              }
+            } else {
+              // Start with polling as fallback
+              this.startPolling();
+            }
+          } catch (error) {
+            // Fallback to polling
+            this.startPolling();
+          }
+        },
+        
+        startPolling() {
+          if (!this.pollingInterval) {
+            this.pollingInterval = setInterval(() => {
+              this.fetchDashboardData();
+            }, 3000);
+          }
+        },
+        
+        calculateStats() {
+          // Calculate stats from torrents data
+          const stats = {
+            total_torrents: this.torrents.length,
+            active_torrents: 0,
+            downloading: 0,
+            seeding: 0,
+            paused: 0,
+            total_download_speed: 0,
+            total_upload_speed: 0,
+            total_downloaded: 0,
+            total_uploaded: 0
+          };
+          
+          this.torrents.forEach(torrent => {
+            if (torrent.status === 'downloading') {
+              stats.downloading++;
+              stats.active_torrents++;
+            } else if (torrent.status === 'seeding') {
+              stats.seeding++;
+              stats.active_torrents++;
+            } else if (torrent.status === 'paused') {
+              stats.paused++;
+            }
+            
+            stats.total_download_speed += torrent.download_speed || 0;
+            stats.total_upload_speed += torrent.upload_speed || 0;
+            stats.total_downloaded += torrent.downloaded || 0;
+            stats.total_uploaded += torrent.uploaded || 0;
+          });
+          
+          this.stats = stats;
+        },
+        
+        async fetchDashboardData() {
+          this.loading = true;
+          const token = getCookie('access_token');
+          
+          try {
+            // Fetch torrents
+            const torrentsRes = await fetch(`${API_BASE}/torrents/?limit=10`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (torrentsRes.ok) {
+              this.torrents = await torrentsRes.json();
+            }
+            
+            // Fetch stats
+            const statsRes = await fetch(`${API_BASE}/torrents/stats/overview`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (statsRes.ok) {
+              this.stats = await statsRes.json();
+            }
+          } catch (error) {
+            // Handle error silently or show user-friendly message
+          } finally {
+            this.loading = false;
+          }
+        },
+        
+        async toggleTorrent(torrent) {
+          const token = getCookie('access_token');
+          const action = torrent.status === 'paused' ? 'resume' : 'pause';
+          
+          try {
+            await fetch(`${API_BASE}/torrents/${torrent.id}/${action}`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            await this.fetchDashboardData();
+          } catch (error) {
+            // Handle error silently
+          }
+        },
+        
+        async resumeAll() {
+          if (!this.canResumeAll) return;
+          
+          const token = getCookie('access_token');
+          const torrentIds = this.torrents
+            .filter(t => t.status === 'paused')
+            .map(t => t.id);
+          
+          try {
+            await fetch(`${API_BASE}/torrents/bulk/resume`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ torrent_ids: torrentIds })
+            });
+            await this.fetchDashboardData();
+          } catch (error) {
+            // Handle error silently
+          }
+        },
+        
+        async pauseAll() {
+          if (!this.canPauseAll) return;
+          
+          const token = getCookie('access_token');
+          const torrentIds = this.torrents
+            .filter(t => t.status !== 'paused')
+            .map(t => t.id);
+          
+          try {
+            await fetch(`${API_BASE}/torrents/bulk/pause`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ torrent_ids: torrentIds })
+            });
+            await this.fetchDashboardData();
+          } catch (error) {
+            // Handle error silently
+          }
+        },
+        
+        async deleteAll() {
+          if (this.torrents.length === 0) {
+            alert('No torrents to delete');
+            return;
+          }
+          
+          if (!confirm(`Delete all ${this.torrents.length} torrent(s) and their files?`)) {
+            return;
+          }
+          
+          const token = getCookie('access_token');
+          const torrentIds = this.torrents.map(t => t.id);
+          
+          try {
+            await fetch(`${API_BASE}/torrents/bulk?delete_files=true`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                torrent_ids: torrentIds
+              })
+            });
+            await this.fetchDashboardData();
+          } catch (error) {
+            // Handle error silently
+          }
+        },
+        
+        handleFileSelect(event) {
+          this.selectedFiles = Array.from(event.target.files);
+        },
+        
+        async addTorrents() {
+          if (this.selectedFiles.length === 0) return;
+          
+          const token = getCookie('access_token');
+          
+          for (const file of this.selectedFiles) {
+            try {
+              const reader = new FileReader();
+              const fileContent = await new Promise((resolve) => {
+                reader.onload = (e) => resolve(btoa(e.target.result));
+                reader.readAsBinaryString(file);
+              });
+              
+              await fetch(`${API_BASE}/torrents/`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                  torrent_file: fileContent,
+                  auto_start: this.autoStartDownloads 
+                })
+              });
+            } catch (error) {
+              // Handle error silently
+            }
+          }
+          
+          this.showAddDialog = false;
+          this.resetAddForm();
+          await this.fetchDashboardData();
+        },
+        
+        resetAddForm() {
+          this.selectedFiles = [];
+          const fileInput = document.querySelector('input[type="file"]');
+          if (fileInput) fileInput.value = '';
+        },
+        
+        logout() {
+          document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          document.cookie = 'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          window.location.href = '/login.html';
+        }
+      };
+    }
+  </script>
+</body>
+</html>

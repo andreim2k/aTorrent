@@ -5,8 +5,8 @@
 
 set -e
 
-echo "🚀 Setting up aTorrent - Modern Torrent Client"
-echo "=============================================="
+echo "🚀 Setting up aTorrent"
+echo "====================="
 
 # Colors for output
 RED='\033[0;31m'
@@ -32,20 +32,6 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Check if Docker is installed
-check_docker() {
-    if ! command -v docker &> /dev/null; then
-        print_error "Docker is not installed. Please install Docker first."
-        exit 1
-    fi
-    
-    if ! command -v docker-compose &> /dev/null; then
-        print_error "Docker Compose is not installed. Please install Docker Compose first."
-        exit 1
-    fi
-    
-    print_success "Docker and Docker Compose are installed"
-}
 
 # Check if Node.js is installed (for local development)
 check_nodejs() {
@@ -202,9 +188,6 @@ Thumbs.db
 
 # Downloads
 downloads/
-
-# Docker
-docker-data/
 EOF
         print_success "Created .gitignore file"
     fi
@@ -216,7 +199,6 @@ main() {
     print_status "Starting aTorrent setup..."
     echo
     
-    check_docker
     create_directories
     setup_backend
     setup_frontend
@@ -227,8 +209,14 @@ main() {
     print_success "🎉 aTorrent setup completed successfully!"
     echo
     echo "Next steps:"
-    echo "1. Start with Docker: docker-compose up -d"
-    echo "2. Or run locally:"
+    echo
+    echo "Use the app manager:"
+    echo "   ./app.sh start all     # Start both services"
+    echo "   ./app.sh stop all      # Stop both services"
+    echo "   ./app.sh status        # Check service status"
+    echo "   ./app.sh logs all      # View logs"
+    echo
+    echo "Or run manually:"
     echo "   - Backend: cd backend && source venv/bin/activate && uvicorn app.main:app --reload"
     echo "   - Frontend: cd frontend && npm run dev"
     echo

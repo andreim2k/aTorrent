@@ -6,6 +6,7 @@ import asyncio
 from typing import List
 import os
 from pathlib import Path
+import logging
 
 from app.core.config import settings
 from app.api.v1.api import api_router
@@ -13,6 +14,17 @@ from app.db.init_db import init_db
 # Use real libtorrent service
 from app.services.torrent_service import TorrentService
 from app.core.websocket_manager import WebSocketManager
+
+# Setup basic logging
+logging.basicConfig(
+    level=logging.WARNING,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+# Silence SQLAlchemy logging
+logging.getLogger('sqlalchemy').setLevel(logging.WARNING)
+logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
+logging.getLogger('sqlalchemy.pool').setLevel(logging.WARNING)
+logger = logging.getLogger(__name__)
 
 # Ensure downloads directory exists
 downloads_path = Path(settings.DOWNLOAD_PATH)
@@ -93,6 +105,9 @@ async def websocket_endpoint(websocket: WebSocket):
 async def broadcast_torrent_updates():
     """Background task to broadcast torrent updates to all connected clients"""
     global torrent_service
+    import logging
+    logger = logging.getLogger(__name__)
+    
     while True:
         try:
             if torrent_service and websocket_manager.active_connections:
@@ -107,6 +122,7 @@ async def broadcast_torrent_updates():
                 
             await asyncio.sleep(1)  # Update every second
         except Exception as e:
+            logger.error(f"Error in broadcast_torrent_updates: {e}")
             await asyncio.sleep(5)  # Wait longer if there's an error
 
 @app.get("/")
