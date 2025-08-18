@@ -109,8 +109,6 @@ Once the backend is running, visit:
 | Web Interface | ✅ Modern | ❌ | ✅ Basic |
 | Mobile Optimized | ✅ | ❌ | ❌ |
 | Real-time Updates | ✅ | ✅ | ✅ |
-| User Management | ✅ | ❌ | ❌ |
-| Dark/Light Theme | ✅ | ❌ | ❌ |
 | Progressive Web App | ✅ | ❌ | ❌ |
 
 ## 🔒 Security Features
