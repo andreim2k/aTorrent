@@ -8,13 +8,10 @@ Created by Andrei (@andreim2k).
 - **Full Torrent Management**: Add, remove, pause, resume torrents
 - **Real-time Updates**: Live progress tracking and statistics via WebSocket
 - **User Authentication**: Secure login/logout with JWT tokens
-- **Server Management**: Save and manage multiple torrent servers
 - **Responsive Design**: Optimized for mobile (Android/iOS) and desktop
 - **Modern UI**: Material-UI components with dark/light theme support
 - **Statistics Dashboard**: Comprehensive download/upload statistics
 - **Settings Management**: Customizable client settings and preferences
-- **File Browser**: Browse and manage downloaded files
-- **Magnet Link Support**: Easy torrent addition via magnet links
 
 ## 🛠 Tech Stack
 
