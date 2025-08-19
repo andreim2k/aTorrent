@@ -33,6 +33,21 @@
   </script>
   
   <style>
+    [x-cloak] { display: none !important; }
+    
+    /* Force minimum width for Name column */
+    @media screen {
+      .resizable-table thead tr th:nth-child(3),
+      .resizable-table tbody tr td:nth-child(3) {
+        min-width: 300px !important;
+        width: max(30%, 300px) !important;
+      }
+    }
+    
+    /* Ensure Name column content is visible */
+    .resizable-table tbody tr td:nth-child(3) .truncate {
+      max-width: calc(100% - 20px);
+    }
     body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
     .mui-card { background: #1e1e1e; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
     .mui-btn { padding: 8px 16px; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
@@ -57,8 +72,22 @@
       width: 100%;
       min-width: 900px;
     }
+    
+    /* Ensure Name column has minimum width */
+    .resizable-table th:nth-child(3),
+    .resizable-table td:nth-child(3) {
+      min-width: 30% !important;
+      width: 40%;
+      max-width: none !important;
+    }
+    
     .resizable-table th {
       position: relative;
+      min-width: 60px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
       min-width: 60px;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -120,12 +149,28 @@
     /* Mobile responsiveness */
     @media (max-width: 1200px) {
       .resizable-table {
+    }
+    
+    /* Ensure Name column has minimum width */
+    .resizable-table th:nth-child(3),
+    .resizable-table td:nth-child(3) {
+      min-width: 30% !important;
+      width: 40%;
+      max-width: none !important;
         min-width: 800px;
       }
     }
     
     @media (max-width: 768px) {
       .resizable-table {
+    }
+    
+    /* Ensure Name column has minimum width */
+    .resizable-table th:nth-child(3),
+    .resizable-table td:nth-child(3) {
+      min-width: 30% !important;
+      width: 40%;
+      max-width: none !important;
         min-width: 600px;
         font-size: 0.875rem;
       }
@@ -303,7 +348,7 @@
                       </button>
                     </div>
                   </td>
-                  <td class="p-4" style="max-width: 0;">
+                  <td class="p-4" style="min-width: 30%; width: 40%;">
                     <div @click="showDetails(torrent)" class="cursor-pointer hover:text-primary-main" style="overflow: hidden;">
                       <div class="font-medium truncate" x-text="torrent.name" :title="torrent.name"></div>
                       <div class="text-xs text-text-secondary mt-1 truncate" x-text="torrent.info_hash ? torrent.info_hash.substring(0, 20) + '...' : ''"></div>
@@ -444,7 +489,7 @@
 
   <script>
     // API Configuration
-    const API_BASE = 'http://localhost:8000/api/v1';
+    const API_BASE = 'http://192.168.50.2:8000/api/v1';
     
     // Utilities
     function getCookie(name) {
@@ -752,7 +797,7 @@
                 filesProcessed++;
                 if (filesProcessed === files.length) {
                   // All files processed
-                  this.$forceUpdate && this.$forceUpdate();
+                  
                 }
               };
               
@@ -824,5 +869,58 @@
       };
     }
   </script>
+<script>
 </body>
+
+  // Ensure Name column minimum width on page load and after resize
+  document.addEventListener('DOMContentLoaded', function() {
+    // Function to enforce minimum width for Name column
+    function enforceNameColumnWidth() {
+      const table = document.querySelector('.resizable-table');
+      if (!table) return;
+      
+      // Get all Name column cells (3rd column)
+      const nameHeaders = table.querySelectorAll('thead th:nth-child(3)');
+      const nameCells = table.querySelectorAll('tbody td:nth-child(3)');
+      
+      // Enforce minimum width
+      [...nameHeaders, ...nameCells].forEach(cell => {
+        const currentWidth = cell.offsetWidth;
+        const tableWidth = table.offsetWidth;
+        const minWidth = Math.max(300, tableWidth * 0.3); // 30% or 300px, whichever is larger
+        
+        if (currentWidth < minWidth) {
+          cell.style.minWidth = minWidth + 'px';
+          cell.style.width = minWidth + 'px';
+        }
+      });
+    }
+    
+    // Run on load
+    enforceNameColumnWidth();
+    
+    // Run on window resize
+    window.addEventListener('resize', enforceNameColumnWidth);
+    
+    // Override any resize events on the table
+    const resizers = document.querySelectorAll('.column-resizer');
+    resizers.forEach((resizer, index) => {
+      if (index === 2) { // Name column resizer
+        resizer.addEventListener('mouseup', enforceNameColumnWidth);
+      }
+    });
+  });
+</script>
 </html>
+
+<script>
+  // Debug helper - log any errors
+  window.addEventListener('error', function(e) {
+    console.error('Global error:', e.message, e);
+  });
+  
+  // Log when Alpine is ready
+  document.addEventListener('alpine:init', () => {
+    console.log('Alpine.js initialized');
+  });
+</script>

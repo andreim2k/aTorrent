@@ -17,7 +17,7 @@ class TorrentWebSocket {
     }
     
     // Use direct connection to backend port
-    const wsUrl = 'ws://localhost:8000/ws';
+    const wsUrl = 'ws://192.168.50.2:8000/ws';
     
     
     try {
