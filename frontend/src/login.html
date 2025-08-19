@@ -72,7 +72,7 @@
         <!-- Submit Button -->
         <button type="submit" class="mui-btn mui-btn-contained w-full flex items-center justify-center" :class="{'mui-btn-loading': loading}" :disabled="loading || !password">
           <span x-show="!loading">Login</span>
-          <span x-show="loading" class="mui-spinner"></span>
+          <span x-show="loading" class="flex items-center justify-center gap-2"><span class="mui-spinner"></span><span>Logging in...</span></span>
         </button>
       </form>
 
