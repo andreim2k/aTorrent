@@ -38,6 +38,8 @@
     .mui-input { width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; }
     .mui-input:focus { outline: none; border-color: #90caf9; background: rgba(255,255,255,0.08); }
     .mui-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(144, 202, 249, 0.3); border-top-color: #90caf9; border-radius: 50%; animation: spin 0.6s linear infinite; }
+    .mui-btn-loading { min-height: 48px; position: relative; }
+    .mui-btn-loading .mui-spinner { margin: 0 auto; }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
@@ -68,9 +70,9 @@
         <div x-show="error" x-text="error" class="mb-4 p-3 bg-red-500/20 text-red-400 rounded"></div>
 
         <!-- Submit Button -->
-        <button type="submit" class="mui-btn mui-btn-contained w-full" :disabled="loading || !password">
+        <button type="submit" class="mui-btn mui-btn-contained w-full flex items-center justify-center" :class="{'mui-btn-loading': loading}" :disabled="loading || !password">
           <span x-show="!loading">Login</span>
-          <div x-show="loading" class="mui-spinner"></div>
+          <span x-show="loading" class="mui-spinner"></span>
         </button>
       </form>
 
