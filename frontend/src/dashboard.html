@@ -119,7 +119,8 @@
       <div class="mui-card p-6">
         <h3 class="text-lg font-bold mb-4">Recent Torrents</h3>
         
-        <div class="flex gap-2 overflow-x-auto pb-2 mb-4">
+        <div class="flex flex-col sm:flex-row gap-2 mb-4">
+          <div class="flex gap-2 justify-center sm:justify-start">
           <button @click="resumeAll()" 
                   :disabled="!canResumeAll" 
                   :class="canResumeAll ? '' : 'opacity-50 cursor-not-allowed'"
@@ -132,7 +133,10 @@
                   :disabled="torrents.length === 0"
                   :class="torrents.length > 0 ? '' : 'opacity-50 cursor-not-allowed'"
                   class="mui-btn mui-btn-outlined text-error-main border-error-main/50 hover:bg-error-main/10 whitespace-nowrap">Delete All</button>
+          </div>
+          <div class="flex justify-center sm:justify-start sm:ml-auto">
           <button @click="showAddDialog = true" class="mui-btn mui-btn-contained whitespace-nowrap">+ Add Torrent(s)</button>
+          </div>
         </div>
 
         <div class="space-y-2">
