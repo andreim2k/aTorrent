@@ -55,7 +55,7 @@
     }
     body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
     .mui-card { background: #1e1e1e; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-    .mui-btn { padding: 8px 16px; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
+    .mui-btn { padding: 10px 20px; font-size: 0.875rem; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
     .mui-btn-contained { background: #90caf9; color: #000; }
     .mui-btn-contained:hover { background: #42a5f5; }
     .mui-btn-outlined { background: transparent; color: #90caf9; border: 1px solid rgba(144, 202, 249, 0.5); }
@@ -210,6 +210,11 @@
       .resizable-table td {
         padding: 8px 12px;
       }
+    }
+    /* Mobile button consistency */
+    @media (max-width: 640px) {
+      .mui-btn { padding: 12px 20px !important; font-size: 0.875rem !important; }
+      .mui-nav-link { padding: 10px 16px !important; font-size: 0.875rem !important; }
     }
   </style>
 </head>

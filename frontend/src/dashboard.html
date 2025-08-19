@@ -33,9 +33,8 @@
   </script>
   
   <style>
-    .mui-nav-link { padding: 8px 16px; border-radius: 8px; transition: all 0.2s; font-size: 0.875rem; }
+    .mui-nav-link { padding: 8px 16px; border-radius: 8px; transition: all 0.2s; }
     .mui-nav-link:hover { background: rgba(255,255,255,0.1); }
-    @media (max-width: 640px) { .mui-nav-link { padding: 6px 12px; font-size: 0.75rem; } }
     /* Global font size reduction - 20% smaller */
     .text-xs { font-size: 0.7rem !important; /* ~11px instead of 12px */ }
     body { font-size: 14px; /* reduced from default 16px */ }
@@ -53,7 +52,7 @@
     /* Minimal custom styles */
     body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
     .mui-card { background: #1e1e1e; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-    .mui-btn { padding: 8px 16px; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
+    .mui-btn { padding: 10px 20px; font-size: 0.875rem; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
     .mui-btn-contained { background: #90caf9; color: #000; }
     .mui-btn-contained:hover { background: #42a5f5; }
     .mui-btn-outlined { background: transparent; color: #90caf9; border: 1px solid rgba(144, 202, 249, 0.5); }
@@ -61,6 +60,11 @@
     .mui-chip { display: inline-flex; padding: 0 12px; height: 24px; align-items: center; border-radius: 12px; font-size: 0.75rem; text-transform: capitalize; }
     .mui-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(144, 202, 249, 0.3); border-top-color: #90caf9; border-radius: 50%; animation: spin 0.6s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    /* Mobile button consistency */
+    @media (max-width: 640px) {
+      .mui-btn { padding: 12px 20px !important; font-size: 0.875rem !important; }
+      .mui-nav-link { padding: 10px 16px !important; font-size: 0.875rem !important; }
+    }
   </style>
 </head>
 <body class="bg-background-default text-text-primary">
@@ -127,7 +131,7 @@
                     :disabled="torrents.length === 0"
                     :class="torrents.length > 0 ? '' : 'opacity-50 cursor-not-allowed'"
                     class="mui-btn mui-btn-outlined text-error-main border-error-main/50 hover:bg-error-main/10">Delete All</button>
-            <button @click="showAddDialog = true" class="mui-btn mui-btn-contained">+ Add Torrent(s)</button>
+            <button @click="showAddDialog = true" class="mui-btn mui-btn-contained text-xs sm:text-sm">+ Add Torrent(s)</button>
           </div>
         </div>
 
@@ -202,7 +206,7 @@
         <!-- Action Buttons -->
         <div class="flex gap-2 justify-end">
           <button @click="showAddDialog = false; resetAddForm()" class="mui-btn mui-btn-outlined">Cancel</button>
-          <button @click="addTorrents()" class="mui-btn mui-btn-contained" :disabled="selectedFiles.length === 0">
+          <button @click="addTorrents()" class="mui-btn mui-btn-contained text-xs sm:text-sm" :disabled="selectedFiles.length === 0">
             Add <span x-show="selectedFiles.length > 0" x-text="'(' + selectedFiles.length + ')'" ></span>
           </button>
         </div>
