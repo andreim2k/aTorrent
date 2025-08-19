@@ -80,7 +80,7 @@
             <a href="/torrents.html" class="mui-nav-link">Torrents</a>
             <a href="/statistics.html" class="mui-nav-link">Statistics</a>
             <a href="/settings.html" class="mui-nav-link">Settings</a>
-            <button @click="logout()" class="mui-btn mui-btn-outlined ml-2 sm:ml-4 text-xs sm:text-sm">Logout</button>
+            <button @click="logout()" class="mui-btn mui-btn-outlined ml-2 sm:ml-4">Logout</button>
           </nav>
         </div>
       </div>
@@ -132,7 +132,7 @@
                     :disabled="torrents.length === 0"
                     :class="torrents.length > 0 ? '' : 'opacity-50 cursor-not-allowed'"
                     class="mui-btn mui-btn-outlined text-error-main border-error-main/50 hover:bg-error-main/10">Delete All</button>
-            <button @click="showAddDialog = true" class="mui-btn mui-btn-contained text-xs sm:text-sm">+ Add Torrent(s)</button>
+            <button @click="showAddDialog = true" class="mui-btn mui-btn-contained">+ Add Torrent(s)</button>
           </div>
         </div>
 
@@ -207,7 +207,7 @@
         <!-- Action Buttons -->
         <div class="flex gap-2 justify-end">
           <button @click="showAddDialog = false; resetAddForm()" class="mui-btn mui-btn-outlined">Cancel</button>
-          <button @click="addTorrents()" class="mui-btn mui-btn-contained text-xs sm:text-sm" :disabled="selectedFiles.length === 0">
+          <button @click="addTorrents()" class="mui-btn mui-btn-contained" :disabled="selectedFiles.length === 0">
             Add <span x-show="selectedFiles.length > 0" x-text="'(' + selectedFiles.length + ')'" ></span>
           </button>
         </div>
