@@ -33,6 +33,9 @@
   </script>
   
   <style>
+    /* Global font size reduction - 20% smaller */
+    .text-xs { font-size: 0.7rem !important; /* ~11px instead of 12px */ }
+    body { font-size: 14px; /* reduced from default 16px */ }
     /* Responsive navigation fixes */
     @media (max-width: 640px) {
       nav {
@@ -63,13 +66,13 @@
     <header class="bg-background-paper border-b border-white/10">
       <div class="max-w-7xl mx-auto px-2 sm:px-4 py-2 sm:py-4">
         <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <h1 class="text-xl sm:text-2xl font-bold">aTorrent</h1>
+          <h1 class="text-lg sm:text-xl font-bold">aTorrent</h1>
           <nav class="flex flex-wrap gap-2 items-center">
-            <a href="/dashboard.html" class="px-2 py-1 text-sm sm:px-3 sm:py-2 rounded-lg bg-primary-main/20 text-primary-main">Dashboard</a>
-            <a href="/torrents.html" class="px-2 py-1 text-sm sm:px-3 sm:py-2 rounded-lg hover:bg-white/10 transition-colors">Torrents</a>
-            <a href="/statistics.html" class="px-2 py-1 text-sm sm:px-3 sm:py-2 rounded-lg hover:bg-white/10 transition-colors">Statistics</a>
-            <a href="/settings.html" class="px-2 py-1 text-sm sm:px-3 sm:py-2 rounded-lg hover:bg-white/10 transition-colors">Settings</a>
-            <button @click="logout()" class="mui-btn mui-btn-outlined ml-2 sm:ml-4 text-sm sm:text-base">Logout</button>
+            <a href="/dashboard.html" class="px-2 py-1 text-xs sm:px-3 sm:py-2 rounded-lg bg-primary-main/20 text-primary-main">Dashboard</a>
+            <a href="/torrents.html" class="px-2 py-1 text-xs sm:px-3 sm:py-2 rounded-lg hover:bg-white/10 transition-colors">Torrents</a>
+            <a href="/statistics.html" class="px-2 py-1 text-xs sm:px-3 sm:py-2 rounded-lg hover:bg-white/10 transition-colors">Statistics</a>
+            <a href="/settings.html" class="px-2 py-1 text-xs sm:px-3 sm:py-2 rounded-lg hover:bg-white/10 transition-colors">Settings</a>
+            <button @click="logout()" class="mui-btn mui-btn-outlined ml-2 sm:ml-4 text-xs sm:text-sm">Logout</button>
           </nav>
         </div>
       </div>
@@ -77,29 +80,29 @@
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 py-8">
-      <h2 class="text-3xl font-bold mb-2">Dashboard</h2>
+      <h2 class="text-2xl font-bold mb-2">Dashboard</h2>
       <p class="text-text-secondary mb-8">Welcome back! Here's an overview of your torrent activity.</p>
 
       <!-- Stats Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div class="mui-card p-4">
-          <p class="text-text-secondary text-sm">Total Torrents</p>
-          <p class="text-3xl font-bold" x-text="stats.total_torrents || 0"></p>
+          <p class="text-text-secondary text-xs">Total Torrents</p>
+          <p class="text-2xl font-bold" x-text="stats.total_torrents || 0"></p>
           <p class="text-xs text-text-secondary"><span x-text="stats.active_torrents || 0"></span> active</p>
         </div>
         <div class="mui-card p-4">
-          <p class="text-text-secondary text-sm">Download Speed</p>
-          <p class="text-3xl font-bold" x-text="formatSpeed(stats.total_download_speed || 0)"></p>
+          <p class="text-text-secondary text-xs">Download Speed</p>
+          <p class="text-2xl font-bold" x-text="formatSpeed(stats.total_download_speed || 0)"></p>
           <p class="text-xs text-text-secondary"><span x-text="stats.downloading || 0"></span> downloading</p>
         </div>
         <div class="mui-card p-4">
-          <p class="text-text-secondary text-sm">Upload Speed</p>
-          <p class="text-3xl font-bold" x-text="formatSpeed(stats.total_upload_speed || 0)"></p>
+          <p class="text-text-secondary text-xs">Upload Speed</p>
+          <p class="text-2xl font-bold" x-text="formatSpeed(stats.total_upload_speed || 0)"></p>
           <p class="text-xs text-text-secondary"><span x-text="stats.seeding || 0"></span> seeding</p>
         </div>
         <div class="mui-card p-4">
-          <p class="text-text-secondary text-sm">Total Downloaded</p>
-          <p class="text-3xl font-bold" x-text="formatBytes(stats.total_downloaded || 0)"></p>
+          <p class="text-text-secondary text-xs">Total Downloaded</p>
+          <p class="text-2xl font-bold" x-text="formatBytes(stats.total_downloaded || 0)"></p>
           <p class="text-xs text-text-secondary"><span x-text="formatBytes(stats.total_uploaded || 0)"></span> uploaded</p>
         </div>
       </div>
@@ -107,8 +110,8 @@
       <!-- Torrents List -->
       <div class="mui-card p-6">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-xl font-bold">Recent Torrents</h3>
-          <div class="flex gap-2">
+          <h3 class="text-lg font-bold">Recent Torrents</h3>
+          <div class="flex flex-wrap gap-2">
             <button @click="resumeAll()" 
                     :disabled="!canResumeAll" 
                     :class="canResumeAll ? '' : 'opacity-50 cursor-not-allowed'"
@@ -172,14 +175,14 @@
     <!-- Add Torrent Dialog -->
     <div x-show="showAddDialog" x-cloak class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="showAddDialog = false">
       <div class="bg-background-paper rounded-xl p-6 w-full max-w-lg">
-        <h3 class="text-xl font-bold mb-4">Add Torrents</h3>
+        <h3 class="text-lg font-bold mb-4">Add Torrents</h3>
         
         <!-- File Upload Area -->
         <div class="mb-4">
-          <label class="block text-sm font-medium mb-2">Select Torrent Files</label>
+          <label class="block text-xs font-medium mb-2">Select Torrent Files</label>
           <input type="file" @change="handleFileSelect($event)" accept=".torrent" multiple
                  class="w-full p-3 bg-white/5 border border-white/20 rounded">
-          <div x-show="selectedFiles.length > 0" class="mt-2 text-sm text-text-secondary">
+          <div x-show="selectedFiles.length > 0" class="mt-2 text-xs text-text-secondary">
             Selected: <span x-text="selectedFiles.length + ' file(s)'" ></span>
           </div>
         </div>
@@ -189,7 +192,7 @@
           <label class="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" x-model="autoStartDownloads" 
                    class="w-4 h-4 rounded border-gray-600 text-primary-main focus:ring-primary-main">
-            <span class="text-sm">Start downloads automatically</span>
+            <span class="text-xs">Start downloads automatically</span>
           </label>
         </div>
 
