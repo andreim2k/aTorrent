@@ -87,6 +87,14 @@ npm install
 npm run dev
 ```
 
+### Default Login Credentials
+
+The application comes with default authentication credentials:
+- **Username**: `admin`
+- **Password**: `admin`
+
+⚠️ **Important**: For security reasons, please change the default password immediately after your first login through the Settings page.
+
 ### App Management
 
 Use the included app manager for easy control:
