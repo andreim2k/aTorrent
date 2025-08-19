@@ -433,6 +433,20 @@
           }
         },
         
+        async deleteTorrent(id) {
+          if (!confirm("Delete this torrent and its files?")) return;
+          
+          const token = getCookie("access_token");
+          try {
+            await fetch(`${API_BASE}/torrents/${id}?delete_files=true`, {
+              method: "DELETE",
+              headers: { "Authorization": `Bearer ${token}` }
+            });
+            await this.fetchDashboardData();
+          } catch (error) {
+            // Handle error silently
+          }
+        },
         async resumeAll() {
           if (!this.canResumeAll) return;
           

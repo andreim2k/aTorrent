@@ -393,9 +393,9 @@
                   </td>
                   <td class="p-4 text-xs" x-text="formatBytes(torrent.total_size)"></td>
                   <td class="p-4">
-                    <div class="w-24">
-                      <div class="text-xs mb-1" x-text="Math.round(torrent.progress * 100) + '%'"></div>
-                      <div class="h-2 bg-white/20 rounded-full overflow-hidden">
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs" x-text="Math.round(torrent.progress * 100) + '%'"></span>
+                      <div class="w-16 h-2 bg-white/20 rounded-full overflow-hidden">
                         <div class="h-full bg-primary-main transition-all" 
                              :style="`width: ${torrent.progress * 100}%`"></div>
                       </div>
