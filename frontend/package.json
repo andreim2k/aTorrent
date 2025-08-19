@@ -5,8 +5,8 @@
   "author": "aTorrent Team",
   "private": true,
   "scripts": {
-    "start": "python3 -m http.server 3001 -d src",
-    "serve": "npx http-server src -p 3001 -c-1"
+    "start": "python3 -m http.server 3000 --bind 0.0.0.0 -d src",
+    "serve": "npx http-server src -p 3000 -a 0.0.0.0 -c-1"
   },
   "devDependencies": {
     "http-server": "^14.1.1"

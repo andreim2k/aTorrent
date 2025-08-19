@@ -13,7 +13,7 @@ python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 
 # Torrent handling - using python-libtorrent for better compatibility
-python-libtorrent==2.0.10
+# python-libtorrent==2.0.10 # Using system-installed python3-libtorrent instead
 
 # Utilities
 pydantic==2.5.0

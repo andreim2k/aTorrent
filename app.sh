@@ -134,7 +134,7 @@ start_frontend() {
     cd "$FRONTEND_DIR/src"
     
     # Start Python HTTP server with minimal output
-    nohup python3 -m http.server $FRONTEND_PORT \
+    nohup python3 -m http.server $FRONTEND_PORT --bind 0.0.0.0 \
         > /dev/null 2> "$LOG_DIR/frontend-error.log" &
     
     local pid=$!
