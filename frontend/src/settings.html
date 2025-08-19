@@ -30,6 +30,9 @@
   </script>
   
   <style>
+    /* Global font size reduction - 20% smaller */
+    .text-xs { font-size: 0.65rem !important; /* ~10px instead of 12px */ }
+    body { font-size: 14px; /* reduced from default 16px */ }
     body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
     .mui-card { background: #1e1e1e; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
     .mui-btn { padding: 8px 16px; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
@@ -57,7 +60,7 @@
     <header class="bg-background-paper border-b border-white/10">
       <div class="max-w-7xl mx-auto px-4 py-4">
         <div class="flex justify-between items-center">
-          <h1 class="text-2xl font-bold">aTorrent</h1>
+          <h1 class="text-xl font-bold">aTorrent</h1>
           <nav class="flex gap-2">
             <a href="/dashboard.html" class="mui-nav-link">Dashboard</a>
             <a href="/torrents.html" class="mui-nav-link">Torrents</a>
@@ -72,7 +75,7 @@
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 py-8">
       <div class="mb-6">
-        <h2 class="text-3xl font-bold mb-2">Settings</h2>
+        <h2 class="text-2xl font-bold mb-2">Settings</h2>
         <p class="text-text-secondary">Manage your account and system preferences</p>
       </div>
 
@@ -98,14 +101,14 @@
                 <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
               </svg>
               <div>
-                <h3 class="text-xl font-bold">Change Password</h3>
-                <p class="text-sm text-text-secondary">Update your account password for security</p>
+                <h3 class="text-lg font-bold">Change Password</h3>
+                <p class="text-xs text-text-secondary">Update your account password for security</p>
               </div>
             </div>
 
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium mb-2">Current Password</label>
+                <label class="block text-xs font-medium mb-2">Current Password</label>
                 <div class="relative">
                   <input :type="showPasswords.current ? 'text' : 'password'" 
                          x-model="passwordForm.currentPassword" 
@@ -124,7 +127,7 @@
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium mb-2">New Password</label>
+                  <label class="block text-xs font-medium mb-2">New Password</label>
                   <div class="relative">
                     <input :type="showPasswords.new ? 'text' : 'password'" 
                            x-model="passwordForm.newPassword" 
@@ -143,7 +146,7 @@
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium mb-2">Confirm New Password</label>
+                  <label class="block text-xs font-medium mb-2">Confirm New Password</label>
                   <div class="relative">
                     <input :type="showPasswords.confirm ? 'text' : 'password'" 
                            x-model="passwordForm.confirmPassword" 
@@ -182,13 +185,13 @@
                 <path d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z"/>
               </svg>
               <div>
-                <h3 class="text-xl font-bold">Download Settings</h3>
-                <p class="text-sm text-text-secondary">Configure where torrents will be downloaded</p>
+                <h3 class="text-lg font-bold">Download Settings</h3>
+                <p class="text-xs text-text-secondary">Configure where torrents will be downloaded</p>
               </div>
             </div>
 
             <div>
-              <label class="block text-sm font-medium mb-2">Default Download Path</label>
+              <label class="block text-xs font-medium mb-2">Default Download Path</label>
               <input type="text" 
                      x-model="localDownloadPath" 
                      @input="downloadPathDirty = (localDownloadPath !== settings.default_download_path)"
