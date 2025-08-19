@@ -239,7 +239,7 @@
           <p class="text-text-secondary">Manage all your torrents in one place</p>
         </div>
         <div class="flex flex-wrap gap-2">
-          <button @click="showAddDialog = true" class="mui-btn mui-btn-contained text-xs sm:text-xs">
+          <button @click="showAddDialog = true" class="mui-btn mui-btn-contained text-xs sm:text-sm">
             + Add Torrent(s)
           </button>
         </div>
@@ -303,7 +303,7 @@
                          class="rounded border-gray-600">
                   <div class="column-resizer" @mousedown="startResize($event, 0)"></div>
                 </th>
-                <th class="p-4 text-left fit-content no-truncate" style="width: 90px;">
+                <th class="p-4 pl-6 text-left fit-content no-truncate" style="width: 90px;">
                   Actions
                   <div class="column-resizer" @mousedown="startResize($event, 1)"></div>
                 </th>
@@ -380,7 +380,7 @@
                       </button>
                     </div>
                   </td>
-                  <td class="p-4" style="min-width: 150px; width: auto;">
+                  <td class="p-4 pl-6" style="min-width: 150px; width: auto;">
                     <div @click="showDetails(torrent)" class="cursor-pointer hover:text-primary-main" style="overflow: hidden;">
                       <div class="font-medium truncate" x-text="torrent.name" :title="torrent.name"></div>
                       <div class="text-xs text-text-secondary mt-1 truncate" x-text="torrent.info_hash ? torrent.info_hash.substring(0, 20) + '...' : ''"></div>
@@ -454,7 +454,7 @@
         <!-- Action Buttons -->
         <div class="flex gap-2 justify-end">
           <button @click="showAddDialog = false; resetAddForm()" class="mui-btn mui-btn-outlined text-xs sm:text-xs">Cancel</button>
-          <button @click="addTorrents()" class="mui-btn mui-btn-contained text-xs sm:text-xs" :disabled="selectedFiles.length === 0">
+          <button @click="addTorrents()" class="mui-btn mui-btn-contained text-xs sm:text-sm" :disabled="selectedFiles.length === 0">
             Add <span x-show="selectedFiles.length > 0" x-text="'(' + selectedFiles.length + ')'" ></span>
           </button>
         </div>
