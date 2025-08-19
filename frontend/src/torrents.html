@@ -33,9 +33,17 @@
   </script>
   
   <style>
-    /* Global font size reduction - 20% smaller */
-    .text-xs { font-size: 0.65rem !important; /* ~10px instead of 12px */ }
-    body { font-size: 14px; /* reduced from default 16px */ }
+    /* Responsive navigation fixes */
+    @media (max-width: 640px) {
+      nav {
+        width: 100%;
+        justify-content: center;
+      }
+      nav a, nav button {
+        flex: 0 0 auto;
+        min-width: fit-content;
+      }
+    }
     [x-cloak] { display: none !important; }
     
     /* Ensure Name column content is visible */
@@ -206,15 +214,15 @@
   <div x-data="torrentsApp()" x-init="init()">
     <!-- Header -->
     <header class="bg-background-paper border-b border-white/10">
-      <div class="max-w-7xl mx-auto px-4 py-4">
-        <div class="flex justify-between items-center">
-          <h1 class="text-xl font-bold">aTorrent</h1>
+      <div class="max-w-7xl mx-auto px-2 sm:px-4 py-2 sm:py-4">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <h1 class="text-xl sm:text-2xl font-bold">aTorrent</h1>
           <nav class="flex gap-2">
             <a href="/dashboard.html" class="mui-nav-link">Dashboard</a>
             <a href="/torrents.html" class="mui-nav-link active">Torrents</a>
             <a href="/statistics.html" class="mui-nav-link">Statistics</a>
             <a href="/settings.html" class="mui-nav-link">Settings</a>
-            <button @click="logout()" class="mui-btn mui-btn-outlined ml-4">Logout</button>
+            <button @click="logout()" class="mui-btn mui-btn-outlined ml-2 sm:ml-4 text-sm sm:text-base">Logout</button>
           </nav>
         </div>
       </div>
@@ -224,7 +232,7 @@
     <main class="max-w-7xl mx-auto px-4 py-8">
       <div class="flex justify-between items-center mb-6">
         <div>
-          <h2 class="text-2xl font-bold mb-2">Torrents</h2>
+          <h2 class="text-3xl font-bold mb-2">Torrents</h2>
           <p class="text-text-secondary">Manage all your torrents in one place</p>
         </div>
         <div class="flex gap-2">
@@ -263,7 +271,7 @@
 
       <!-- Bulk Actions -->
       <div x-show="selectedTorrents.length > 0" class="mui-card p-4 mb-4 bg-primary-main/10">
-        <div class="flex justify-between items-center">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
           <span><span x-text="selectedTorrents.length"></span> torrent(s) selected</span>
           <div class="flex gap-2">
             <button @click="bulkAction('pause')" 
@@ -375,7 +383,7 @@
                       <div class="text-xs text-text-secondary mt-1 truncate" x-text="torrent.info_hash ? torrent.info_hash.substring(0, 20) + '...' : ''"></div>
                     </div>
                   </td>
-                  <td class="p-4 text-xs" x-text="formatBytes(torrent.total_size)"></td>
+                  <td class="p-4 text-sm" x-text="formatBytes(torrent.total_size)"></td>
                   <td class="p-4">
                     <div class="w-24">
                       <div class="text-xs mb-1" x-text="Math.round(torrent.progress * 100) + '%'"></div>
@@ -396,15 +404,15 @@
                           }"
                           x-text="torrent.status"></span>
                   </td>
-                  <td class="p-4 text-xs whitespace-nowrap no-truncate">
+                  <td class="p-4 text-sm whitespace-nowrap no-truncate">
                     <span class="text-primary-main" x-text="formatSpeed(torrent.download_speed || 0)"></span>
                     <span class="text-text-secondary mx-1">/</span>
                     <span class="text-success-main" x-text="formatSpeed(torrent.upload_speed || 0)"></span>
                   </td>
-                  <td class="p-4 text-xs">
+                  <td class="p-4 text-sm">
                     <span x-text="torrent.num_seeds"></span>/<span x-text="torrent.num_peers"></span>
                   </td>
-                  <td class="p-4 text-xs whitespace-nowrap">
+                  <td class="p-4 text-sm whitespace-nowrap">
                     <span x-text="torrent.eta ? formatTime(torrent.eta) : '-'"></span>
                   </td>
                 </tr>
@@ -419,14 +427,14 @@
     <div x-show="showAddDialog" x-cloak class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" 
          @click.self="showAddDialog = false">
       <div class="bg-background-paper rounded-xl p-6 w-full max-w-lg">
-        <h3 class="text-lg font-bold mb-4">Add Torrents</h3>
+        <h3 class="text-xl font-bold mb-4">Add Torrents</h3>
         
         <!-- File Upload Area -->
         <div class="mb-4">
-          <label class="block text-xs font-medium mb-2">Select Torrent Files</label>
+          <label class="block text-sm font-medium mb-2">Select Torrent Files</label>
           <input type="file" @change="handleFileSelect($event)" accept=".torrent" multiple
                  class="mui-input">
-          <div x-show="selectedFiles.length > 0" class="mt-2 text-xs text-text-secondary">
+          <div x-show="selectedFiles.length > 0" class="mt-2 text-sm text-text-secondary">
             Selected: <span x-text="selectedFiles.length + ' file(s)'"></span>
           </div>
         </div>
@@ -436,7 +444,7 @@
           <label class="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" x-model="autoStartDownloads" 
                    class="w-4 h-4 rounded border-gray-600 text-primary-main focus:ring-primary-main">
-            <span class="text-xs">Start downloads automatically</span>
+            <span class="text-sm">Start downloads automatically</span>
           </label>
         </div>
 
@@ -454,51 +462,51 @@
     <div x-show="showDetailsDialog" x-cloak class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" 
          @click.self="showDetailsDialog = false">
       <div class="bg-background-paper rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <h3 class="text-lg font-bold mb-4" x-text="selectedTorrent?.name"></h3>
+        <h3 class="text-xl font-bold mb-4" x-text="selectedTorrent?.name"></h3>
         
         <div class="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label class="text-text-secondary text-xs">Status</label>
+            <label class="text-text-secondary text-sm">Status</label>
             <p class="font-medium" x-text="selectedTorrent?.status"></p>
           </div>
           <div>
-            <label class="text-text-secondary text-xs">Progress</label>
+            <label class="text-text-secondary text-sm">Progress</label>
             <p class="font-medium" x-text="Math.round((selectedTorrent?.progress || 0) * 100) + '%'"></p>
           </div>
           <div>
-            <label class="text-text-secondary text-xs">Size</label>
+            <label class="text-text-secondary text-sm">Size</label>
             <p class="font-medium" x-text="formatBytes(selectedTorrent?.total_size || 0)"></p>
           </div>
           <div>
-            <label class="text-text-secondary text-xs">Downloaded</label>
+            <label class="text-text-secondary text-sm">Downloaded</label>
             <p class="font-medium" x-text="formatBytes(selectedTorrent?.downloaded || 0)"></p>
           </div>
           <div>
-            <label class="text-text-secondary text-xs">Uploaded</label>
+            <label class="text-text-secondary text-sm">Uploaded</label>
             <p class="font-medium" x-text="formatBytes(selectedTorrent?.uploaded || 0)"></p>
           </div>
           <div>
-            <label class="text-text-secondary text-xs">Ratio</label>
+            <label class="text-text-secondary text-sm">Ratio</label>
             <p class="font-medium" x-text="(selectedTorrent?.ratio || 0).toFixed(2)"></p>
           </div>
           <div>
-            <label class="text-text-secondary text-xs">Seeds</label>
+            <label class="text-text-secondary text-sm">Seeds</label>
             <p class="font-medium"><span x-text="selectedTorrent?.num_seeds"></span> (<span x-text="selectedTorrent?.total_seeds"></span> total)</p>
           </div>
           <div>
-            <label class="text-text-secondary text-xs">Peers</label>
+            <label class="text-text-secondary text-sm">Peers</label>
             <p class="font-medium"><span x-text="selectedTorrent?.num_peers"></span> (<span x-text="selectedTorrent?.total_peers"></span> total)</p>
           </div>
         </div>
 
         <div class="mb-4">
-          <label class="text-text-secondary text-xs">Info Hash</label>
-          <p class="font-mono text-xs break-all" x-text="selectedTorrent?.info_hash"></p>
+          <label class="text-text-secondary text-sm">Info Hash</label>
+          <p class="font-mono text-sm break-all" x-text="selectedTorrent?.info_hash"></p>
         </div>
 
         <div class="mb-4">
-          <label class="text-text-secondary text-xs">Save Path</label>
-          <p class="text-xs" x-text="selectedTorrent?.save_path || 'Default'"></p>
+          <label class="text-text-secondary text-sm">Save Path</label>
+          <p class="text-sm" x-text="selectedTorrent?.save_path || 'Default'"></p>
         </div>
 
         <div class="flex gap-2 justify-end">
