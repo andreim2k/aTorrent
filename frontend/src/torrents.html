@@ -35,15 +35,6 @@
   <style>
     [x-cloak] { display: none !important; }
     
-    /* Force minimum width for Name column */
-    @media screen {
-      .resizable-table thead tr th:nth-child(3),
-      .resizable-table tbody tr td:nth-child(3) {
-        min-width: 300px !important;
-        width: max(30%, 300px) !important;
-      }
-    }
-    
     /* Ensure Name column content is visible */
     .resizable-table tbody tr td:nth-child(3) .truncate {
       max-width: calc(100% - 20px);
@@ -157,6 +148,33 @@
       min-width: 30% !important;
       width: 40%;
       max-width: none !important;
+    /* Force Name column to maintain minimum width */
+    .resizable-table thead tr th:nth-child(3),
+    .resizable-table tbody tr td:nth-child(3) {
+      min-width: max(30%, 400px) !important;
+      width: auto !important;
+    }
+    
+    /* Prevent Name column from being too narrow */
+    .resizable-table {
+      table-layout: auto !important;
+    }
+    
+    .resizable-table thead tr th:nth-child(3) {
+      position: relative;
+      min-width: 400px !important;
+    }
+    
+    .resizable-table tbody tr td:nth-child(3) {
+      min-width: 400px !important;
+      max-width: none !important;
+    }
+    
+    /* Ensure content in Name column is visible */
+    .resizable-table tbody tr td:nth-child(3) > div {
+      min-width: 380px;
+      padding-right: 20px;
+    }
         min-width: 800px;
       }
     }
@@ -348,7 +366,7 @@
                       </button>
                     </div>
                   </td>
-                  <td class="p-4" style="min-width: 30%; width: 40%;">
+                  <td class="p-4" style="min-width: 400px; width: auto;">
                     <div @click="showDetails(torrent)" class="cursor-pointer hover:text-primary-main" style="overflow: hidden;">
                       <div class="font-medium truncate" x-text="torrent.name" :title="torrent.name"></div>
                       <div class="text-xs text-text-secondary mt-1 truncate" x-text="torrent.info_hash ? torrent.info_hash.substring(0, 20) + '...' : ''"></div>
@@ -822,11 +840,15 @@
           const startX = event.clientX;
           const startWidth = th.offsetWidth;
           
+          // Calculate dynamic minimum for Name column
+          const tableWidth = table.offsetWidth;
+          const nameColumnMinWidth = Math.max(400, tableWidth * 0.3); // 30% of table or 400px minimum
+          
           // Define minimum widths for specific columns
           const columnMinWidths = {
             0: 50,   // Checkbox column
             1: 90,   // Actions column
-            2: 120,  // Name column
+            2: nameColumnMinWidth,  // Name column - MUST be visible (30% minimum)
             3: 80,   // Size column
             4: 120,  // Progress column
             5: 130,  // Status column - wider with more spacing
@@ -845,6 +867,15 @@
             const diff = e.clientX - startX;
             const newWidth = Math.max(minWidth, startWidth + diff);
             th.style.width = newWidth + 'px';
+            
+            // Also update the corresponding td elements for Name column
+            if (columnIndex === 2) {
+              const tds = table.querySelectorAll('tbody td:nth-child(3)');
+              tds.forEach(td => {
+                td.style.width = newWidth + 'px';
+                td.style.minWidth = minWidth + 'px';
+              });
+            }
           };
           
           const onMouseUp = () => {
@@ -852,12 +883,27 @@
             event.target.classList.remove('column-resizing');
             document.body.style.cursor = '';
             
+            // Ensure Name column maintains minimum width after resize
+            if (columnIndex === 2) {
+              const finalWidth = th.offsetWidth;
+              if (finalWidth < minWidth) {
+                th.style.width = minWidth + 'px';
+                const tds = table.querySelectorAll('tbody td:nth-child(3)');
+                tds.forEach(td => {
+                  td.style.width = minWidth + 'px';
+                  td.style.minWidth = minWidth + 'px';
+                });
+              }
+            }
+            
             // Remove event listeners
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
           };
           
           document.addEventListener('mousemove', onMouseMove);
+          document.addEventListener('mouseup', onMouseUp);
+        },
           document.addEventListener('mouseup', onMouseUp);
         },
         
