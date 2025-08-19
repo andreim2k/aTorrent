@@ -149,10 +149,14 @@
           </template>
 
           <template x-for="torrent in torrents" :key="torrent.id">
-            <div class="p-3 border-b border-white/10 flex items-center gap-4">
-              <div class="flex-1">
-                <p class="font-medium" x-text="torrent.name"></p>
-                <div class="flex items-center gap-3 mt-1">
+            <div class="p-4 border-b border-white/10 flex items-center justify-between gap-4">
+              <!-- Left side: Name and details stacked -->
+              <div class="flex-1 min-w-0">
+                <!-- 1. Torrent name on top with truncation -->
+                <p class="font-medium truncate mb-2" x-text="torrent.name" :title="torrent.name"></p>
+                
+                <!-- 2. Details row below name -->
+                <div class="flex items-center gap-3 flex-wrap">
                   <span class="mui-chip" 
                         :class="{'bg-primary-main/20 text-primary-main': torrent.status === 'downloading',
                                  'bg-success-main/20 text-success-main': torrent.status === 'seeding',
@@ -161,22 +165,31 @@
                   <span class="text-xs text-text-secondary" x-text="formatBytes(torrent.total_size)"></span>
                   <span x-show="torrent.download_speed > 0" class="text-xs text-primary-main">↓ <span x-text="formatSpeed(torrent.download_speed)"></span></span>
                   <span x-show="torrent.upload_speed > 0" class="text-xs text-success-main">↑ <span x-text="formatSpeed(torrent.upload_speed)"></span></span>
+                  <span class="text-xs text-text-secondary" x-text="Math.round(torrent.progress * 100) + '%'"></span>
+                  <div class="w-20 sm:w-24 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                    <div class="h-full bg-primary-main transition-all" :style="`width: ${torrent.progress * 100}%`"></div>
+                  </div>
                 </div>
               </div>
-              <div class="w-32">
-                <div class="text-xs text-text-secondary mb-1" x-text="Math.round(torrent.progress * 100) + '%'"></div>
-                <div class="h-1 bg-white/20 rounded-full overflow-hidden">
-                  <div class="h-full bg-primary-main transition-all" :style="`width: ${torrent.progress * 100}%`"></div>
-                </div>
+              
+              <!-- 3. Right side: Action buttons vertically centered -->
+              <div class="flex gap-1 items-center flex-shrink-0">
+                <button @click="toggleTorrent(torrent)" 
+                        class="p-1 hover:bg-white/10 rounded" title="Play/Pause">
+                  <svg x-show="torrent.status !== 'paused'" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                  </svg>
+                  <svg x-show="torrent.status === 'paused'" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                </button>
+                <button @click="deleteTorrent(torrent.id)" 
+                        class="p-1 hover:bg-white/10 rounded text-error-main" title="Delete">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                  </svg>
+                </button>
               </div>
-              <button @click="toggleTorrent(torrent)" class="p-2 hover:bg-white/10 rounded-full">
-                <svg x-show="torrent.status !== 'paused'" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-                </svg>
-                <svg x-show="torrent.status === 'paused'" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z"/>
-                </svg>
-              </button>
             </div>
           </template>
         </div>
