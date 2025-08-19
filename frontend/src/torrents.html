@@ -162,11 +162,11 @@
     
     .resizable-table thead tr th:nth-child(3) {
       position: relative;
-      min-width: 400px !important;
+      min-width: 150px !important;
     }
     
     .resizable-table tbody tr td:nth-child(3) {
-      min-width: 400px !important;
+      min-width: 150px !important;
       max-width: none !important;
     }
     
@@ -366,7 +366,7 @@
                       </button>
                     </div>
                   </td>
-                  <td class="p-4" style="min-width: 400px; width: auto;">
+                  <td class="p-4" style="min-width: 150px; width: auto;">
                     <div @click="showDetails(torrent)" class="cursor-pointer hover:text-primary-main" style="overflow: hidden;">
                       <div class="font-medium truncate" x-text="torrent.name" :title="torrent.name"></div>
                       <div class="text-xs text-text-secondary mt-1 truncate" x-text="torrent.info_hash ? torrent.info_hash.substring(0, 20) + '...' : ''"></div>
@@ -842,13 +842,13 @@
           
           // Calculate dynamic minimum for Name column
           const tableWidth = table.offsetWidth;
-          const nameColumnMinWidth = Math.max(400, tableWidth * 0.3); // 30% of table or 400px minimum
+          const nameColumnMinWidth = Math.max(150, tableWidth * 0.1); // 10% of table or 150px minimum
           
           // Define minimum widths for specific columns
           const columnMinWidths = {
             0: 50,   // Checkbox column
             1: 90,   // Actions column
-            2: nameColumnMinWidth,  // Name column - MUST be visible (30% minimum)
+            2: nameColumnMinWidth,  // Name column - MUST be visible (10% minimum)
             3: 80,   // Size column
             4: 120,  // Progress column
             5: 130,  // Status column - wider with more spacing
@@ -904,8 +904,6 @@
           document.addEventListener('mousemove', onMouseMove);
           document.addEventListener('mouseup', onMouseUp);
         },
-          document.addEventListener('mouseup', onMouseUp);
-        },
         
         logout() {
           document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
@@ -915,58 +913,46 @@
       };
     }
   </script>
-<script>
-</body>
-
-  // Ensure Name column minimum width on page load and after resize
-  document.addEventListener('DOMContentLoaded', function() {
-    // Function to enforce minimum width for Name column
-    function enforceNameColumnWidth() {
-      const table = document.querySelector('.resizable-table');
-      if (!table) return;
-      
-      // Get all Name column cells (3rd column)
-      const nameHeaders = table.querySelectorAll('thead th:nth-child(3)');
-      const nameCells = table.querySelectorAll('tbody td:nth-child(3)');
-      
-      // Enforce minimum width
-      [...nameHeaders, ...nameCells].forEach(cell => {
-        const currentWidth = cell.offsetWidth;
-        const tableWidth = table.offsetWidth;
-        const minWidth = Math.max(300, tableWidth * 0.3); // 30% or 300px, whichever is larger
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to enforce minimum width for Name column
+        function enforceNameColumnWidth() {
+        const table = document.querySelector('.resizable-table');
+        if (!table) return;
         
-        if (currentWidth < minWidth) {
-          cell.style.minWidth = minWidth + 'px';
-          cell.style.width = minWidth + 'px';
+        // Get all Name column cells (3rd column)
+        const nameHeaders = table.querySelectorAll('thead th:nth-child(3)');
+        const nameCells = table.querySelectorAll('tbody td:nth-child(3)');
+        
+        // Enforce minimum width
+        [...nameHeaders, ...nameCells].forEach(cell => {
+            const currentWidth = cell.offsetWidth;
+            const tableWidth = table.offsetWidth;
+            const minWidth = Math.max(150, tableWidth * 0.1); // 10% or 150px, whichever is larger
+            
+            if (currentWidth < minWidth) {
+            cell.style.minWidth = minWidth + 'px';
+            cell.style.width = minWidth + 'px';
+            }
+        });
         }
-      });
-    }
-    
-    // Run on load
-    enforceNameColumnWidth();
-    
-    // Run on window resize
-    window.addEventListener('resize', enforceNameColumnWidth);
-    
-    // Override any resize events on the table
-    const resizers = document.querySelectorAll('.column-resizer');
-    resizers.forEach((resizer, index) => {
-      if (index === 2) { // Name column resizer
-        resizer.addEventListener('mouseup', enforceNameColumnWidth);
-      }
+        
+        // Run on load
+        enforceNameColumnWidth();
+        
+        // Run on window resize
+        window.addEventListener('resize', enforceNameColumnWidth);
+        
+        // Override any resize events on the table
+        const resizers = document.querySelectorAll('.column-resizer');
+        resizers.forEach((resizer, index) => {
+        if (index === 2) { // Name column resizer
+            resizer.addEventListener('mouseup', enforceNameColumnWidth);
+        }
+        });
     });
-  });
-</script>
+    </script>
+
+</body>
 </html>
 
-<script>
-  // Debug helper - log any errors
-  window.addEventListener('error', function(e) {
-    console.error('Global error:', e.message, e);
-  });
-  
-  // Log when Alpine is ready
-  document.addEventListener('alpine:init', () => {
-    console.log('Alpine.js initialized');
-  });
-</script>
