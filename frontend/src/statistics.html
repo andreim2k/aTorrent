@@ -28,17 +28,29 @@
             background: { default: '#121212', paper: '#1e1e1e', elevated: '#272727' },
             text: { primary: '#ffffff', secondary: '#b3b3b3', disabled: '#666666' }
           }
+          }
         }
       }
-    }
   </script>
   
   <style>
+    /* Beautiful gradient background */
+    body {
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      min-height: 100vh;
+      background-attachment: fixed;
+    }
+    .mui-nav-link { display: inline-flex; align-items: center; padding: 12px 24px; border-radius: 8px; transition: all 0.2s; }
+    .mui-nav-link:hover { background: rgba(255,255,255,0.1); }
+    .mui-nav-link.active { background: rgba(144, 202, 249, 0.2); color: #90caf9; }
     /* Global font size reduction - 20% smaller */
     .text-xs { font-size: 0.7rem !important; /* ~11px instead of 12px */ }
     body { font-size: 14px; /* reduced from default 16px */ }
     /* Responsive navigation fixes */
     @media (max-width: 640px) {
+      .mui-btn-danger { padding: 8px 12px !important; font-size: 0.875rem !important; }
+      .mui-nav-link { padding: 8px 12px !important; font-size: 0.875rem !important; }
+      .mui-btn-outlined { padding: 8px 12px !important; font-size: 0.875rem !important; }
       nav {
         width: 100%;
         justify-content: center;
@@ -48,39 +60,46 @@
         min-width: fit-content;
       }
     }
+    /* Minimal custom styles */
     body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-    .mui-card { background: #1e1e1e; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+    .mui-card { background: linear-gradient(135deg, rgba(20, 18, 35, 0.95) 0%, rgba(35, 30, 70, 0.9) 50%, rgba(25, 25, 45, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 16px; box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37), 0 0 40px rgba(144, 202, 249, 0.1); border: 1px solid rgba(255, 255, 255, 0.08); }
     .mui-btn { padding: 12px 24px; font-size: 0.875rem; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
     .mui-btn-contained { background: #90caf9; color: #000; }
     .mui-btn-contained:hover { background: #42a5f5; }
     .mui-btn-outlined { background: transparent; color: #90caf9; border: 1px solid rgba(144, 202, 249, 0.5); }
+    .mui-btn-danger { background: #dc2626; color: #fff; border: 1px solid #dc2626; }
+    .mui-btn-danger:hover { background: #b91c1c; border-color: #b91c1c; }
     .mui-btn-outlined:hover { background: rgba(144, 202, 249, 0.1); }
+    .mui-chip { display: inline-flex; padding: 0 12px; height: 24px; align-items: center; border-radius: 12px; font-size: 0.75rem; text-transform: capitalize; }
+    .mui-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(144, 202, 249, 0.3); border-top-color: #90caf9; border-radius: 50%; animation: spin 0.6s linear infinite; }
     .mui-nav-link { display: inline-flex; align-items: center; padding: 12px 24px; border-radius: 8px; transition: all 0.2s; }
     .mui-nav-link:hover { background: rgba(255,255,255,0.1); }
     .mui-nav-link.active { background: rgba(144, 202, 249, 0.2); color: #90caf9; }
-    .mui-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(144, 202, 249, 0.3); border-top-color: #90caf9; border-radius: 50%; animation: spin 0.6s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     /* Mobile button consistency */
     @media (max-width: 640px) {
+      .mui-btn-danger { padding: 8px 12px !important; font-size: 0.875rem !important; }
+      .mui-nav-link { padding: 8px 12px !important; font-size: 0.875rem !important; }
+      .mui-btn-outlined { padding: 8px 12px !important; font-size: 0.875rem !important; }
       .mui-btn { padding: 12px 20px !important; font-size: 0.875rem !important; }
-      .mui-nav-link { padding: 10px 16px !important; font-size: 0.875rem !important; }
     }
-    .stat-card { background: #1e1e1e; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+    .stat-card { background: linear-gradient(135deg, rgba(20, 18, 35, 0.95) 0%, rgba(35, 30, 70, 0.9) 50%, rgba(25, 25, 45, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 16px; padding: 20px; box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37), 0 0 40px rgba(144, 202, 249, 0.1); border: 1px solid rgba(255, 255, 255, 0.08); }
+    tbody tr:hover { background: linear-gradient(135deg, rgba(144, 202, 249, 0.1) 0%, rgba(144, 202, 249, 0.05) 100%); cursor: pointer; }
   </style>
 </head>
-<body class="bg-background-default text-text-primary">
+<body class="gradient-bg-dark text-text-primary">
   <div x-data="statisticsApp()" x-init="init()">
     <!-- Header -->
-    <header class="bg-background-paper border-b border-white/10">
+    <header class="bg-gray-900/90 backdrop-blur border-b border-white/10">
       <div class="max-w-7xl mx-auto px-2 sm:px-4 py-2 sm:py-4">
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4">
           <h1 class="text-lg sm:text-xl font-bold">aTorrent</h1>
-          <nav class="flex flex-wrap gap-2">
+          <nav class="flex flex-wrap justify-center sm:justify-start gap-1 sm:gap-2">
             <a href="/dashboard.html" class="mui-nav-link">Dashboard</a>
             <a href="/torrents.html" class="mui-nav-link">Torrents</a>
             <a href="/statistics.html" class="mui-nav-link active">Statistics</a>
             <a href="/settings.html" class="mui-nav-link">Settings</a>
-            <button @click="logout()" class="mui-btn mui-btn-outlined ml-2 sm:ml-4">Logout</button>
+            <button @click="logout()" class="mui-btn mui-btn-danger sm:ml-4">Logout</button>
           </nav>
         </div>
       </div>
@@ -94,7 +113,7 @@
       </div>
 
       <!-- Summary Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
         <div class="stat-card">
           <div class="text-text-secondary text-xs mb-1">Total Downloaded</div>
           <div class="text-lg sm:text-xl font-bold" x-text="formatBytes(stats.all_time_download || 0)"></div>
@@ -154,35 +173,13 @@
           </div>
         </div>
 
-        <!-- Top Torrents -->
-        <div class="mui-card p-6">
-          <h3 class="text-lg font-bold mb-4">Top Active Torrents</h3>
-          <div class="space-y-3">
-            <template x-for="torrent in topTorrents" :key="torrent.id">
-              <div class="border-b border-white/10 pb-3 last:border-0">
-                <div class="flex justify-between items-start">
-                  <div class="flex-1 min-w-0 mr-3">
-                    <div class="font-medium truncate" x-text="torrent.name"></div>
-                    <div class="text-xs text-text-secondary mt-1">
-                      <span x-text="formatBytes(torrent.total_size)"></span> • 
-                      <span x-text="Math.round(torrent.progress * 100) + '%'"></span>
-                    </div>
-                  </div>
-                  <div class="text-right">
-                    <div class="text-xs text-primary-main">↓ <span x-text="formatSpeed(torrent.download_speed)"></span></div>
-                    <div class="text-xs text-success-main">↑ <span x-text="formatSpeed(torrent.upload_speed)"></span></div>
-                  </div>
-                </div>
-              </div>
-            </template>
-            <div x-show="topTorrents.length === 0" class="text-center text-text-secondary py-4">
-              No active torrents
-            </div>
-          </div>
-        </div>
-      </div>
 
     </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-8 text-text-secondary text-xs">
+      <p>Copyright © 2025. All rights reserved.</p>
+    </footer>
   </div>
 
   <script>
@@ -225,7 +222,6 @@
         stats: {},
         sessionStats: {},
         torrentStats: {},
-        topTorrents: [],
         lastTorrentData: new Map(), // Track previous torrent data for calculating deltas
         
         calculateRatio(upload, download) {
@@ -257,11 +253,6 @@
           
           // Listen for torrent updates to calculate stats
           window.torrentWS.on('torrent_update', (torrents) => {
-            // Update top torrents from real-time data
-            this.topTorrents = torrents
-              .filter(t => t.status === 'downloading' || t.status === 'seeding')
-              .sort((a, b) => (b.download_speed + b.upload_speed) - (a.download_speed + a.upload_speed))
-              .slice(0, 5);
             
             // Calculate current speeds and update all-time totals
             let downloadSpeed = 0;
@@ -351,11 +342,6 @@
               });
               
               // Get top 5 active torrents by speed
-              this.topTorrents = torrents
-                .filter(t => t.status === 'downloading' || t.status === 'seeding')
-                .sort((a, b) => (b.download_speed + b.upload_speed) - (a.download_speed + a.upload_speed))
-                .slice(0, 5);
-            }
           } catch (error) {
             // Handle error silently
           }

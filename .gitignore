@@ -98,3 +98,7 @@ coverage/
 tmp/
 temp/
 .tmp/
+
+# Process ID files
+pids/
+*.pid
