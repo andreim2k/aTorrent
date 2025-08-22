@@ -120,7 +120,7 @@ async def broadcast_torrent_updates():
                     "data": torrents_status
                 })
                 
-            await asyncio.sleep(1)  # Update every second
+            await asyncio.sleep(0.2)  # Update every 200ms
         except Exception as e:
             logger.error(f"Error in broadcast_torrent_updates: {e}")
             await asyncio.sleep(5)  # Wait longer if there's an error

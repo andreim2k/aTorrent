@@ -95,7 +95,7 @@ class TorrentService:
                 alerts = self.session.pop_alerts()
                 for alert in alerts:
                     await self._handle_alert(alert)
-                await asyncio.sleep(1)  # Check for alerts every second
+                await asyncio.sleep(0.2)  # Check for alerts every 200ms
             except Exception as e:
                 logger.error(f"Error processing alerts: {e}")
                 await asyncio.sleep(5)
