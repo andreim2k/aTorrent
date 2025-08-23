@@ -1,3 +1,7 @@
+# aTorrent Frontend - Ultra-Lightweight ARM Edition
+
+Specifically optimized for CubieBoard 2 and ARM-based single-board computers.
+
 # aTorrent Frontend - Ultra-Lightweight Edition
 
 A minimalist, high-performance torrent client web interface built with Alpine.js and Tailwind CSS.
