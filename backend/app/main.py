@@ -10,6 +10,7 @@ import logging
 
 from app.core.config import settings
 from app.api.v1.api import api_router
+from app.api.v1.system import router as system_router
 from app.db.init_db import init_db
 # Use real libtorrent service
 from app.services.torrent_service import TorrentService
@@ -50,6 +51,7 @@ app.add_middleware(
 
 # Include API routes
 app.include_router(api_router, prefix=settings.API_V1_STR)
+app.include_router(system_router, prefix=settings.API_V1_STR + "/system", tags=["system"])
 
 # Global instances
 websocket_manager = WebSocketManager()

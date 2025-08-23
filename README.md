@@ -200,3 +200,83 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Production Notes](frontend/PRODUCTION_NOTES.md)
 - [Backend API Documentation](backend/README.md)
 - [Frontend Documentation](frontend/README.md)
+
+## 🖥️ System Statistics
+
+aTorrent now includes comprehensive real-time system monitoring with beautiful visualizations and live data updates.
+
+### 📊 Features
+
+#### **Real-time System Monitoring**
+- **⚡ 200ms Updates**: Live system metrics with smooth animations
+- **🚀 WebSocket Streaming**: Real-time data delivery without page refresh
+- **📱 Responsive Design**: Works perfectly on desktop and mobile devices
+- **🎨 Beautiful UI**: Progress bars, charts, and animated indicators
+
+#### **Comprehensive Metrics**
+
+**🖥️ CPU Monitoring**
+- Overall CPU utilization percentage with animated progress bar
+- Per-core CPU usage with individual progress indicators
+- CPU frequency information (current, min, max)
+- System load averages (1min, 5min, 15min)
+- Logical vs physical core count
+
+**💾 Memory Monitoring**
+- RAM usage with percentage and visual progress bar
+- Available, used, free, and cached memory statistics
+- Swap memory usage and statistics
+- Real-time memory consumption tracking
+
+**💽 Disk Monitoring**
+- Per-partition disk usage with progress indicators
+- Real-time disk I/O rates (read/write speeds)
+- Filesystem information (ext4, etc.)
+- Used/free space for each mounted filesystem
+- Device information and mount points
+
+**🌐 Network Monitoring**
+- Real-time download/upload rates (bytes/second)
+- Total network transfer statistics (lifetime)
+- Active network interface detection
+- Per-interface statistics and IP addresses
+- Interface status monitoring (up/down)
+
+### 🔧 Technical Implementation
+
+#### **Backend Components**
+- **psutil Integration**: System metrics collection using Python psutil library
+- **FastAPI Endpoints**: REST API for system statistics snapshots
+- **WebSocket Streaming**: Real-time data delivery every 200ms
+- **Rate Calculations**: Proper differential calculations for I/O and network rates
+- **Error Handling**: Robust error handling and recovery
+
+#### **Frontend Components**
+- **Alpine.js Integration**: Reactive UI components
+- **WebSocket Client**: Automatic connection management with reconnection
+- **Smooth Animations**: CSS transitions and progress bar animations
+- **Responsive Layout**: Mobile-friendly design with Tailwind CSS
+- **Real-time Updates**: Live DOM updates without page refresh
+
+#### **API Endpoints**
+```
+GET  /api/v1/system/stats    - System statistics snapshot
+WS   /api/v1/system/ws       - Real-time WebSocket stream
+```
+
+### 📈 Usage
+
+1. **Access Statistics Page**: Navigate to `/statistics.html` after logging in
+2. **View Real-time Data**: System statistics update automatically every 200ms
+3. **Monitor Performance**: Track CPU, memory, disk, and network usage live
+4. **Mobile Friendly**: View statistics on any device with responsive design
+
+### 🚀 Performance
+
+- **Low Overhead**: Efficient system monitoring with minimal CPU impact
+- **Optimized Updates**: 200ms intervals provide smooth real-time experience
+- **Memory Efficient**: Proper cleanup and resource management
+- **Network Optimized**: Compressed JSON data over WebSocket connection
+
+The system statistics feature provides comprehensive real-time monitoring capabilities, making aTorrent not just a torrent client but also a powerful system monitoring tool.
+

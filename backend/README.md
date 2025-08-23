@@ -245,3 +245,58 @@ MIT License - see LICENSE file for details.
 ---
 
 **Made with ❤️ by Andrei (@andreim2k)**
+
+## System Statistics
+
+The aTorrent backend now includes comprehensive system monitoring capabilities using psutil.
+
+### New Dependencies
+
+- `psutil==5.9.8` - System and process monitoring
+
+### System Statistics Features
+
+The system statistics provide real-time monitoring of:
+
+1. **CPU Usage**
+   - Overall CPU utilization percentage
+   - Per-core CPU usage
+   - CPU frequency information
+   - System load averages (1min, 5min, 15min)
+
+2. **Memory Usage**
+   - RAM usage (used, available, total, percentage)
+   - Swap usage
+   - Cache and buffer information
+
+3. **Disk Usage**
+   - Per-partition disk usage
+   - Disk I/O statistics
+   - Read/write operations and bytes
+
+4. **Network Activity**
+   - Real-time upload/download rates
+   - Total bytes transferred
+   - Per-interface statistics
+   - Network interface status
+
+### API Endpoints
+
+- `GET /api/v1/system/stats` - Get current system statistics snapshot
+- `WebSocket /api/v1/system/ws` - Real-time system statistics (updates every 200ms)
+
+### Running in Production
+
+For long-running servers, use the recommended background execution pattern:
+
+```bash
+# Start both services in background
+./app.sh start all
+
+# Or manually with nohup (user preference)
+nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload > logs/backend.log 2>&1 &
+bg
+```
+
+The system statistics WebSocket updates every 200ms to provide smooth real-time monitoring without excessive CPU usage.
+

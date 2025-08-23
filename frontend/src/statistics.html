@@ -140,6 +140,131 @@
       </div>
 
 
+
+      <!-- System Statistics Card -->
+      <div class="mb-8">
+        <h3 class="text-xl font-bold mb-4 text-white">System Statistics</h3>
+        <div class="mui-card p-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- CPU Stats -->
+            <div class="space-y-4">
+              <h4 class="text-lg font-semibold text-primary-main mb-3">CPU Usage</h4>
+              
+              <!-- Overall CPU -->
+              <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-text-secondary">Overall</span>
+                  <span class="text-sm font-medium text-white" id="cpu-usage-percent">0.0%</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2">
+                  <div class="bg-primary-main h-2 rounded-full transition-all duration-300" 
+                       id="cpu-usage-bar" style="width: 0%"></div>
+                </div>
+              </div>
+              
+              <!-- Per-core CPU -->
+              <div class="space-y-2">
+                <span class="text-sm text-text-secondary">Per Core</span>
+                <div id="cpu-cores-container" class="space-y-1">
+                  <!-- CPU cores will be populated dynamically -->
+                </div>
+              </div>
+              
+              <!-- CPU Info -->
+              <div class="text-xs text-text-secondary space-y-1">
+                <div>Cores: <span id="cpu-cores-count" class="text-white">0</span> logical, <span id="cpu-cores-physical" class="text-white">0</span> physical</div>
+                <div>Frequency: <span id="cpu-frequency" class="text-white">0 MHz</span></div>
+                <div>Load Average: <span id="cpu-load-avg" class="text-white">0.00, 0.00, 0.00</span></div>
+              </div>
+            </div>
+
+            <!-- Memory Stats -->
+            <div class="space-y-4">
+              <h4 class="text-lg font-semibold text-primary-main mb-3">Memory Usage</h4>
+              
+              <!-- RAM Usage -->
+              <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-text-secondary">RAM</span>
+                  <span class="text-sm font-medium text-white" id="memory-usage-percent">0.0%</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2">
+                  <div class="bg-success-main h-2 rounded-full transition-all duration-300" 
+                       id="memory-usage-bar" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between text-xs text-text-secondary">
+                  <span>Used: <span id="memory-used" class="text-white">0 GB</span></span>
+                  <span>Total: <span id="memory-total" class="text-white">0 GB</span></span>
+                </div>
+              </div>
+              
+              <!-- Swap Usage -->
+              <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-text-secondary">Swap</span>
+                  <span class="text-sm font-medium text-white" id="swap-usage-percent">0.0%</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2">
+                  <div class="bg-warning-main h-2 rounded-full transition-all duration-300" 
+                       id="swap-usage-bar" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between text-xs text-text-secondary">
+                  <span>Used: <span id="swap-used" class="text-white">0 GB</span></span>
+                  <span>Total: <span id="swap-total" class="text-white">0 GB</span></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Disk Stats -->
+            <div class="space-y-4">
+              <h4 class="text-lg font-semibold text-primary-main mb-3">Disk Usage</h4>
+              <div id="disk-partitions-container" class="space-y-3">
+                <!-- Disk partitions will be populated dynamically -->
+              </div>
+              
+              <!-- Disk I/O -->
+              <div class="text-xs text-text-secondary space-y-1 pt-2 border-t border-gray-600">
+                <div class="font-medium text-white mb-1">I/O Activity</div>
+                <div>Read: <span id="disk-read-rate" class="text-white">0 MB/s</span></div>
+                <div>Write: <span id="disk-write-rate" class="text-white">0 MB/s</span></div>
+              </div>
+            </div>
+
+            <!-- Network Stats -->
+            <div class="space-y-4">
+              <h4 class="text-lg font-semibold text-primary-main mb-3">Network Activity</h4>
+              
+              <!-- Overall Network -->
+              <div class="space-y-2">
+                <div class="flex justify-between text-xs text-text-secondary">
+                  <span>↓ Download Rate:</span>
+                  <span id="network-download-rate" class="text-success-main font-medium">0 MB/s</span>
+                </div>
+                <div class="flex justify-between text-xs text-text-secondary">
+                  <span>↑ Upload Rate:</span>
+                  <span id="network-upload-rate" class="text-primary-main font-medium">0 MB/s</span>
+                </div>
+              </div>
+              
+              <!-- Total Transfer -->
+              <div class="text-xs text-text-secondary space-y-1 pt-2 border-t border-gray-600">
+                <div class="font-medium text-white mb-1">Total Transfer</div>
+                <div>Downloaded: <span id="network-total-download" class="text-white">0 GB</span></div>
+                <div>Uploaded: <span id="network-total-upload" class="text-white">0 GB</span></div>
+              </div>
+              
+              <!-- Active Interfaces -->
+              <div class="text-xs text-text-secondary space-y-1 pt-2 border-t border-gray-600">
+                <div class="font-medium text-white mb-1">Active Interfaces</div>
+                <div id="network-interfaces-container">
+                  <!-- Network interfaces will be populated dynamically -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Detailed Stats Tables -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Session Statistics -->
@@ -231,6 +356,195 @@
         sessionStats: {},
         torrentStats: {},
         lastTorrentData: new Map(), // Track previous torrent data for calculating deltas
+
+        // === SYSTEM STATISTICS WEBSOCKET ===
+        systemStatsWS: null,
+        systemStats: { cpu: {}, memory: {}, disk: {}, network: {} },
+        
+        formatBytesSystem(bytes) {
+          if (!bytes || bytes === 0) return '0 B';
+          const k = 1024;
+          const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+          const i = Math.floor(Math.log(bytes) / Math.log(k));
+          const decimals = (i >= 3) ? 3 : 2;  // More precision for GB/TB
+          return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
+        },
+        
+        formatBytesPerSecondSystem(bytes) {
+          return this.formatBytesSystem(bytes) + '/s';
+        },
+        
+        formatFrequency(mhz) {
+          if (!mhz) return '0 MHz';
+          if (mhz >= 1000) return (mhz / 1000).toFixed(2) + ' GHz';
+          return mhz.toFixed(0) + ' MHz';
+        },
+        
+        setupSystemStatsWebSocket() {
+          const wsUrl = 'ws://192.168.50.2:8000/api/v1/system/ws';
+          const connectSystemStats = () => {
+            this.systemStatsWS = new WebSocket(wsUrl);
+            this.systemStatsWS.onopen = () => console.log('System stats WebSocket connected');
+            this.systemStatsWS.onmessage = (event) => {
+              try {
+                const message = JSON.parse(event.data);
+                if (message.type === 'system_stats' && message.data) {
+                  this.systemStats = message.data;
+                  this.updateSystemStatsUI();
+                }
+              } catch (error) {
+                console.error('Error parsing system stats message:', error);
+              }
+            };
+            this.systemStatsWS.onerror = (error) => console.error('System stats WebSocket error:', error);
+            this.systemStatsWS.onclose = () => {
+              console.log('System stats WebSocket disconnected, reconnecting...');
+              setTimeout(connectSystemStats, 3000);
+            };
+          };
+          connectSystemStats();
+        },
+        
+        updateSystemStatsUI() {
+          this.updateCPUStats();
+          this.updateMemoryStats();
+          this.updateDiskStats();
+          this.updateNetworkStats();
+        },
+        
+        updateCPUStats() {
+          const cpu = this.systemStats.cpu || {};
+          const usage = cpu.usage || 0;
+          
+          const cpuUsageEl = document.getElementById('cpu-usage-percent');
+          const cpuBarEl = document.getElementById('cpu-usage-bar');
+          if (cpuUsageEl) cpuUsageEl.textContent = usage.toFixed(1) + '%';
+          if (cpuBarEl) cpuBarEl.style.width = Math.min(usage, 100) + '%';
+          
+          // Per-core usage
+          const coresContainer = document.getElementById('cpu-cores-container');
+          if (coresContainer && cpu.per_core && cpu.per_core.length > 0) {
+            coresContainer.innerHTML = cpu.per_core.map((coreUsage, index) => `
+              <div class="flex items-center space-x-2">
+                <span class="text-xs text-text-secondary w-12">Core ${index}</span>
+                <div class="flex-1 bg-gray-700 rounded-full h-1">
+                  <div class="bg-primary-light h-1 rounded-full transition-all duration-300" 
+                       style="width: ${Math.min(coreUsage, 100)}%"></div>
+                </div>
+                <span class="text-xs text-white w-10 text-right">${coreUsage.toFixed(0)}%</span>
+              </div>
+            `).join('');
+          }
+          
+          // CPU info
+          const coresCountEl = document.getElementById('cpu-cores-count');
+          const coresPhysicalEl = document.getElementById('cpu-cores-physical');
+          const cpuFreqEl = document.getElementById('cpu-frequency');
+          const loadAvgEl = document.getElementById('cpu-load-avg');
+          
+          if (coresCountEl) coresCountEl.textContent = cpu.cores || 0;
+          if (coresPhysicalEl) coresPhysicalEl.textContent = cpu.cores_physical || 0;
+          if (cpuFreqEl) cpuFreqEl.textContent = this.formatFrequency(cpu.frequency?.current || 0);
+          if (loadAvgEl && cpu.load_average) {
+            const loadAvg = `${cpu.load_average['1min']?.toFixed(2) || 0}, ${cpu.load_average['5min']?.toFixed(2) || 0}, ${cpu.load_average['15min']?.toFixed(2) || 0}`;
+            loadAvgEl.textContent = loadAvg;
+          }
+        },
+        
+        updateMemoryStats() {
+          const memory = this.systemStats.memory || {};
+          
+          // RAM usage
+          const ramPercent = memory.percent || 0;
+          const memUsagePercentEl = document.getElementById('memory-usage-percent');
+          const memUsageBarEl = document.getElementById('memory-usage-bar');
+          const memUsedEl = document.getElementById('memory-used');
+          const memTotalEl = document.getElementById('memory-total');
+          
+          if (memUsagePercentEl) memUsagePercentEl.textContent = ramPercent.toFixed(1) + '%';
+          if (memUsageBarEl) memUsageBarEl.style.width = Math.min(ramPercent, 100) + '%';
+          if (memUsedEl) memUsedEl.textContent = this.formatBytesSystem(memory.used || 0);
+          if (memTotalEl) memTotalEl.textContent = this.formatBytesSystem(memory.total || 0);
+          
+          // Swap usage
+          const swap = memory.swap || {};
+          const swapPercent = swap.percent || 0;
+          const swapUsagePercentEl = document.getElementById('swap-usage-percent');
+          const swapUsageBarEl = document.getElementById('swap-usage-bar');
+          const swapUsedEl = document.getElementById('swap-used');
+          const swapTotalEl = document.getElementById('swap-total');
+          
+          if (swapUsagePercentEl) swapUsagePercentEl.textContent = swapPercent.toFixed(1) + '%';
+          if (swapUsageBarEl) swapUsageBarEl.style.width = Math.min(swapPercent, 100) + '%';
+          if (swapUsedEl) swapUsedEl.textContent = this.formatBytesSystem(swap.used || 0);
+          if (swapTotalEl) swapTotalEl.textContent = this.formatBytesSystem(swap.total || 0);
+        },
+        
+        updateDiskStats() {
+          const disk = this.systemStats.disk || {};
+          const partitions = disk.partitions || [];
+          
+          const partitionsContainer = document.getElementById('disk-partitions-container');
+          if (partitionsContainer && partitions.length > 0) {
+            partitionsContainer.innerHTML = partitions.slice(0, 3).map(partition => `
+              <div class="space-y-1">
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-text-secondary">${partition.device} (${partition.mountpoint})</span>
+                  <span class="text-sm font-medium text-white">${partition.percent.toFixed(1)}%</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-1">
+                  <div class="bg-warning-main h-1 rounded-full transition-all duration-300" 
+                       style="width: ${Math.min(partition.percent, 100)}%"></div>
+                </div>
+                <div class="flex justify-between text-xs text-text-secondary">
+                  <span>Used: ${this.formatBytesSystem(partition.used)}</span>
+                  <span>Free: ${this.formatBytesSystem(partition.free)}</span>
+                </div>
+              </div>
+            `).join('');
+          }
+          
+          // Disk I/O rates
+          const io = disk.io || {};
+          const diskReadRateEl = document.getElementById('disk-read-rate');
+          const diskWriteRateEl = document.getElementById('disk-write-rate');
+          if (diskReadRateEl) diskReadRateEl.textContent = this.formatBytesPerSecondSystem(io.read_rate || 0);
+          if (diskWriteRateEl) diskWriteRateEl.textContent = this.formatBytesPerSecondSystem(io.write_rate || 0);
+        },
+        
+        updateNetworkStats() {
+          const network = this.systemStats.network || {};
+          
+          // Network rates
+          const netDownloadRateEl = document.getElementById('network-download-rate');
+          const netUploadRateEl = document.getElementById('network-upload-rate');
+          if (netDownloadRateEl) netDownloadRateEl.textContent = this.formatBytesPerSecondSystem(network.bytes_recv_rate || 0);
+          if (netUploadRateEl) netUploadRateEl.textContent = this.formatBytesPerSecondSystem(network.bytes_sent_rate || 0);
+          
+          // Total transfer
+          const netTotalDownloadEl = document.getElementById('network-total-download');
+          const netTotalUploadEl = document.getElementById('network-total-upload');
+          if (netTotalDownloadEl) netTotalDownloadEl.textContent = this.formatBytesSystem(network.bytes_recv || 0);
+          if (netTotalUploadEl) netTotalUploadEl.textContent = this.formatBytesSystem(network.bytes_sent || 0);
+          
+          // Active interfaces
+          const interfaces = network.interfaces || [];
+          const interfacesContainer = document.getElementById('network-interfaces-container');
+          if (interfacesContainer) {
+            const activeInterfaces = interfaces.filter(iface => iface.is_up && !iface.name.startsWith('lo'));
+            if (activeInterfaces.length > 0) {
+              interfacesContainer.innerHTML = activeInterfaces.slice(0, 3).map(iface => `
+                <div class="text-xs">
+                  <span class="text-white font-medium">${iface.name}</span>: 
+                  <span class="text-success-main">↓${this.formatBytesSystem(iface.bytes_recv)}</span> 
+                  <span class="text-primary-main">↑${this.formatBytesSystem(iface.bytes_sent)}</span>
+                </div>
+              `).join('');
+            } else {
+              interfacesContainer.innerHTML = '<div class="text-xs text-text-secondary">No active interfaces</div>';
+            }
+          }
+        },
         
         calculateRatio(upload, download) {
           if (!download || download === 0) return '∞';
@@ -253,6 +567,9 @@
           
           // Setup WebSocket for real-time updates
           this.setupWebSocket();
+
+          // Setup System Stats WebSocket
+          this.setupSystemStatsWebSocket();
         },
         
         setupWebSocket() {
