@@ -145,31 +145,39 @@
         <!-- Session Statistics -->
         <div class="mui-card p-6">
           <h3 class="text-lg font-bold mb-4">Session Statistics</h3>
-          <div class="space-y-3">
-            <div class="flex justify-between">
-              <span class="text-text-secondary">Active Torrents</span>
-              <span class="font-medium" x-text="torrentStats.active_torrents || 0"></span>
+          <div class="grid grid-cols-2 gap-6">
+            <!-- Column 1: Active torrents, total torrents, connected peers -->
+            <div class="space-y-3">
+              <div class="flex flex-col">
+                <span class="text-text-secondary text-sm">Active Torrents</span>
+                <span class="font-medium text-lg" x-text="torrentStats.active_torrents || 0"></span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-text-secondary text-sm">Total Torrents</span>
+                <span class="font-medium text-lg" x-text="torrentStats.total_torrents || 0"></span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-text-secondary text-sm">Connected Peers</span>
+                <span class="font-medium text-lg" x-text="sessionStats.num_peers || 0"></span>
+              </div>
             </div>
-            <div class="flex justify-between">
-              <span class="text-text-secondary">Total Torrents</span>
-              <span class="font-medium" x-text="torrentStats.total_torrents || 0"></span>
+            
+            <!-- Column 2: DHT nodes, listen port, protocol version -->
+            <div class="space-y-3">
+              <div class="flex flex-col">
+                <span class="text-text-secondary text-sm">DHT Nodes</span>
+                <span class="font-medium text-lg" x-text="sessionStats.dht_nodes || 0"></span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-text-secondary text-sm">Listen Port</span>
+                <span class="font-medium text-lg" x-text="sessionStats.port || 'N/A'"></span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-text-secondary text-sm">Protocol Version</span>
+                <span class="font-medium text-lg" x-text="sessionStats.libtorrent_version || 'N/A'"></span>
+              </div>
             </div>
-            <div class="flex justify-between">
-              <span class="text-text-secondary">Connected Peers</span>
-              <span class="font-medium" x-text="sessionStats.num_peers || 0"></span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-text-secondary">DHT Nodes</span>
-              <span class="font-medium" x-text="sessionStats.dht_nodes || 0"></span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-text-secondary">Listen Port</span>
-              <span class="font-medium" x-text="sessionStats.port || 'N/A'"></span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-text-secondary">Protocol Version</span>
-              <span class="font-medium" x-text="sessionStats.libtorrent_version || 'N/A'"></span>
-            </div>
+          </div></div>
           </div>
         </div>
 
