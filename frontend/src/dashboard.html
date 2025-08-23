@@ -62,6 +62,9 @@
     .mui-btn-contained:hover { background: #42a5f5; }
     .mui-btn-outlined { background: transparent; color: #90caf9; border: 1px solid rgba(144, 202, 249, 0.5); }
     .mui-btn-outlined:hover { background: rgba(144, 202, 249, 0.1); }
+    .mui-input { padding: 10px 14px; background: rgba(144, 202, 249, 0.08); border: 1px solid rgba(144, 202, 249, 0.2); border-radius: 6px; color: rgba(144, 202, 249, 0.9); font-size: 14px; transition: all 0.2s; }
+    .mui-input:focus { outline: none; border-color: rgba(144, 202, 249, 0.5); background: rgba(144, 202, 249, 0.12); box-shadow: 0 0 0 3px rgba(144, 202, 249, 0.1); }
+    .mui-input:hover { border-color: rgba(144, 202, 249, 0.4); background: rgba(144, 202, 249, 0.1); }
     .mui-btn-danger { background: #dc2626; color: #fff; border: 1px solid #dc2626; }
     .mui-btn-danger:hover { background: #b91c1c; border-color: #b91c1c; }
     .mui-chip { display: inline-flex; padding: 0 12px; height: 24px; align-items: center; border-radius: 12px; font-size: 0.75rem; text-transform: capitalize; }
@@ -217,17 +220,22 @@
         </div>
       </div>
     </main>
+    <!-- Footer -->
+    <footer class="text-center py-8 text-text-secondary text-xs">
+      <p>Copyright © 2025. All rights reserved.</p>
+    </footer>
+
 
     <!-- Add Torrent Dialog -->
-    <div x-show="showAddDialog" x-cloak class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="showAddDialog = false">
-      <div class="bg-gray-900/90 backdrop-blur rounded-xl p-6 w-full max-w-lg">
+    <div x-show="showAddDialog" x-cloak class="fixed inset-0 bg-black/75 flex items-center justify-center z-50" @click.self="showAddDialog = false">
+      <div class="mui-card rounded-xl p-6 w-full max-w-lg">
         <h3 class="text-lg font-bold mb-4">Add Torrents</h3>
         
         <!-- File Upload Area -->
         <div class="mb-4">
           <label class="block text-xs font-medium mb-2">Select Torrent Files</label>
           <input type="file" @change="handleFileSelect($event)" accept=".torrent" multiple
-                 class="w-full p-3 bg-white/5 border border-white/20 rounded">
+                 class="mui-input">
           <div x-show="selectedFiles.length > 0" class="mt-2 text-xs text-text-secondary">
             Selected: <span x-text="selectedFiles.length + ' file(s)'" ></span>
           </div>
