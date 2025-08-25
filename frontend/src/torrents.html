@@ -72,9 +72,7 @@
     .resizable-table tbody tr td:nth-child(3) .truncate {
       max-width: calc(100% - 20px);
     }
-    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-    .mui-card { background: linear-gradient(135deg, rgba(20, 18, 35, 0.95) 0%, rgba(35, 30, 70, 0.9) 50%, rgba(25, 25, 45, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 16px; box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37), 0 0 40px rgba(144, 202, 249, 0.1); border: 1px solid rgba(255, 255, 255, 0.08); }
-    .gradient-card { background: linear-gradient(135deg, rgba(20, 18, 35, 0.95) 0%, rgba(35, 30, 70, 0.9) 50%, rgba(25, 25, 45, 0.95) 100%); backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37), 0 0 40px rgba(144, 202, 249, 0.1); border: 1px solid rgba(255, 255, 255, 0.08); }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }}}
     .mui-btn { padding: 12px 24px; font-size: 0.875rem; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
     .mui-btn-contained { background: #90caf9; color: #000; }
     .mui-btn-contained:hover { background: #42a5f5; }
@@ -84,8 +82,7 @@
     .mui-btn-danger:hover { background: rgba(244, 67, 54, 0.1); }
     .mui-chip { display: inline-flex; padding: 0 12px; height: 24px; align-items: center; border-radius: 12px; font-size: 0.75rem; text-transform: capitalize; }
     .mui-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(144, 202, 249, 0.3); border-top-color: #90caf9; border-radius: 50%; animation: spin 0.6s linear infinite; }
-    .mui-input { padding: 10px 14px; background: rgba(144, 202, 249, 0.08); border: 1px solid rgba(144, 202, 249, 0.2); border-radius: 6px; color: rgba(144, 202, 249, 0.9); font-size: 14px; transition: all 0.2s; }
-    .mui-input:focus { outline: none; border-color: rgba(144, 202, 249, 0.5); background: rgba(144, 202, 249, 0.12); box-shadow: 0 0 0 3px rgba(144, 202, 249, 0.1); }
+    .mui-input { padding: 10px 14px; background: rgba(144, 202, 249, 0.08); border: 1px solid rgba(144, 202, 249, 0.2); border-radius: 6px; color: rgba(144, 202, 249, 0.9); font-size: 14px; transition: all 0.2s; }}
     .mui-input:hover { border-color: rgba(144, 202, 249, 0.4); background: rgba(144, 202, 249, 0.1); }
     /* Custom File Input Styling */
     .mui-file-input {
@@ -183,11 +180,7 @@
       transform: rotate(45deg);
       top: 1px;
       left: 6px;
-    }
-    
-    .mui-checkbox input[type="checkbox"]:focus + .checkbox-custom {
-      box-shadow: 0 0 0 3px rgba(144, 202, 249, 0.2);
-    }
+    }}
     select.mui-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2390caf9' d='M6 9L2 5h8z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer; }
     select.mui-input option { background: rgba(25, 25, 45, 0.98); color: #fff; }
     select.mui-input:hover { background: rgba(144, 202, 249, 0.1) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2390caf9' d='M6 9L2 5h8z'/%3E%3C/svg%3E") no-repeat right 12px center; }
@@ -287,11 +280,7 @@
       transform: rotate(45deg);
       top: 1px;
       left: 6px;
-    }
-    
-    .mui-checkbox input[type="checkbox"]:focus + .checkbox-custom {
-      box-shadow: 0 0 0 3px rgba(144, 202, 249, 0.2);
-    }
+    }}
     select.mui-input:focus { background: rgba(144, 202, 249, 0.12) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2390caf9' d='M6 9L2 5h8z'/%3E%3C/svg%3E") no-repeat right 12px center; }
     .mui-nav-link { display: inline-flex; align-items: center; padding: 12px 24px; border-radius: 8px; transition: all 0.2s; }
     .mui-nav-link:hover { background: rgba(255,255,255,0.1); }
@@ -345,17 +334,11 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .resizable-table td.no-truncate,
-    .resizable-table th.no-truncate {
-      overflow: visible;
-      text-overflow: initial;
-      white-space: nowrap;
-    }
     .column-resizer {
       position: absolute;
       top: 0;
       right: -3px;
-      width: 6px;
+      width: 12px;
       height: 100%;
       cursor: col-resize;
       background: transparent;
@@ -363,24 +346,161 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: all 0.2s ease;
     }
+    
     .column-resizer::before {
       content: '⋮';
-      color: rgba(255,255,255,0.4);
-      font-size: 12px;
+      color: rgba(144, 202, 249, 0.7);
+      font-size: 16px;
       line-height: 1;
-      opacity: 0.3;
-      transition: all 0.2s ease;
-      font-weight: bold;
-    }
-    .column-resizer:hover::before {
       opacity: 1;
-      color: rgba(144, 202, 249, 0.9);
+      transition: all 0.2s ease;
+      font-weight: 600;
+      font-family: system-ui, sans-serif;
+      width: 10px;
+      text-align: center;
     }
+    
+    .column-resizer:hover::before {
+      color: rgba(144, 202, 249, 1);
+      font-size: 17px;
+    }
+    
     .column-resizing::before {
-      opacity: 1 !important;
       color: rgba(144, 202, 249, 1) !important;
+      font-size: 17px !important;
     }
+
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    .resizable-table td.no-truncate,
+    .resizable-table th.no-truncate {
+      overflow: visible;
+      text-overflow: initial;
+      white-space: nowrap;
+    }    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
     .fit-content {
       width: 1%;
       white-space: nowrap;
@@ -462,6 +582,7 @@
     }
     tbody tr:hover { cursor: pointer; }
     tr.selected-row { background: linear-gradient(135deg, rgba(144, 202, 249, 0.1) 0%, rgba(144, 202, 249, 0.05) 100%); border-left: 3px solid rgba(144, 202, 249, 0.5); }
+      /* Cache buster: v7.0 - Brought dots back into perfect view - Updated column separators */
   </style>
 </head>
 <body class="gradient-bg-dark text-text-primary">
