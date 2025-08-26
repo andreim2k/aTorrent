@@ -413,16 +413,16 @@
                     <div class="flex flex-wrap gap-1">
                       <button @click.stop="toggleTorrent(torrent)" 
                               class="p-1 hover:bg-white/10 rounded" title="Play/Pause">
-                        <svg x-show="torrent.status !== 'paused'" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <svg x-show="torrent.status !== 'paused'" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
                         </svg>
-                        <svg x-show="torrent.status === 'paused'" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <svg x-show="torrent.status === 'paused'" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M8 5v14l11-7z"/>
                         </svg>
                       </button>
                       <button @click.stop="deleteTorrent(torrent.id)" 
                               class="p-1 hover:bg-white/10 rounded text-error-main" title="Delete">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                         </svg>
                       </button>
