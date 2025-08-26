@@ -390,7 +390,9 @@
     }
     
     function formatSpeed(bytesPerSecond) {
-      return formatBytes(bytesPerSecond) + '/s';
+      if (bytesPerSecond === 0) return '0.00 MB/s';
+      const mb = bytesPerSecond / (1024 * 1024);
+      return mb.toFixed(2) + ' MB/s';
     }
     
     // Alpine.js App
