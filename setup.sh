@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# aTorrent Setup Script
+# @Torrent Setup Script
 # Created by Andrei (@andreim2k)
 
 set -e
 
-echo "🚀 Setting up aTorrent"
+echo "🚀 Setting up @Torrent"
 echo "====================="
 
 # Colors for output
@@ -196,7 +196,7 @@ EOF
 # Main setup function
 main() {
     echo
-    print_status "Starting aTorrent setup..."
+    print_status "Starting @Torrent setup..."
     echo
     
     create_directories
@@ -206,7 +206,7 @@ main() {
     setup_git
     
     echo
-    print_success "🎉 aTorrent setup completed successfully!"
+    print_success "🎉 @Torrent setup completed successfully!"
     echo
     echo "Next steps:"
     echo

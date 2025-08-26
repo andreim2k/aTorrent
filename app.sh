@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# aTorrent App Management Script
+# @Torrent App Management Script
 # Manages both frontend and backend services
 # Created by Andrei (@andreim2k)
 
@@ -247,7 +247,7 @@ status_service() {
 
 # Show status
 show_status() {
-    echo -e "${BLUE}=== aTorrent Service Status ===${NC}"
+    echo -e "${BLUE}=== @Torrent Service Status ===${NC}"
     echo
     status_service "Backend" "$BACKEND_PID" $BACKEND_PORT
     status_service "Frontend" "$FRONTEND_PID" $FRONTEND_PORT
@@ -307,7 +307,7 @@ clean_logs() {
 
 # Main menu
 show_help() {
-    echo "aTorrent App Manager"
+    echo "@Torrent App Manager"
     echo "===================="
     echo
     echo "Usage: $0 [command] [options]"

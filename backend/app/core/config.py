@@ -9,7 +9,7 @@ def _generate_secret_key() -> str:
     return secrets.token_urlsafe(32)
 
 class Settings(BaseSettings):
-    APP_NAME: str = "aTorrent"
+    APP_NAME: str = "@Torrent"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
     API_V1_STR: str = "/api/v1"

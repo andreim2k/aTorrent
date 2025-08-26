@@ -1,6 +1,6 @@
-# aTorrent Backend - ARM / CubieBoard 2 Edition
+# @Torrent Backend - ARM / CubieBoard 2 Edition
 
-# aTorrent Backend API
+# @Torrent Backend API
 
 A modern, full-featured torrent management system built with FastAPI and libtorrent.
 
@@ -248,7 +248,7 @@ MIT License - see LICENSE file for details.
 
 ## System Statistics
 
-The aTorrent backend now includes comprehensive system monitoring capabilities using psutil.
+The @Torrent backend now includes comprehensive system monitoring capabilities using psutil.
 
 ### New Dependencies
 

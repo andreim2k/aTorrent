@@ -1,8 +1,8 @@
 {
   "name": "atorrent-frontend",
   "version": "1.0.0",
-  "description": "aTorrent - Ultra-light Torrent Client Web Frontend for ARM devices",
-  "author": "aTorrent Team",
+  "description": "@Torrent - Ultra-light Torrent Client Web Frontend for ARM devices",
+  "author": "@Torrent Team",
   "private": true,
   "scripts": {
     "start": "python3 -m http.server 3000 --bind 0.0.0.0 -d src",

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "==================================="
-echo "aTorrent Network Configuration Check"
+echo "@Torrent Network Configuration Check"
 echo "==================================="
 echo
 

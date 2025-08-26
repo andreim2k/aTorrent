@@ -1,7 +1,7 @@
-# aTorrent CubieBoard 2 Deployment Guide
+# @Torrent CubieBoard 2 Deployment Guide
 
 ## Overview
-This is the official deployment guide for aTorrent on the **CubieBoard 2 ARM platform**. This ultra-lightweight version is specifically optimized for the CubieBoard 2's hardware constraints (1GB RAM, ARM Cortex-A7 dual-core processor).
+This is the official deployment guide for @Torrent on the **CubieBoard 2 ARM platform**. This ultra-lightweight version is specifically optimized for the CubieBoard 2's hardware constraints (1GB RAM, ARM Cortex-A7 dual-core processor).
 
 ## Target Hardware Specification
 
@@ -293,6 +293,6 @@ Planned optimizations for CubieBoard 2:
 
 ## Summary
 
-This deployment guide ensures optimal performance of aTorrent on CubieBoard 2 hardware. The ultra-lightweight frontend combined with ARM-optimized backend provides a full-featured torrent client experience within the hardware constraints of single-board computers.
+This deployment guide ensures optimal performance of @Torrent on CubieBoard 2 hardware. The ultra-lightweight frontend combined with ARM-optimized backend provides a full-featured torrent client experience within the hardware constraints of single-board computers.
 
 **Expected Performance**: Smooth operation with 5-10 active torrents, real-time web interface, and <130MB memory usage on CubieBoard 2.

@@ -1,4 +1,4 @@
-# aTorrent - CubieBoard 2 Edition
+# @Torrent - CubieBoard 2 Edition
 
 A modern, lightweight torrent client web application specifically optimized for the **CubieBoard 2 ARM platform**.
 This version from the `cubie-dev` branch is designed to run efficiently on ARM-based single-board computers with limited resources.
@@ -51,7 +51,7 @@ Created by Andrei (@andreim2k).
 ## 🏗 Project Structure
 
 ```
-aTorrent/
+@Torrent/
 ├── backend/              # Python FastAPI backend
 │   ├── app/
 │   │   ├── api/         # API routes
@@ -153,7 +153,7 @@ Once the backend is running, visit:
 | **Total** | **60-130MB** | **<20%** | **22MB** |
 
 ### vs. Traditional Torrent Clients
-| Feature | aTorrent ARM | qBittorrent | Transmission |
+| Feature | @Torrent ARM | qBittorrent | Transmission |
 |---------|--------------|-------------|---------------|
 | Memory Usage | 60-130MB | 150-300MB | 100-200MB |
 | Web Interface | ✅ Modern | ✅ Basic | ✅ Basic |
@@ -203,7 +203,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🖥️ System Statistics
 
-aTorrent now includes comprehensive real-time system monitoring with beautiful visualizations and live data updates.
+@Torrent now includes comprehensive real-time system monitoring with beautiful visualizations and live data updates.
 
 ### 📊 Features
 
@@ -278,5 +278,5 @@ WS   /api/v1/system/ws       - Real-time WebSocket stream
 - **Memory Efficient**: Proper cleanup and resource management
 - **Network Optimized**: Compressed JSON data over WebSocket connection
 
-The system statistics feature provides comprehensive real-time monitoring capabilities, making aTorrent not just a torrent client but also a powerful system monitoring tool.
+The system statistics feature provides comprehensive real-time monitoring capabilities, making @Torrent not just a torrent client but also a powerful system monitoring tool.
 

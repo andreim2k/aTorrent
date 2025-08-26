@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Initialize the single-user aTorrent application.
+Initialize the single-user @Torrent application.
 This script sets up the default password and initial settings.
 """
 
@@ -18,7 +18,7 @@ from app.core.security import get_password_hash
 
 def initialize_database():
     """Initialize the database with default settings."""
-    print("🔧 Initializing aTorrent single-user application...")
+    print("🔧 Initializing @Torrent single-user application...")
     
     # Create all tables
     Base.metadata.create_all(bind=engine)

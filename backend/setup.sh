@@ -1,9 +1,9 @@
 #!/bin/bash
-# aTorrent Backend Setup Script
+# @Torrent Backend Setup Script
 
 set -e
 
-echo "🚀 Setting up aTorrent Backend..."
+echo "🚀 Setting up @Torrent Backend..."
 
 # Check Python version
 if ! command -v python3 &> /dev/null; then

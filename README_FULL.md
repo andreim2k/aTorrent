@@ -1,4 +1,4 @@
-# aTorrent - Modern BitTorrent Client
+# @Torrent - Modern BitTorrent Client
 
 <div align="center">
   <img src="https://img.shields.io/badge/Python-3.11+-blue.svg" alt="Python">
@@ -9,8 +9,8 @@
 </div>
 
 ## 🚀 Overview
-aTorrent is a modern, web-based BitTorrent client built with Python (FastAPI) and ultra-lightweight Alpine.js frontend. This version is specifically optimized for the CubieBoard 2 ARM platform and similar ARM-based single-board computers with limited resources.
-aTorrent is a modern, web-based BitTorrent client built with Python (FastAPI) and Next.js. It provides a clean, responsive interface for managing torrents with support for both x86 and ARM architectures, making it perfect for deployment on everything from cloud servers to Raspberry Pi devices.
+@Torrent is a modern, web-based BitTorrent client built with Python (FastAPI) and ultra-lightweight Alpine.js frontend. This version is specifically optimized for the CubieBoard 2 ARM platform and similar ARM-based single-board computers with limited resources.
+@Torrent is a modern, web-based BitTorrent client built with Python (FastAPI) and Next.js. It provides a clean, responsive interface for managing torrents with support for both x86 and ARM architectures, making it perfect for deployment on everything from cloud servers to Raspberry Pi devices.
 
 ### ✨ Features
 - **Ultra-Lightweight**: Alpine.js frontend (~20KB per page) optimized for ARM
@@ -94,7 +94,7 @@ sudo sh get-docker.sh
 # Add user to docker group
 sudo usermod -aG docker $USER
 
-# Deploy aTorrent
+# Deploy @Torrent
 ./scripts/deploy.sh
 ```
 
