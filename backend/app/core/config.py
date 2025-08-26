@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     
     # CORS - Allow environment override
     ALLOWED_ORIGINS: List[str] = [
+        "*",
+        "http://192.168.50.2:3000",
         os.getenv("FRONTEND_URL", "http://localhost:3000"),
         "http://127.0.0.1:3000"
     ]
