@@ -177,6 +177,65 @@
     .mui-chip { display: inline-flex; padding: 0 12px; height: 24px; align-items: center; border-radius: 12px; font-size: 0.75rem; text-transform: capitalize; }
     .mui-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(144, 202, 249, 0.3); border-top-color: #90caf9; border-radius: 50%; animation: spin 0.6s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    /* Row selection styling */
+    .torrent-row {
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .torrent-row:hover {
+      background-color: rgba(144, 202, 249, 0.05) !important;
+    }
+    .torrent-row.selected-row {
+      background-color: rgba(144, 202, 249, 0.15) !important;
+      border-left: 4px solid #90caf9 !important;
+    }
+    .torrent-row.selected-row:hover {
+    /* Enhanced bulk actions card styling */
+    .bulk-actions-card {
+      background: linear-gradient(135deg, 
+        rgba(144, 202, 249, 0.15) 0%, 
+        rgba(66, 165, 245, 0.1) 30%, 
+        rgba(144, 202, 249, 0.08) 70%, 
+        rgba(25, 118, 210, 0.06) 100%) !important;
+      border: 1px solid rgba(144, 202, 249, 0.25) !important;
+      box-shadow: 
+        0 8px 32px rgba(144, 202, 249, 0.15), 
+        inset 0 1px 0 rgba(255, 255, 255, 0.15), 
+        inset 0 -1px 0 rgba(144, 202, 249, 0.1) !important;
+      backdrop-filter: blur(12px) !important;
+      position: relative;
+      overflow: hidden;
+    }
+    .bulk-actions-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(144, 202, 249, 0.6), transparent);
+      animation: shimmer 3s infinite;
+    }
+    .bulk-actions-card .selection-text {
+      color: rgba(144, 202, 249, 0.95) !important;
+      font-weight: 600 !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    }
+    .bulk-actions-card .mui-btn {
+      backdrop-filter: blur(4px) !important;
+      transition: all 0.3s ease !important;
+    }
+    .bulk-actions-card .mui-btn:hover {
+      transform: translateY(-1px) !important;
+      box-shadow: 0 4px 12px rgba(144, 202, 249, 0.2) !important;
+    }
+    @keyframes shimmer {
+      0% { left: -100%; }
+      50% { left: 100%; }
+      100% { left: 100%; }
+    }
+      background-color: rgba(144, 202, 249, 0.2) !important;
+    }
     /* Mobile button consistency */
     @media (max-width: 640px) {
       .mui-btn-danger { padding: 8px 12px !important; font-size: 0.875rem !important; }
@@ -262,9 +321,9 @@
       </div>
 
       <!-- Bulk Actions -->
-      <div x-show="selectedTorrents.length > 0" class="mui-card p-4 mb-4" style="background: linear-gradient(135deg, rgba(144, 202, 249, 0.08) 0%, rgba(144, 202, 249, 0.04) 100%);">
+      <div x-show="selectedTorrents.length > 0" class="mui-card bulk-actions-card p-4 mb-4" >
         <div class="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4">
-          <span><span x-text="selectedTorrents.length"></span> torrent(s) selected</span>
+          <span class="selection-text"><span x-text="selectedTorrents.length"></span> torrent(s) selected</span>
           <div class="flex flex-wrap gap-2">
             <button @click="bulkAction('pause')" 
                     :disabled="!canPauseSelected"
@@ -343,16 +402,16 @@
               </template>
               
               <template x-for="torrent in filteredTorrents" :key="torrent.id">
-                <tr class="border-b border-white/5" :class="{'selected-row': selectedTorrents.includes(torrent.id)}">
+                <tr class="border-b border-white/5 torrent-row" :class="{'selected-row': selectedTorrents.includes(torrent.id)}" @click="toggleSelect(torrent.id)">
                   <td class="p-4">
                     <input type="checkbox" :value="torrent.id" 
-                           @change="toggleSelect(torrent.id)"
+                           @change="toggleSelect(torrent.id)" @click.stop
                            :checked="selectedTorrents.includes(torrent.id)"
                            class="rounded border-gray-600">
                   </td>
                   <td class="p-4">
                     <div class="flex flex-wrap gap-1">
-                      <button @click="toggleTorrent(torrent)" 
+                      <button @click.stop="toggleTorrent(torrent)" 
                               class="p-1 hover:bg-white/10 rounded" title="Play/Pause">
                         <svg x-show="torrent.status !== 'paused'" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
@@ -361,7 +420,7 @@
                           <path d="M8 5v14l11-7z"/>
                         </svg>
                       </button>
-                      <button @click="deleteTorrent(torrent.id)" 
+                      <button @click.stop="deleteTorrent(torrent.id)" 
                               class="p-1 hover:bg-white/10 rounded text-error-main" title="Delete">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
@@ -370,7 +429,7 @@
                     </div>
                   </td>
                   <td class="p-4 pl-6" style="min-width: 150px; width: auto;">
-                    <div @click="showDetails(torrent)" class="cursor-pointer hover:text-primary-main" style="overflow: hidden;">
+                    <div @click.stop="showDetails(torrent)" class="cursor-pointer hover:text-primary-main" style="overflow: hidden;">
                       <div class="font-medium truncate" x-text="torrent.name" :title="torrent.name"></div>
                       <div class="text-xs text-text-secondary mt-1 truncate" x-text="torrent.info_hash ? torrent.info_hash.substring(0, 20) + '...' : ''"></div>
                     </div>
