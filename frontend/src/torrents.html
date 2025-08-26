@@ -3,6 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="cache-bust" content="1756198118">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
   <title>Torrents - aTorrent</title>
   
   <!-- Alpine.js from CDN -->
@@ -33,56 +39,37 @@
   </script>
   
   <style>
-    /* Table header gradient */
-    thead.bg-background-elevated {
-      background: linear-gradient(135deg, rgba(30, 28, 50, 0.98) 0%, rgba(40, 35, 75, 0.95) 50%, rgba(30, 30, 55, 0.98) 100%);
-      backdrop-filter: blur(5px);
-    }
-    thead th {
-      border-bottom: 1px solid rgba(144, 202, 249, 0.2);
-      font-weight: 600;
-      color: rgba(144, 202, 249, 0.9);
-    }
     /* Beautiful gradient background */
     body {
       background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
       min-height: 100vh;
       background-attachment: fixed;
     }
+    .mui-nav-link { display: inline-flex; align-items: center; padding: 12px 24px; border-radius: 8px; transition: all 0.2s; }
+    .mui-nav-link:hover { background: rgba(255,255,255,0.1); }
+    .mui-nav-link.active { background: rgba(144, 202, 249, 0.2); color: #90caf9; }
     /* Global font size reduction - 20% smaller */
     .text-xs { font-size: 0.7rem !important; /* ~11px instead of 12px */ }
     body { font-size: 14px; /* reduced from default 16px */ }
     /* Responsive navigation fixes */
     @media (max-width: 640px) {
-      .mui-btn-danger { padding: 8px 12px !important; font-size: 0.875rem !important; }
       .mui-nav-link { padding: 8px 12px !important; font-size: 0.875rem !important; }
       .mui-btn-outlined { padding: 8px 12px !important; font-size: 0.875rem !important; }
-      nav {
-        width: 100%;
-        justify-content: center;
-      }
       nav a, nav button {
         flex: 0 0 auto;
         min-width: fit-content;
       }
     }
-    [x-cloak] { display: none !important; }
-    
-    /* Ensure Name column content is visible */
-    .resizable-table tbody tr td:nth-child(3) .truncate {
-      max-width: calc(100% - 20px);
-    }
-    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }}}
+    /* Minimal custom styles */
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    .mui-card { background: linear-gradient(135deg, rgba(20, 18, 35, 0.95) 0%, rgba(35, 30, 70, 0.9) 50%, rgba(25, 25, 45, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 16px; box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37), 0 0 40px rgba(144, 202, 249, 0.1); border: 1px solid rgba(255, 255, 255, 0.08); }
     .mui-btn { padding: 12px 24px; font-size: 0.875rem; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
     .mui-btn-contained { background: #90caf9; color: #000; }
     .mui-btn-contained:hover { background: #42a5f5; }
     .mui-btn-outlined { background: transparent; color: #90caf9; border: 1px solid rgba(144, 202, 249, 0.5); }
     .mui-btn-outlined:hover { background: rgba(144, 202, 249, 0.1); }
-    .mui-btn-danger { background: transparent; color: #f44336; border: 1px solid rgba(244, 67, 54, 0.5); }
-    .mui-btn-danger:hover { background: rgba(244, 67, 54, 0.1); }
-    .mui-chip { display: inline-flex; padding: 0 12px; height: 24px; align-items: center; border-radius: 12px; font-size: 0.75rem; text-transform: capitalize; }
-    .mui-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(144, 202, 249, 0.3); border-top-color: #90caf9; border-radius: 50%; animation: spin 0.6s linear infinite; }
-    .mui-input { padding: 10px 14px; background: rgba(144, 202, 249, 0.08); border: 1px solid rgba(144, 202, 249, 0.2); border-radius: 6px; color: rgba(144, 202, 249, 0.9); font-size: 14px; transition: all 0.2s; }}
+    .mui-input { padding: 10px 14px; background: rgba(144, 202, 249, 0.08); border: 1px solid rgba(144, 202, 249, 0.2); border-radius: 6px; color: rgba(144, 202, 249, 0.9); font-size: 14px; transition: all 0.2s; }
+    .mui-input:focus { outline: none; border-color: rgba(144, 202, 249, 0.5); background: rgba(144, 202, 249, 0.12); box-shadow: 0 0 0 3px rgba(144, 202, 249, 0.1); }
     .mui-input:hover { border-color: rgba(144, 202, 249, 0.4); background: rgba(144, 202, 249, 0.1); }
     /* Custom File Input Styling */
     .mui-file-input {
@@ -180,409 +167,31 @@
       transform: rotate(45deg);
       top: 1px;
       left: 6px;
-    }}
-    select.mui-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2390caf9' d='M6 9L2 5h8z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer; }
-    select.mui-input option { background: rgba(25, 25, 45, 0.98); color: #fff; }
-    select.mui-input:hover { background: rgba(144, 202, 249, 0.1) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2390caf9' d='M6 9L2 5h8z'/%3E%3C/svg%3E") no-repeat right 12px center; }
-    /* Custom File Input Styling */
-    .mui-file-input {
-      position: relative;
-      display: inline-block;
-      width: 100%;
-      cursor: pointer;
     }
     
-    .mui-file-input input[type="file"] {
-      position: absolute;
-      opacity: 0;
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
+    .mui-checkbox input[type="checkbox"]:focus + .checkbox-custom {
+      box-shadow: 0 0 0 3px rgba(144, 202, 249, 0.2);
     }
-    
-    .mui-file-input .file-input-button {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 12px 16px;
-      background: linear-gradient(135deg, rgba(144, 202, 249, 0.1) 0%, rgba(144, 202, 249, 0.05) 100%);
-      border: 2px dashed rgba(144, 202, 249, 0.3);
-      border-radius: 8px;
-      color: rgba(144, 202, 249, 0.9);
-      font-size: 14px;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      min-height: 48px;
-    }
-    
-    .mui-file-input:hover .file-input-button {
-      background: linear-gradient(135deg, rgba(144, 202, 249, 0.15) 0%, rgba(144, 202, 249, 0.08) 100%);
-      border-color: rgba(144, 202, 249, 0.5);
-      transform: translateY(-1px);
-    }
-    
-    .mui-file-input.has-files .file-input-button {
-      background: linear-gradient(135deg, rgba(144, 202, 249, 0.2) 0%, rgba(144, 202, 249, 0.1) 100%);
-      border-color: rgba(144, 202, 249, 0.6);
-      border-style: solid;
-    }
-
-    /* Custom Checkbox Styling */
-    .mui-checkbox {
-      position: relative;
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
-    }
-    
-    .mui-checkbox input[type="checkbox"] {
-      position: absolute;
-      opacity: 0;
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-    }
-    
-    .mui-checkbox .checkbox-custom {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 20px;
-      height: 20px;
-      background: rgba(144, 202, 249, 0.08);
-      border: 2px solid rgba(144, 202, 249, 0.3);
-      border-radius: 4px;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .mui-checkbox:hover .checkbox-custom {
-      background: rgba(144, 202, 249, 0.12);
-      border-color: rgba(144, 202, 249, 0.5);
-    }
-    
-    .mui-checkbox input[type="checkbox"]:checked + .checkbox-custom {
-      background: linear-gradient(135deg, #90caf9 0%, #42a5f5 100%);
-      border-color: #90caf9;
-    }
-    
-    .mui-checkbox input[type="checkbox"]:checked + .checkbox-custom::after {
-      content: '';
-      position: absolute;
-      width: 6px;
-      height: 10px;
-      border: solid #000;
-      border-width: 0 2px 2px 0;
-      transform: rotate(45deg);
-      top: 1px;
-      left: 6px;
-    }}
-    select.mui-input:focus { background: rgba(144, 202, 249, 0.12) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2390caf9' d='M6 9L2 5h8z'/%3E%3C/svg%3E") no-repeat right 12px center; }
-    .mui-nav-link { display: inline-flex; align-items: center; padding: 12px 24px; border-radius: 8px; transition: all 0.2s; }
-    .mui-nav-link:hover { background: rgba(255,255,255,0.1); }
-    .mui-nav-link.active { background: rgba(144, 202, 249, 0.2); color: #90caf9; }
     .mui-btn-danger { background: #dc2626; color: #fff; border: 1px solid #dc2626; }
     .mui-btn-danger:hover { background: #b91c1c; border-color: #b91c1c; }
+    .mui-chip { display: inline-flex; padding: 0 12px; height: 24px; align-items: center; border-radius: 12px; font-size: 0.75rem; text-transform: capitalize; }
+    .mui-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(144, 202, 249, 0.3); border-top-color: #90caf9; border-radius: 50%; animation: spin 0.6s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes shimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
-    }
-    .progress-shimmer {
-      background: linear-gradient(90deg, 
-        transparent 0%, 
-        rgba(255,255,255,0.2) 25%, 
-        rgba(255,255,255,0.3) 50%, 
-        rgba(255,255,255,0.2) 75%, 
-        transparent 100%);
-      background-size: 200% 100%;
-      animation: shimmer 2s linear infinite;
-    }
-    /* Resizable table columns */
-    .resizable-table {
-      table-layout: fixed;
-      width: 100%;
-      min-width: 900px;
-    }
-    
-    /* Ensure Name column has minimum width */
-    .resizable-table th:nth-child(3),
-    .resizable-table td:nth-child(3) {
-      min-width: 30% !important;
-      width: 40%;
-      max-width: none !important;
-    }
-    
-    .resizable-table th {
-      position: relative;
-      min-width: 60px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-      min-width: 60px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .resizable-table td {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .column-resizer {
-      position: absolute;
-      top: 0;
-      right: -3px;
-      width: 12px;
-      height: 100%;
-      cursor: col-resize;
-      background: transparent;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
-    }
-    
-    .column-resizer::before {
-      content: '⋮';
-      color: rgba(144, 202, 249, 0.7);
-      font-size: 16px;
-      line-height: 1;
-      opacity: 1;
-      transition: all 0.2s ease;
-      font-weight: 600;
-      font-family: system-ui, sans-serif;
-      width: 10px;
-      text-align: center;
-    }
-    
-    .column-resizer:hover::before {
-      color: rgba(144, 202, 249, 1);
-      font-size: 17px;
-    }
-    
-    .column-resizing::before {
-      color: rgba(144, 202, 249, 1) !important;
-      font-size: 17px !important;
-    }
-
-    
-    
-    
-    
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-    .resizable-table td.no-truncate,
-    .resizable-table th.no-truncate {
-      overflow: visible;
-      text-overflow: initial;
-      white-space: nowrap;
-    }    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-    .fit-content {
-      width: 1%;
-      white-space: nowrap;
-    }
-    
-    /* Responsive table wrapper */
-    .table-wrapper {
-      width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    
-    /* Mobile responsiveness */
-    @media (max-width: 1200px) {
-      .resizable-table {
-    }
-    
-    /* Ensure Name column has minimum width */
-    .resizable-table th:nth-child(3),
-    .resizable-table td:nth-child(3) {
-      min-width: 30% !important;
-      width: 40%;
-      max-width: none !important;
-    /* Force Name column to maintain minimum width */
-    .resizable-table thead tr th:nth-child(3),
-    .resizable-table tbody tr td:nth-child(3) {
-      min-width: max(30%, 400px) !important;
-      width: auto !important;
-    }
-    
-    /* Prevent Name column from being too narrow */
-    .resizable-table {
-      table-layout: auto !important;
-    }
-    
-    .resizable-table thead tr th:nth-child(3) {
-      position: relative;
-      min-width: 150px !important;
-    }
-    
-    .resizable-table tbody tr td:nth-child(3) {
-      min-width: 150px !important;
-      max-width: none !important;
-    }
-    
-    /* Ensure content in Name column is visible */
-    .resizable-table tbody tr td:nth-child(3) > div {
-      min-width: 380px;
-      padding-right: 20px;
-    }
-        min-width: 800px;
-      }
-    }
-    
-    @media (max-width: 768px) {
-      .resizable-table {
-    }
-    
-    /* Ensure Name column has minimum width */
-    .resizable-table th:nth-child(3),
-    .resizable-table td:nth-child(3) {
-      min-width: 30% !important;
-      width: 40%;
-      max-width: none !important;
-        min-width: 600px;
-        font-size: 0.875rem;
-      }
-      .resizable-table th,
-      .resizable-table td {
-        padding: 8px 12px;
-      }
-    }
     /* Mobile button consistency */
     @media (max-width: 640px) {
       .mui-btn-danger { padding: 8px 12px !important; font-size: 0.875rem !important; }
       .mui-nav-link { padding: 8px 12px !important; font-size: 0.875rem !important; }
       .mui-btn-outlined { padding: 8px 12px !important; font-size: 0.875rem !important; }
       .mui-btn { padding: 12px 20px !important; font-size: 0.875rem !important; }
+      nav {
+        width: 100%;
+        justify-content: center;
+      }
+      nav a, nav button {
+        flex: 0 0 auto;
+        min-width: fit-content;
+      }
     }
-    tbody tr:hover { cursor: pointer; }
-    tr.selected-row { background: linear-gradient(135deg, rgba(144, 202, 249, 0.1) 0%, rgba(144, 202, 249, 0.05) 100%); border-left: 3px solid rgba(144, 202, 249, 0.5); }
-      /* Cache buster: v7.0 - Brought dots back into perfect view - Updated column separators */
   </style>
 </head>
 <body class="gradient-bg-dark text-text-primary">
@@ -611,7 +220,7 @@
           <p class="text-text-secondary">Manage all your torrents in one place</p>
         </div>
         <div class="flex flex-wrap gap-2">
-          <button @click="showAddDialog = true" class="mui-btn mui-btn-contained">
+          <button id="main-add-btn" @click="showAddDialog = true" class="mui-btn mui-btn-contained whitespace-nowrap" style="color: #000 !important; padding: 12px 24px !important; border-radius: 8px !important; font-weight: 500 !important; white-space: nowrap !important; border: none !important; transition: all 0.2s ease !important;">
             + Add Torrent(s)
           </button>
         </div>
@@ -623,24 +232,32 @@
           <input type="text" x-model="searchQuery" @input="filterTorrents()" 
                  placeholder="Search torrents..." class="mui-input flex-1 min-w-[200px]">
           
-          <select x-model="statusFilter" @change="filterTorrents()" 
-                  class="mui-input w-40">
-            <option value="">All Status</option>
-            <option value="downloading">Downloading</option>
-            <option value="seeding">Seeding</option>
-            <option value="paused">Paused</option>
-            <option value="checking">Checking</option>
-            <option value="error">Error</option>
-          </select>
+          <div class="relative inline-block">
+            <select id="status-filter" x-model="statusFilter" @change="filterTorrents()" class="bg-gray-700 border border-blue-400 rounded text-blue-300 px-3 py-2 text-sm focus:outline-none focus:ring-0 focus:border-blue-500 hover:bg-gray-600 appearance-none cursor-pointer pr-8">
+              <option value="">All Status</option>
+              <option value="downloading">Downloading</option>
+              <option value="seeding">Seeding</option>
+              <option value="paused">Paused</option>
+              <option value="checking">Checking</option>
+              <option value="error">Error</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+              <span class="text-blue-400 text-sm">▼</span>
+            </div>
+          </div>
           
-          <select x-model="sortBy" @change="sortTorrents()" 
-                  class="mui-input w-40">
-            <option value="name">Sort by Name</option>
-            <option value="size">Sort by Size</option>
-            <option value="progress">Sort by Progress</option>
-            <option value="speed">Sort by Speed</option>
-            <option value="added">Sort by Date Added</option>
-          </select>
+          <div class="relative inline-block">
+            <select id="sort-filter" x-model="sortBy" @change="sortTorrents()" class="bg-gray-700 border border-blue-400 rounded text-blue-300 px-3 py-2 text-sm focus:outline-none focus:ring-0 focus:border-blue-500 hover:bg-gray-600 appearance-none cursor-pointer pr-8">
+              <option value="name">Sort by Name</option>
+              <option value="size">Sort by Size</option>
+              <option value="progress">Sort by Progress</option>
+              <option value="speed">Sort by Speed</option>
+              <option value="added">Sort by Date Added</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+              <span class="text-blue-400 text-sm">▼</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -673,35 +290,35 @@
                   <input type="checkbox" @change="toggleSelectAll($event)" 
                          :checked="selectedTorrents.length > 0 && selectedTorrents.length === filteredTorrents.length"
                          class="rounded border-gray-600">
-                  <div class="column-resizer" @mousedown="startResize($event, 0)"></div>
+                  
                 </th>
                 <th class="p-4 pl-6 text-left fit-content no-truncate" style="width: 90px;">
                   Actions
-                  <div class="column-resizer" @mousedown="startResize($event, 1)"></div>
+                  
                 </th>
-                <th class="p-4 text-left" style="width: 40%;">
+                <th class="p-4 text-left" style="width: 50%;">
                   Name
-                  <div class="column-resizer" @mousedown="startResize($event, 2)"></div>
+                  
                 </th>
                 <th class="p-4 text-left" style="width: 100px;">
                   Size
-                  <div class="column-resizer" @mousedown="startResize($event, 3)"></div>
+                  
                 </th>
                 <th class="p-4 text-left" style="width: 120px;">
                   Progress
-                  <div class="column-resizer" @mousedown="startResize($event, 4)"></div>
+                  
                 </th>
                 <th class="p-4 text-left fit-content no-truncate" style="width: 130px;">
                   Status
-                  <div class="column-resizer" @mousedown="startResize($event, 5)"></div>
+                  
                 </th>
                 <th class="p-4 text-left fit-content no-truncate" style="width: 200px;">
                   Download/Upload
-                  <div class="column-resizer" @mousedown="startResize($event, 6)"></div>
+                  
                 </th>
                 <th class="p-4 text-left fit-content no-truncate" style="width: 120px;">
                   Seeds/Peers
-                  <div class="column-resizer" @mousedown="startResize($event, 7)"></div>
+                  
                 </th>
                 <th class="p-4 text-left fit-content" style="width: 100px;">
                   ETA
@@ -810,7 +427,7 @@
     <!-- Add Torrent Dialog -->
     <div x-show="showAddDialog" x-cloak class="fixed inset-0 bg-black/75 flex items-center justify-center z-50" 
          @click.self="showAddDialog = false">
-      <div class="gradient-card backdrop-blur rounded-xl p-6 w-full max-w-lg">
+      <div class="mui-card backdrop-blur rounded-xl p-6 w-full max-w-lg">
         <h3 class="text-lg font-bold mb-4">Add Torrents</h3>
         
         <!-- File Upload Area -->
