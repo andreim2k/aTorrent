@@ -189,6 +189,13 @@
       background-color: rgba(144, 202, 249, 0.15) !important;
       border-left: 4px solid #90caf9 !important;
     }
+    /* Size column styling */
+    .size-column {
+      width: fit-content !important;
+      min-width: 80px !important;
+      white-space: nowrap !important;
+      text-align: right;
+    }
     .torrent-row.selected-row:hover {
     /* Enhanced bulk actions card styling */
     .bulk-actions-card {
@@ -359,7 +366,7 @@
                   Name
                   
                 </th>
-                <th class="p-4 text-left" style="width: 100px;">
+                <th class="p-4 text-left size-column">
                   Size
                   
                 </th>
@@ -434,7 +441,7 @@
                       <div class="text-xs text-text-secondary mt-1 truncate" x-text="torrent.info_hash ? torrent.info_hash.substring(0, 20) + '...' : ''"></div>
                     </div>
                   </td>
-                  <td class="p-4 text-xs" x-text="formatBytes(torrent.total_size)"></td>
+                  <td class="p-4 text-xs size-column" x-text="formatBytes(torrent.total_size)"></td>
                   <td class="p-4">
                     <div class="relative w-full">
                       <div class="w-full h-7 bg-gray-800/50 rounded-lg border border-white/10 overflow-hidden">
@@ -598,11 +605,9 @@
     }
     
     function formatBytes(bytes) {
-      if (bytes === 0) return '0 B';
-      const k = 1024;
-      const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      if (bytes === 0) return '0.00 GB';
+      const gb = bytes / (1024 * 1024 * 1024);
+      return gb.toFixed(2) + ' GB';
     }
     
     function formatSpeed(bytesPerSecond) {
