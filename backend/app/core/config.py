@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     # Database
-    DATABASE_URL: str = "sqlite:///./atorrent.db"
+    DATABASE_URL: str = "sqlite:///./aTorrent.db"
     
     # CORS - Allow environment override
     ALLOWED_ORIGINS: List[str] = [

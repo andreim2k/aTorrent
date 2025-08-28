@@ -29,7 +29,7 @@ LOGGING_CONFIG = {
             "class": "logging.handlers.RotatingFileHandler",
             "level": "WARNING",  # Only log warnings and errors to file
             "formatter": "default",
-            "filename": "logs/atorrent.log",
+            "filename": "logs/aTorrent.log",
             "maxBytes": 10485760,  # 10MB
             "backupCount": 3,
             "encoding": "utf8"

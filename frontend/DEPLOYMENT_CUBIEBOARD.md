@@ -37,13 +37,13 @@ This is the official deployment guide for @Torrent on the **CubieBoard 2 ARM pla
 ### Option 1: Direct File Serving (Recommended for CubieBoard 2)
 ```bash
 # Copy files to your CubieBoard 2
-scp -r frontend/src/ cubie@192.168.1.100:/var/www/atorrent/
+scp -r frontend/src/ cubie@192.168.1.100:/var/www/aTorrent/
 
 # SSH into CubieBoard 2
 ssh cubie@192.168.1.100
 
 # Serve with Python (no additional dependencies)
-cd /var/www/atorrent
+cd /var/www/aTorrent
 python3 -m http.server 3000
 ```
 
@@ -54,7 +54,7 @@ sudo apt update
 sudo apt install nginx
 
 # Configure Nginx
-sudo vim /etc/nginx/sites-available/atorrent
+sudo vim /etc/nginx/sites-available/aTorrent
 ```
 
 ```nginx
@@ -62,7 +62,7 @@ server {
     listen 80;
     server_name cubieboard.local;
     
-    root /var/www/atorrent;
+    root /var/www/aTorrent;
     index dashboard.html;
     
     location / {
@@ -110,7 +110,7 @@ const API_BASE = 'http://192.168.1.100:8000/api/v1';
 Create a configuration file for production:
 ```bash
 # Create optimization script
-cat > /var/www/atorrent/optimize.sh << 'SCRIPT'
+cat > /var/www/aTorrent/optimize.sh << 'SCRIPT'
 #!/bin/bash
 # CubieBoard 2 optimization settings
 
@@ -126,7 +126,7 @@ export WS_UPDATE_INTERVAL=15  # seconds
 echo "CubieBoard 2 optimizations applied"
 SCRIPT
 
-chmod +x /var/www/atorrent/optimize.sh
+chmod +x /var/www/aTorrent/optimize.sh
 ```
 
 ## Performance Tuning
@@ -151,7 +151,7 @@ echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governo
 3. **Storage Optimization**
 ```bash
 # Mount tmpfs for logs to reduce SD card writes
-sudo mount -t tmpfs -o size=100M tmpfs /var/log/atorrent
+sudo mount -t tmpfs -o size=100M tmpfs /var/log/aTorrent
 ```
 
 ### Network Configuration
@@ -210,7 +210,7 @@ iostat -x 1
 ps aux --sort=-%mem | head
 
 # Restart services if needed
-sudo systemctl restart atorrent-backend
+sudo systemctl restart aTorrent-backend
 ```
 
 ### Slow Performance

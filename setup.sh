@@ -226,7 +226,7 @@ main() {
     echo "- API Documentation: http://localhost:8000/api/v1/docs"
     echo
     echo "Default login credentials:"
-    echo "- Email: admin@atorrent.local"
+    echo "- Email: admin@aTorrent.local"
     echo "- Password: admin123"
     echo
     echo "📖 For more information, check the README.md file"

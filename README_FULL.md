@@ -56,8 +56,8 @@
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/atorrent.git
-   cd atorrent
+   git clone https://github.com/yourusername/aTorrent.git
+   cd aTorrent
    ```
 
 2. **Configure environment:**
@@ -218,7 +218,7 @@ docker-compose -f docker-compose.production.yml down
 
 ### Project Structure
 ```
-atorrent/
+aTorrent/
 ├── backend/           # FastAPI backend
 │   ├── app/          # Application code
 │   ├── tests/        # Backend tests
@@ -290,8 +290,8 @@ PUSH=true DOCKER_NAMESPACE=yourusername ./scripts/build.sh all
 ### Deploy to Production Server
 ```bash
 # On production server
-git clone https://github.com/yourusername/atorrent.git
-cd atorrent
+git clone https://github.com/yourusername/aTorrent.git
+cd aTorrent
 ./scripts/deploy.sh deploy
 ```
 

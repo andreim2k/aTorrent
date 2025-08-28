@@ -132,7 +132,7 @@ SECRET_KEY=your-secret-key-here
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 
 # Database
-DATABASE_URL=sqlite:///./atorrent.db
+DATABASE_URL=sqlite:///./aTorrent.db
 
 # Torrent Settings
 DOWNLOAD_PATH=./downloads
