@@ -15,6 +15,49 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 class TorrentService:
+    
+    def _sanitize_name(self, name: str) -> str:
+        """Remove commas and replace spaces with dots in filename/directory name"""
+        if not name:
+            return name
+        # Remove commas and replace spaces with dots
+        sanitized = name.replace(",", "").replace(" ", ".")
+        return sanitized
+    
+    def _sanitize_file_paths(self, handle) -> None:
+        """Sanitize file paths using libtorrent handle after torrent is added"""
+        try:
+            if not handle or not handle.is_valid():
+                return
+            
+            torrent_info = handle.torrent_file()
+            if not torrent_info:
+                return
+            
+            # Rename individual files
+            for file_index in range(torrent_info.num_files()):
+                file_info = torrent_info.file_at(file_index)
+                original_path = file_info.path
+                
+                # Split path into components and sanitize each
+                path_parts = original_path.split("/")
+                sanitized_parts = []
+                
+                for part in path_parts:
+                    if part:  # Skip empty parts
+                        sanitized_part = self._sanitize_name(part)
+                        sanitized_parts.append(sanitized_part)
+                
+                if sanitized_parts:
+                    sanitized_path = "/".join(sanitized_parts)
+                    
+                    # Only rename if the path has changed
+                    if sanitized_path != original_path:
+                        handle.rename_file(file_index, sanitized_path)
+                        logger.debug(f"Renamed file: {original_path} -> {sanitized_path}")
+        
+        except Exception as e:
+            logger.warning(f"Failed to sanitize file paths: {e}")
     """Real torrent service using libtorrent"""
     
     def __init__(self, downloads_path: str = None):
@@ -59,7 +102,7 @@ class TorrentService:
             self.session.start_natpmp()
             
             self.running = True
-            logger.info("TorrentService initialized successfully")
+            logger.debug("TorrentService initialized successfully")
             
             # Start alert processing
             asyncio.create_task(self._process_alerts())
@@ -83,10 +126,10 @@ class TorrentService:
             # DO NOT save session state to prevent torrents from reappearing
             # Session state persistence can cause deleted torrents to reappear
             # as libtorrent may resume them from saved state
-            logger.info("Skipping session state save to prevent torrent resurrection")
+            logger.debug("Skipping session state save to prevent torrent resurrection")
             
             self.session = None
-            logger.info("TorrentService cleaned up")
+            logger.debug("TorrentService cleaned up")
 
     async def _process_alerts(self):
         """Process libtorrent alerts"""
@@ -104,9 +147,9 @@ class TorrentService:
         """Handle individual alert"""
         try:
             if isinstance(alert, lt.torrent_added_alert):
-                logger.info(f"Torrent added: {alert.torrent_name}")
+                logger.debug(f"Torrent added: {alert.torrent_name}")
             elif isinstance(alert, lt.torrent_finished_alert):
-                logger.info(f"Torrent finished: {alert.torrent_name}")
+                logger.debug(f"Torrent finished: {alert.torrent_name}")
             elif isinstance(alert, lt.torrent_error_alert):
                 logger.error(f"Torrent error: {alert.what()}")
         except Exception as e:
@@ -222,12 +265,18 @@ class TorrentService:
             # Store handle
             self.handles[info_hash] = handle
             
+            # Sanitize file paths to remove spaces and commas
+            self._sanitize_file_paths(handle)
+            
             # Get torrent name
             torrent_name = "Unknown"
             if hasattr(params, 'ti') and params.ti:
                 torrent_name = params.ti.name()
             elif hasattr(params, 'name') and params.name:
                 torrent_name = params.name
+            
+            # Sanitize the torrent name for database storage
+            torrent_name = self._sanitize_name(torrent_name)
             
             # Save to database
             db = self._get_db()
@@ -401,7 +450,7 @@ class TorrentService:
                     torrent.status = "checking"
                     db.commit()
                     
-                    logger.info(f"Initiated recheck for torrent: {torrent.name}")
+                    logger.debug(f"Initiated recheck for torrent: {torrent.name}")
                     return {"success": True, "message": "Recheck initiated"}
                 else:
                     logger.warning(f"No libtorrent handle found for torrent: {torrent.name}")
@@ -443,7 +492,7 @@ class TorrentService:
                         torrent.status = "downloading" if torrent.progress < 1.0 else "seeding"
                     
                     db.commit()
-                    logger.info(f"Successfully {action}d torrent with libtorrent handle: {torrent.name}")
+                    logger.debug(f"Successfully {action}d torrent with libtorrent handle: {torrent.name}")
                     return {"success": True, "used_handle": True}
                 else:
                     # No libtorrent handle, but still update database status
@@ -461,7 +510,7 @@ class TorrentService:
                                 handle = self.session.add_torrent(params)
                                 self.handles[info_hash] = handle
                                 torrent.status = "downloading" if torrent.progress < 1.0 else "seeding"
-                                logger.info(f"Reloaded torrent into libtorrent and resumed: {torrent.name}")
+                                logger.debug(f"Reloaded torrent into libtorrent and resumed: {torrent.name}")
                             except Exception as e:
                                 logger.error(f"Failed to reload torrent {torrent.name}: {e}")
                                 torrent.status = "downloading" if torrent.progress < 1.0 else "seeding"
@@ -469,7 +518,7 @@ class TorrentService:
                             torrent.status = "downloading" if torrent.progress < 1.0 else "seeding"
                     
                     db.commit()
-                    logger.info(f"Updated database status to {torrent.status} for torrent: {torrent.name}")
+                    logger.debug(f"Updated database status to {torrent.status} for torrent: {torrent.name}")
                     return {"success": True, "used_handle": False, "status_updated": True}
                     
             finally:
@@ -757,7 +806,7 @@ class TorrentService:
                             if torrent.status == "paused":
                                 handle.pause()
                                 
-                            logger.info(f"Reloaded torrent: {torrent.name}")
+                            logger.debug(f"Reloaded torrent: {torrent.name}")
                         
                     except Exception as e:
                         logger.error(f"Failed to reload torrent {torrent.name}: {e}")
