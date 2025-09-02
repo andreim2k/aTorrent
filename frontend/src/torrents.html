@@ -437,7 +437,7 @@
                   </td>
                   <td class="p-4 pl-6" style="min-width: 150px; width: auto;">
                     <div @click.stop="showDetails(torrent)" class="cursor-pointer hover:text-primary-main" style="overflow: hidden;">
-                      <div class="font-medium truncate" x-text="torrent.name" :title="torrent.name"></div>
+                      <div class="font-medium truncate" x-text="formatFileName(torrent.name)" :title="torrent.name"></div>
                       <div class="text-xs text-text-secondary mt-1 truncate" x-text="torrent.info_hash ? torrent.info_hash.substring(0, 20) + '...' : ''"></div>
                     </div>
                   </td>
@@ -566,6 +566,23 @@
       const s = Math.floor(seconds % 60);
       return h > 0 ? `${h}h ${m}m` : m > 0 ? `${m}m ${s}s` : `${s}s`;
     }
+    function formatFileName(fileName) {
+      if (!fileName) return fileName;
+      
+      // Video extensions to remove from TORRENT NAMES display only
+      const videoExtensions = ['.mkv', '.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.m4v', '.mpg', '.mpeg', '.3gp', '.m2ts', '.ts'];
+      
+      // Check if torrent name ends with any video extension - if so, remove it
+      for (const ext of videoExtensions) {
+        if (fileName.toLowerCase().endsWith(ext.toLowerCase())) {
+          return fileName.slice(0, -ext.length);
+        }
+      }
+      
+      // Return original name if no video extension found
+      return fileName;
+    }
+
     
     // Alpine.js App
     function torrentsApp() {
@@ -668,6 +685,7 @@
         },
         
         async fetchTorrents() {
+          this.loading = true;
           const token = getCookie('access_token');
           
           try {
@@ -681,6 +699,8 @@
             }
           } catch (error) {
             // Handle error silently
+          } finally {
+            this.loading = false;
           }
         },
         
@@ -1065,7 +1085,7 @@
         <!-- Dialog Header -->
         <div class="flex justify-between items-start p-6 border-b border-white/10">
           <div class="flex-1">
-            <h3 class="text-xl font-bold mb-2" x-text="selectedTorrent?.name"></h3>
+            <h3 class="text-xl font-bold mb-2" x-text="formatFileName(selectedTorrent?.name)"></h3>
             <div class="flex flex-wrap gap-4 text-sm text-text-secondary">
               <span>Size: <span class="text-white" x-text="formatBytes(selectedTorrent?.total_size || 0)"></span></span>
               <span>Progress: <span class="text-white" x-text="Math.round((selectedTorrent?.progress || 0) * 100) + '%'"></span></span>

@@ -2,6 +2,7 @@ from pydantic import BaseModel, validator
 from typing import Optional, Dict, Any
 from datetime import datetime
 
+
 class AppSettingsBase(BaseModel):
     theme: str = "dark"
     language: str = "en"
@@ -40,6 +41,7 @@ class AppSettingsBase(BaseModel):
     enable_csrf_protection: bool = True
     custom_settings: Optional[Dict[str, Any]] = None
 
+
 class AppSettingsUpdate(BaseModel):
     theme: Optional[str] = None
     language: Optional[str] = None
@@ -77,30 +79,31 @@ class AppSettingsUpdate(BaseModel):
     web_ui_username: Optional[str] = None
     enable_csrf_protection: Optional[bool] = None
     custom_settings: Optional[Dict[str, Any]] = None
-    
-    @validator('theme')
+
+    @validator("theme")
     def validate_theme(cls, v):
-        if v and v not in ['dark', 'light', 'auto']:
-            raise ValueError('Theme must be dark, light, or auto')
+        if v and v not in ["dark", "light", "auto"]:
+            raise ValueError("Theme must be dark, light, or auto")
         return v
-    
-    @validator('max_download_speed', 'max_upload_speed')
+
+    @validator("max_download_speed", "max_upload_speed")
     def validate_speeds(cls, v):
         if v and v < 0:
-            raise ValueError('Speed limits must be 0 or positive')
+            raise ValueError("Speed limits must be 0 or positive")
         return v
-    
-    @validator('max_active_downloads')
+
+    @validator("max_active_downloads")
     def validate_max_downloads(cls, v):
         if v and not 1 <= v <= 100:
-            raise ValueError('Max active downloads must be between 1 and 100')
+            raise ValueError("Max active downloads must be between 1 and 100")
         return v
-    
-    @validator('connection_port', 'web_ui_port')
+
+    @validator("connection_port", "web_ui_port")
     def validate_ports(cls, v):
         if v and not 1024 <= v <= 65535:
-            raise ValueError('Port must be between 1024 and 65535')
+            raise ValueError("Port must be between 1024 and 65535")
         return v
+
 
 class AppSettings(AppSettingsBase):
     id: int
@@ -110,8 +113,10 @@ class AppSettings(AppSettingsBase):
     class Config:
         from_attributes = True
 
+
 class AppSettingsResponse(BaseModel):
     """Simplified settings response for frontend"""
+
     theme: str
     language: str
     timezone: str
@@ -126,6 +131,6 @@ class AppSettingsResponse(BaseModel):
     enable_dht: bool
     connection_port: int
     use_random_port: bool
-    
+
     class Config:
         from_attributes = True

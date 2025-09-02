@@ -14,8 +14,8 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-class TorrentService:
 
+class TorrentService:
     def _sanitize_name(self, name: str) -> str:
         """Remove commas and replace spaces with dots in filename/directory name"""
         if not name:
@@ -54,14 +54,19 @@ class TorrentService:
                     # Only rename if the path has changed
                     if sanitized_path != original_path:
                         handle.rename_file(file_index, sanitized_path)
-                        logger.debug(f"Renamed file: {original_path} -> {sanitized_path}")
+                        logger.debug(
+                            f"Renamed file: {original_path} -> {sanitized_path}"
+                        )
 
         except Exception as e:
             logger.warning(f"Failed to sanitize file paths: {e}")
+
     """Real torrent service using libtorrent"""
 
     def __init__(self, downloads_path: str = None):
-        self.downloads_path = downloads_path or getattr(settings, 'DOWNLOADS_PATH', './downloads')
+        self.downloads_path = downloads_path or getattr(
+            settings, "DOWNLOADS_PATH", "./downloads"
+        )
         self.session = None
         self.handles: Dict[str, Any] = {}  # info_hash -> torrent_handle mapping
         self.running = False
@@ -120,7 +125,7 @@ class TorrentService:
             self.running = False
             # Pause all torrents
             for handle in self.handles.values():
-                if hasattr(handle, 'pause'):
+                if hasattr(handle, "pause"):
                     handle.pause()
 
             # DO NOT save session state to prevent torrents from reappearing
@@ -159,7 +164,9 @@ class TorrentService:
         """Get database session"""
         return SessionLocal()
 
-    def _calculate_eta(self, total_size: int, downloaded: int, download_speed: float) -> int:
+    def _calculate_eta(
+        self, total_size: int, downloaded: int, download_speed: float
+    ) -> int:
         """Calculate ETA (Estimated Time of Arrival) in seconds"""
         try:
             if download_speed <= 0 or total_size <= 0 or downloaded >= total_size:
@@ -180,9 +187,9 @@ class TorrentService:
         try:
             db = self._get_db()
             try:
-                torrent = db.query(Torrent).filter(
-                    Torrent.info_hash == info_hash
-                ).first()
+                torrent = (
+                    db.query(Torrent).filter(Torrent.info_hash == info_hash).first()
+                )
 
                 if torrent:
                     for key, value in torrent_data.items():
@@ -215,7 +222,9 @@ class TorrentService:
         os.makedirs(self.downloads_path, exist_ok=True)
         return self.downloads_path
 
-    async def add_torrent(self, torrent_file: str, auto_start: bool = True) -> Dict[str, Any]:
+    async def add_torrent(
+        self, torrent_file: str, auto_start: bool = True
+    ) -> Dict[str, Any]:
         """Add a new torrent"""
         try:
             if not self.session:
@@ -227,6 +236,7 @@ class TorrentService:
             # Handle base64 encoded torrent file content only
             try:
                 import base64
+
                 torrent_data = base64.b64decode(torrent_file)
                 info = lt.torrent_info(torrent_data)
                 params.ti = info
@@ -258,7 +268,7 @@ class TorrentService:
                 # Resume after recheck completes
                 handle.resume()  # Start downloading immediately
             else:
-                handle.pause()   # Ensure it stays paused
+                handle.pause()  # Ensure it stays paused
 
             info_hash = str(handle.info_hash())
 
@@ -270,9 +280,9 @@ class TorrentService:
 
             # Get torrent name
             torrent_name = "Unknown"
-            if hasattr(params, 'ti') and params.ti:
+            if hasattr(params, "ti") and params.ti:
                 torrent_name = params.ti.name()
-            elif hasattr(params, 'name') and params.name:
+            elif hasattr(params, "name") and params.name:
                 torrent_name = params.name
 
             # Sanitize the torrent name for database storage
@@ -282,12 +292,15 @@ class TorrentService:
             db = self._get_db()
             try:
                 # Check if torrent already exists
-                existing_torrent = db.query(Torrent).filter(
-                    Torrent.info_hash == info_hash
-                ).first()
+                existing_torrent = (
+                    db.query(Torrent).filter(Torrent.info_hash == info_hash).first()
+                )
 
                 if existing_torrent:
-                    return {"error": "Torrent already exists", "torrent_id": existing_torrent.id}
+                    return {
+                        "error": "Torrent already exists",
+                        "torrent_id": existing_torrent.id,
+                    }
 
                 # Set initial status based on auto_start parameter
                 initial_status = "downloading" if auto_start else "paused"
@@ -303,7 +316,7 @@ class TorrentService:
                     upload_speed=0,
                     progress=0.0,
                     status=initial_status,  # Respect auto_start parameter
-                    download_path=save_path
+                    download_path=save_path,
                 )
                 db.add(db_torrent)
                 db.commit()
@@ -313,7 +326,7 @@ class TorrentService:
                     "success": True,
                     "torrent_id": db_torrent.id,
                     "info_hash": info_hash,
-                    "name": torrent_name
+                    "name": torrent_name,
                 }
             finally:
                 db.close()
@@ -322,7 +335,9 @@ class TorrentService:
             logger.error(f"Error adding torrent: {e}")
             return {"error": str(e)}
 
-    async def remove_torrent(self, torrent_id: int, delete_files: bool = False) -> Dict[str, Any]:
+    async def remove_torrent(
+        self, torrent_id: int, delete_files: bool = False
+    ) -> Dict[str, Any]:
         """Remove a torrent"""
         try:
             if not self.session:
@@ -330,9 +345,7 @@ class TorrentService:
 
             db = self._get_db()
             try:
-                torrent = db.query(Torrent).filter(
-                    Torrent.id == torrent_id
-                ).first()
+                torrent = db.query(Torrent).filter(Torrent.id == torrent_id).first()
 
                 if not torrent:
                     return {"error": "Torrent not found"}
@@ -352,7 +365,9 @@ class TorrentService:
                         # Small delay to ensure operations complete
                         await asyncio.sleep(0.5)
                     except Exception as stop_error:
-                        logger.warning(f"Error stopping torrent before removal: {stop_error}")
+                        logger.warning(
+                            f"Error stopping torrent before removal: {stop_error}"
+                        )
                         # Continue with removal anyway
 
                 # SECOND: Remove from libtorrent session
@@ -364,7 +379,9 @@ class TorrentService:
                         self.session.remove_torrent(handle, flags)
                         removed_from_session = True
                     except Exception as session_error:
-                        logger.error(f"Error removing from libtorrent session: {session_error}")
+                        logger.error(
+                            f"Error removing from libtorrent session: {session_error}"
+                        )
                         # Already paused above, so just log the error
                     finally:
                         # ALWAYS remove the handle from our tracking dict
@@ -393,7 +410,11 @@ class TorrentService:
                         else:
                             # Try alternative: sometimes the name might be different from file system name
                             # Check if there's a folder/file that starts with the torrent name
-                            possible_matches = list(base_path.glob(f"{torrent.name[:20]}*")) if len(torrent.name) > 20 else []
+                            possible_matches = (
+                                list(base_path.glob(f"{torrent.name[:20]}*"))
+                                if len(torrent.name) > 20
+                                else []
+                            )
                             if possible_matches:
                                 for match in possible_matches:
                                     if match.is_file():
@@ -412,6 +433,7 @@ class TorrentService:
         except Exception as e:
             logger.error(f"Error removing torrent: {e}")
             import traceback
+
             logger.error(f"Full traceback: {traceback.format_exc()}")
             return {"error": str(e)}
 
@@ -431,9 +453,7 @@ class TorrentService:
 
             db = self._get_db()
             try:
-                torrent = db.query(Torrent).filter(
-                    Torrent.id == torrent_id
-                ).first()
+                torrent = db.query(Torrent).filter(Torrent.id == torrent_id).first()
 
                 if not torrent:
                     return {"error": "Torrent not found"}
@@ -453,7 +473,9 @@ class TorrentService:
                     logger.debug(f"Initiated recheck for torrent: {torrent.name}")
                     return {"success": True, "message": "Recheck initiated"}
                 else:
-                    logger.warning(f"No libtorrent handle found for torrent: {torrent.name}")
+                    logger.warning(
+                        f"No libtorrent handle found for torrent: {torrent.name}"
+                    )
                     return {"error": "Torrent handle not found in session"}
 
             finally:
@@ -471,9 +493,7 @@ class TorrentService:
 
             db = self._get_db()
             try:
-                torrent = db.query(Torrent).filter(
-                    Torrent.id == torrent_id
-                ).first()
+                torrent = db.query(Torrent).filter(Torrent.id == torrent_id).first()
 
                 if not torrent:
                     return {"error": "Torrent not found"}
@@ -489,37 +509,66 @@ class TorrentService:
                     elif action == "resume":
                         # Simply resume without manipulating flags
                         handle.resume()
-                        torrent.status = "downloading" if torrent.progress < 1.0 else "seeding"
+                        torrent.status = (
+                            "downloading" if torrent.progress < 1.0 else "seeding"
+                        )
 
                     db.commit()
-                    logger.debug(f"Successfully {action}d torrent with libtorrent handle: {torrent.name}")
+                    logger.debug(
+                        f"Successfully {action}d torrent with libtorrent handle: {torrent.name}"
+                    )
                     return {"success": True, "used_handle": True}
                 else:
                     # No libtorrent handle, but still update database status
-                    logger.warning(f"No libtorrent handle for {torrent.name}, updating database status only")
+                    logger.warning(
+                        f"No libtorrent handle for {torrent.name}, updating database status only"
+                    )
 
                     if action == "pause":
                         torrent.status = "paused"
                     elif action == "resume":
                         # Try to reload the torrent into libtorrent if we have a magnet link
-                        if hasattr(torrent, 'magnet_link') and torrent.magnet_link:
+                        if hasattr(torrent, "magnet_link") and torrent.magnet_link:
                             try:
                                 import libtorrent as lt
+
                                 params = lt.parse_magnet_uri(torrent.magnet_link)
-                                params.save_path = torrent.download_path or self.downloads_path
+                                params.save_path = (
+                                    torrent.download_path or self.downloads_path
+                                )
                                 handle = self.session.add_torrent(params)
                                 self.handles[info_hash] = handle
-                                torrent.status = "downloading" if torrent.progress < 1.0 else "seeding"
-                                logger.debug(f"Reloaded torrent into libtorrent and resumed: {torrent.name}")
+                                torrent.status = (
+                                    "downloading"
+                                    if torrent.progress < 1.0
+                                    else "seeding"
+                                )
+                                logger.debug(
+                                    f"Reloaded torrent into libtorrent and resumed: {torrent.name}"
+                                )
                             except Exception as e:
-                                logger.error(f"Failed to reload torrent {torrent.name}: {e}")
-                                torrent.status = "downloading" if torrent.progress < 1.0 else "seeding"
+                                logger.error(
+                                    f"Failed to reload torrent {torrent.name}: {e}"
+                                )
+                                torrent.status = (
+                                    "downloading"
+                                    if torrent.progress < 1.0
+                                    else "seeding"
+                                )
                         else:
-                            torrent.status = "downloading" if torrent.progress < 1.0 else "seeding"
+                            torrent.status = (
+                                "downloading" if torrent.progress < 1.0 else "seeding"
+                            )
 
                     db.commit()
-                    logger.debug(f"Updated database status to {torrent.status} for torrent: {torrent.name}")
-                    return {"success": True, "used_handle": False, "status_updated": True}
+                    logger.debug(
+                        f"Updated database status to {torrent.status} for torrent: {torrent.name}"
+                    )
+                    return {
+                        "success": True,
+                        "used_handle": False,
+                        "status_updated": True,
+                    }
 
             finally:
                 db.close()
@@ -533,9 +582,7 @@ class TorrentService:
         try:
             db = self._get_db()
             try:
-                torrent = db.query(Torrent).filter(
-                    Torrent.id == torrent_id
-                ).first()
+                torrent = db.query(Torrent).filter(Torrent.id == torrent_id).first()
 
                 if not torrent:
                     return {"error": "Torrent not found"}
@@ -571,10 +618,10 @@ class TorrentService:
                         db.commit()
 
                 # Get additional data from libtorrent handle if available
-                peers_total = getattr(torrent, 'peers_total', 0)
-                seeds_total = getattr(torrent, 'seeds_total', 0)
-                availability = getattr(torrent, 'availability', 0.0)
-                time_active = getattr(torrent, 'time_active', 0)
+                peers_total = getattr(torrent, "peers_total", 0)
+                seeds_total = getattr(torrent, "seeds_total", 0)
+                availability = getattr(torrent, "availability", 0.0)
+                time_active = getattr(torrent, "time_active", 0)
 
                 if torrent.info_hash in self.handles and self.session:
                     handle = self.handles[torrent.info_hash]
@@ -583,10 +630,14 @@ class TorrentService:
                         peers_total = status.num_peers
                         seeds_total = status.num_seeds
                         availability = 1.0  # Default availability
-                        time_active = status.active_time if hasattr(status, 'active_time') else 0
+                        time_active = (
+                            status.active_time if hasattr(status, "active_time") else 0
+                        )
 
                 # Calculate real-time ETA
-                eta = self._calculate_eta(torrent.total_size, torrent.downloaded, torrent.download_speed)
+                eta = self._calculate_eta(
+                    torrent.total_size, torrent.downloaded, torrent.download_speed
+                )
 
                 return {
                     "id": torrent.id,
@@ -599,26 +650,30 @@ class TorrentService:
                     "uploaded": torrent.uploaded,
                     "download_speed": torrent.download_speed,
                     "upload_speed": torrent.upload_speed,
-                    "peers_connected": getattr(torrent, 'peers_connected', 0),
+                    "peers_connected": getattr(torrent, "peers_connected", 0),
                     "peers_total": peers_total,
-                    "seeds_connected": getattr(torrent, 'seeds_connected', 0),
+                    "seeds_connected": getattr(torrent, "seeds_connected", 0),
                     "seeds_total": seeds_total,
-                    "ratio": torrent.uploaded / torrent.downloaded if torrent.downloaded > 0 else 0,
+                    "ratio": torrent.uploaded / torrent.downloaded
+                    if torrent.downloaded > 0
+                    else 0,
                     "availability": availability,
                     "eta": eta,
                     "time_active": time_active,
                     "download_path": torrent.download_path,
-                    "priority": getattr(torrent, 'priority', 1),
-                    "sequential_download": getattr(torrent, 'sequential_download', False),
-                    "file_count": getattr(torrent, 'file_count', 0),
-                    "files_info": getattr(torrent, 'files_info', None),
-                    "label": getattr(torrent, 'label', None),
-                    "category": getattr(torrent, 'category', None),
-                    "tags": getattr(torrent, 'tags', None),
+                    "priority": getattr(torrent, "priority", 1),
+                    "sequential_download": getattr(
+                        torrent, "sequential_download", False
+                    ),
+                    "file_count": getattr(torrent, "file_count", 0),
+                    "files_info": getattr(torrent, "files_info", None),
+                    "label": getattr(torrent, "label", None),
+                    "category": getattr(torrent, "category", None),
+                    "tags": getattr(torrent, "tags", None),
                     "created_at": torrent.created_at,
                     "updated_at": torrent.updated_at,
-                    "completed_at": getattr(torrent, 'completed_at', None),
-                    "started_at": getattr(torrent, 'started_at', None)
+                    "completed_at": getattr(torrent, "completed_at", None),
+                    "started_at": getattr(torrent, "started_at", None),
                 }
 
             finally:
@@ -653,7 +708,9 @@ class TorrentService:
                                 torrent.progress = status.progress
 
                                 # Update total_size if we didn't have it
-                                if torrent.total_size == 0 and hasattr(status, 'total_wanted'):
+                                if torrent.total_size == 0 and hasattr(
+                                    status, "total_wanted"
+                                ):
                                     torrent.total_size = status.total_wanted
 
                                 # Update status based on libtorrent state
@@ -661,7 +718,10 @@ class TorrentService:
                                     torrent.status = "paused"
                                 elif status.state == lt.torrent_status.checking_files:
                                     torrent.status = "checking"
-                                elif status.state == lt.torrent_status.checking_resume_data:
+                                elif (
+                                    status.state
+                                    == lt.torrent_status.checking_resume_data
+                                ):
                                     torrent.status = "checking"
                                 elif status.state == lt.torrent_status.downloading:
                                     torrent.status = "downloading"
@@ -675,7 +735,9 @@ class TorrentService:
                                 updated_from_libtorrent = True
 
                             except Exception as status_error:
-                                logger.error(f"Error getting status for {torrent.name}: {status_error}")
+                                logger.error(
+                                    f"Error getting status for {torrent.name}: {status_error}"
+                                )
                     else:
                         # If no handle, ensure speeds are 0 unless paused
                         if torrent.status not in ["paused", "downloading", "error"]:
@@ -683,10 +745,10 @@ class TorrentService:
                             torrent.upload_speed = 0
 
                     # Get additional data from libtorrent handle if available
-                    peers_total = getattr(torrent, 'peers_total', 0)
-                    seeds_total = getattr(torrent, 'seeds_total', 0)
-                    availability = getattr(torrent, 'availability', 0.0)
-                    time_active = getattr(torrent, 'time_active', 0)
+                    peers_total = getattr(torrent, "peers_total", 0)
+                    seeds_total = getattr(torrent, "seeds_total", 0)
+                    availability = getattr(torrent, "availability", 0.0)
+                    time_active = getattr(torrent, "time_active", 0)
 
                     if torrent.info_hash in self.handles and self.session:
                         handle = self.handles[torrent.info_hash]
@@ -696,35 +758,47 @@ class TorrentService:
                                 peers_total = status.num_peers
                                 seeds_total = status.num_seeds
                                 availability = 1.0  # Default availability
-                                time_active = status.active_time if hasattr(status, 'active_time') else 0
+                                time_active = (
+                                    status.active_time
+                                    if hasattr(status, "active_time")
+                                    else 0
+                                )
                             except Exception:
                                 pass  # Use defaults
 
                     # Calculate real-time ETA
-                    eta = self._calculate_eta(torrent.total_size, torrent.downloaded, torrent.download_speed)
+                    eta = self._calculate_eta(
+                        torrent.total_size, torrent.downloaded, torrent.download_speed
+                    )
 
-                    results.append({
-                        "id": torrent.id,
-                        "name": torrent.name,
-                        "status": torrent.status,
-                        "progress": torrent.progress,
-                        "total_size": torrent.total_size,
-                        "downloaded": torrent.downloaded,
-                        "uploaded": torrent.uploaded,
-                        "download_speed": torrent.download_speed,
-                        "upload_speed": torrent.upload_speed,
-                        "peers_connected": getattr(torrent, 'peers_connected', 0),
-                        "seeds_connected": getattr(torrent, 'seeds_connected', 0),
-                        "num_peers": peers_total,  # Add this for frontend compatibility
-                        "num_seeds": seeds_total,  # Add this for frontend compatibility
-                        "ratio": torrent.uploaded / torrent.downloaded if torrent.downloaded > 0 else 0,
-                        "eta": eta,
-                        "priority": getattr(torrent, 'priority', 1),
-                        "label": getattr(torrent, 'label', None),
-                        "category": getattr(torrent, 'category', None),
-                        "created_at": torrent.created_at.isoformat() if torrent.created_at else None,
-                        "updated_from_libtorrent": updated_from_libtorrent
-                    })
+                    results.append(
+                        {
+                            "id": torrent.id,
+                            "name": torrent.name,
+                            "status": torrent.status,
+                            "progress": torrent.progress,
+                            "total_size": torrent.total_size,
+                            "downloaded": torrent.downloaded,
+                            "uploaded": torrent.uploaded,
+                            "download_speed": torrent.download_speed,
+                            "upload_speed": torrent.upload_speed,
+                            "peers_connected": getattr(torrent, "peers_connected", 0),
+                            "seeds_connected": getattr(torrent, "seeds_connected", 0),
+                            "num_peers": peers_total,  # Add this for frontend compatibility
+                            "num_seeds": seeds_total,  # Add this for frontend compatibility
+                            "ratio": torrent.uploaded / torrent.downloaded
+                            if torrent.downloaded > 0
+                            else 0,
+                            "eta": eta,
+                            "priority": getattr(torrent, "priority", 1),
+                            "label": getattr(torrent, "label", None),
+                            "category": getattr(torrent, "category", None),
+                            "created_at": torrent.created_at.isoformat()
+                            if torrent.created_at
+                            else None,
+                            "updated_from_libtorrent": updated_from_libtorrent,
+                        }
+                    )
 
                 # Bulk update database
                 db.commit()
@@ -736,6 +810,7 @@ class TorrentService:
         except Exception as e:
             logger.error(f"Error getting all torrents status: {e}")
             import traceback
+
             logger.error(f"Full traceback: {traceback.format_exc()}")
             return []
 
@@ -748,7 +823,7 @@ class TorrentService:
                     "num_peers": 0,
                     "dht_nodes": 0,
                     "libtorrent_version": lt.version,
-                    "uptime": 0
+                    "uptime": 0,
                 }
 
             # Use session status for stats
@@ -759,20 +834,24 @@ class TorrentService:
                     "num_peers": status.num_peers,
                     "dht_nodes": status.dht_nodes,
                     "libtorrent_version": lt.version,
-                    "uptime": int(time.time() - self.startup_time),  # Service uptime in seconds
+                    "uptime": int(
+                        time.time() - self.startup_time
+                    ),  # Service uptime in seconds
                     "download_rate": status.download_rate,
                     "upload_rate": status.upload_rate,
                     "payload_download_rate": status.payload_download_rate,
-                    "payload_upload_rate": status.payload_upload_rate
+                    "payload_upload_rate": status.payload_upload_rate,
                 }
             except Exception:
                 # Fallback if status() doesn't work
                 return {
-                    "port": self.session.listen_port() if hasattr(self.session, 'listen_port') else 0,
+                    "port": self.session.listen_port()
+                    if hasattr(self.session, "listen_port")
+                    else 0,
                     "num_peers": len(self.handles),
                     "dht_nodes": 0,
                     "libtorrent_version": lt.version,
-                    "uptime": 0
+                    "uptime": 0,
                 }
 
         except Exception as e:
@@ -782,7 +861,7 @@ class TorrentService:
                 "num_peers": 0,
                 "dht_nodes": 0,
                 "libtorrent_version": lt.version,
-                "uptime": 0
+                "uptime": 0,
             }
 
     async def _load_existing_torrents(self):
@@ -790,16 +869,20 @@ class TorrentService:
         try:
             db = self._get_db()
             try:
-                torrents = db.query(Torrent).filter(
-                    Torrent.status.in_(["downloading", "seeding", "paused"])
-                ).all()
+                torrents = (
+                    db.query(Torrent)
+                    .filter(Torrent.status.in_(["downloading", "seeding", "paused"]))
+                    .all()
+                )
 
                 for torrent in torrents:
                     try:
                         # Recreate torrent from magnet link if available
-                        if hasattr(torrent, 'magnet_link') and torrent.magnet_link:
+                        if hasattr(torrent, "magnet_link") and torrent.magnet_link:
                             params = lt.parse_magnet_uri(torrent.magnet_link)
-                            params.save_path = torrent.download_path or self.downloads_path
+                            params.save_path = (
+                                torrent.download_path or self.downloads_path
+                            )
                             handle = self.session.add_torrent(params)
                             self.handles[torrent.info_hash] = handle
 

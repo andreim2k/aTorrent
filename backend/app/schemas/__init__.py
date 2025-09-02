@@ -3,7 +3,14 @@ from .settings import AppSettings, AppSettingsUpdate, AppSettingsResponse
 from .auth import Token, TokenData, Login
 
 __all__ = [
-    "Torrent", "TorrentCreate", "TorrentUpdate", "TorrentStatus",
-    "AppSettings", "AppSettingsUpdate", "AppSettingsResponse",
-    "Token", "TokenData", "Login"
+    "Torrent",
+    "TorrentCreate",
+    "TorrentUpdate",
+    "TorrentStatus",
+    "AppSettings",
+    "AppSettingsUpdate",
+    "AppSettingsResponse",
+    "Token",
+    "TokenData",
+    "Login",
 ]

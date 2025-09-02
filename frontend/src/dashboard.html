@@ -272,7 +272,7 @@
               <!-- Middle: Name and details stacked -->
               <div class="flex-1 min-w-0">
                 <!-- 1. Torrent name on top with truncation -->
-                <p class="font-medium truncate mb-2" x-text="torrent.name" :title="torrent.name"></p>
+                <p class="font-medium truncate mb-2" x-text="formatFileName(torrent.name)" :title="torrent.name"></p>
                 
                 <!-- 2. Details row below name -->
                 <div class="flex items-center gap-3 flex-wrap">
@@ -394,6 +394,23 @@
       const mb = bytesPerSecond / (1024 * 1024);
       return mb.toFixed(2) + ' MB/s';
     }
+    function formatFileName(fileName) {
+      if (!fileName) return fileName;
+      
+      // Video extensions to remove from TORRENT NAMES display only
+      const videoExtensions = ['.mkv', '.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.m4v', '.mpg', '.mpeg', '.3gp', '.m2ts', '.ts'];
+      
+      // Check if torrent name ends with any video extension - if so, remove it
+      for (const ext of videoExtensions) {
+        if (fileName.toLowerCase().endsWith(ext.toLowerCase())) {
+          return fileName.slice(0, -ext.length);
+        }
+      }
+      
+      // Return original name if no video extension found
+      return fileName;
+    }
+
     
     // Alpine.js App
     function dashboardApp() {

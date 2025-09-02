@@ -11,14 +11,14 @@ router = APIRouter()
 # Default download path - use user's home directory + Downloads
 DEFAULT_DOWNLOAD_PATH = os.path.join(os.path.expanduser("~"), "Downloads")
 
+
 @router.get("/", response_model=AppSettingsResponse)
 def get_settings(
-    authenticated: bool = Depends(get_authenticated),
-    db: Session = Depends(get_db)
+    authenticated: bool = Depends(get_authenticated), db: Session = Depends(get_db)
 ):
     """Get application settings"""
     settings = db.query(AppSettings).first()
-    
+
     if not settings:
         # Create default settings if they don't exist
         settings = AppSettings(
@@ -31,12 +31,12 @@ def get_settings(
             max_upload_speed=0,
             max_active_downloads=5,
             auto_start_downloads=True,
-            enable_notifications=True
+            enable_notifications=True,
         )
         db.add(settings)
         db.commit()
         db.refresh(settings)
-    
+
     return AppSettingsResponse(
         theme=settings.theme,
         language=settings.language,
@@ -51,35 +51,38 @@ def get_settings(
         notify_on_download_complete=settings.notify_on_download_complete,
         enable_dht=settings.enable_dht,
         connection_port=settings.connection_port,
-        use_random_port=settings.use_random_port
+        use_random_port=settings.use_random_port,
     )
+
 
 @router.put("/", response_model=AppSettingsResponse)
 def update_settings(
     settings_update: AppSettingsUpdate,
     authenticated: bool = Depends(get_authenticated),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Update application settings"""
     settings = db.query(AppSettings).first()
-    
+
     if not settings:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Settings not found - application may not be initialized"
+            detail="Settings not found - application may not be initialized",
         )
-    
+
     # Update fields directly
     update_data = settings_update.dict(exclude_unset=True)
-    
+
     # Update fields
     for field, value in update_data.items():
-        if hasattr(settings, field) and field != 'app_password_hash':  # Don't allow password changes here
+        if (
+            hasattr(settings, field) and field != "app_password_hash"
+        ):  # Don't allow password changes here
             setattr(settings, field, value)
-    
+
     db.commit()
     db.refresh(settings)
-    
+
     return AppSettingsResponse(
         theme=settings.theme,
         language=settings.language,
@@ -94,26 +97,26 @@ def update_settings(
         notify_on_download_complete=settings.notify_on_download_complete,
         enable_dht=settings.enable_dht,
         connection_port=settings.connection_port,
-        use_random_port=settings.use_random_port
+        use_random_port=settings.use_random_port,
     )
+
 
 @router.post("/reset", response_model=AppSettingsResponse)
 def reset_settings(
-    authenticated: bool = Depends(get_authenticated),
-    db: Session = Depends(get_db)
+    authenticated: bool = Depends(get_authenticated), db: Session = Depends(get_db)
 ):
     """Reset application settings to defaults"""
     settings = db.query(AppSettings).first()
-    
+
     if not settings:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Settings not found - application may not be initialized"
+            detail="Settings not found - application may not be initialized",
         )
-    
+
     # Keep the password hash but reset other settings
     password_hash = settings.app_password_hash
-    
+
     # Reset settings to defaults (keep the current download path or use default)
     settings.theme = "dark"
     settings.language = "en"
@@ -130,10 +133,10 @@ def reset_settings(
     settings.enable_dht = True
     settings.connection_port = 6881
     settings.use_random_port = True
-    
+
     db.commit()
     db.refresh(settings)
-    
+
     return AppSettingsResponse(
         theme=settings.theme,
         language=settings.language,
@@ -148,5 +151,5 @@ def reset_settings(
         notify_on_download_complete=settings.notify_on_download_complete,
         enable_dht=settings.enable_dht,
         connection_port=settings.connection_port,
-        use_random_port=settings.use_random_port
+        use_random_port=settings.use_random_port,
     )

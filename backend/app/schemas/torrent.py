@@ -2,6 +2,7 @@ from pydantic import BaseModel, validator
 from typing import Optional, List, Any, Dict
 from datetime import datetime
 
+
 class TorrentBase(BaseModel):
     name: str
     download_path: Optional[str] = None
@@ -10,26 +11,29 @@ class TorrentBase(BaseModel):
     label: Optional[str] = None
     category: Optional[str] = None
 
+
 class TorrentCreate(BaseModel):
     torrent_file: str
     auto_start: bool = True
     sequential_download: bool = False
     priority: int = 1
-    
-    @validator('torrent_file')
+
+    @validator("torrent_file")
     def validate_torrent_file(cls, v):
         # Only allow base64 encoded torrent file content
         if len(v) > 100:  # Basic length check for base64 content
             try:
                 import base64
+
                 # Try to decode to validate it's proper base64
                 base64.b64decode(v)
                 return v
             except Exception:
-                raise ValueError('Invalid base64 torrent file content')
+                raise ValueError("Invalid base64 torrent file content")
         else:
-            raise ValueError('Must be base64 encoded torrent file content')
+            raise ValueError("Must be base64 encoded torrent file content")
         return v
+
 
 class TorrentUpdate(BaseModel):
     priority: Optional[int] = None
@@ -37,6 +41,7 @@ class TorrentUpdate(BaseModel):
     label: Optional[str] = None
     category: Optional[str] = None
     download_path: Optional[str] = None
+
 
 class TorrentStatus(BaseModel):
     id: int
@@ -76,12 +81,16 @@ class TorrentStatus(BaseModel):
     class Config:
         from_attributes = True
 
+
 class Torrent(TorrentStatus):
     pass
 
+
 class TorrentResponse(TorrentStatus):
     """Response model for torrent operations"""
+
     pass
+
 
 class TorrentListItem(BaseModel):
     id: int
@@ -105,6 +114,7 @@ class TorrentListItem(BaseModel):
     class Config:
         from_attributes = True
 
+
 class TorrentStats(BaseModel):
     total_torrents: int
     active_torrents: int
@@ -117,15 +127,18 @@ class TorrentStats(BaseModel):
     total_downloaded: int
     total_uploaded: int
 
+
 class BulkTorrentOperation(BaseModel):
     """Schema for bulk torrent operations"""
+
     torrent_ids: List[int]
-    
-    @validator('torrent_ids')
+
+    @validator("torrent_ids")
     def validate_torrent_ids(cls, v):
         if not v or len(v) == 0:
-            raise ValueError('At least one torrent ID is required')
+            raise ValueError("At least one torrent ID is required")
         return v
+
 
 class SessionStats(BaseModel):
     port: int
