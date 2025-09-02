@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Start the backend with reduced logging
-cd /Users/andrei/aTorrent/backend
+cd /root/aTorrent/backend
 
 # Activate virtual environment if it exists
 if [ -d "venv" ]; then
@@ -18,4 +18,4 @@ nohup uvicorn app.main:app \
     > logs/backend.log 2>&1 &
 
 echo "Backend started with PID: $!"
-echo "Logs: /Users/andrei/aTorrent/backend/logs/backend.log"
+echo "Logs: /root/aTorrent/backend/logs/backend.log"

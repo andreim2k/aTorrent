@@ -6,6 +6,7 @@ class AppSettingsBase(BaseModel):
     theme: str = "dark"
     language: str = "en"
     timezone: str = "UTC"
+    tmdb_api_key: str = ""
     default_download_path: Optional[str] = None
     max_download_speed: int = 0
     max_upload_speed: int = 0
@@ -43,6 +44,7 @@ class AppSettingsUpdate(BaseModel):
     theme: Optional[str] = None
     language: Optional[str] = None
     timezone: Optional[str] = None
+    tmdb_api_key: Optional[str] = None
     default_download_path: Optional[str] = None
     max_download_speed: Optional[int] = None
     max_upload_speed: Optional[int] = None
@@ -113,6 +115,7 @@ class AppSettingsResponse(BaseModel):
     theme: str
     language: str
     timezone: str
+    tmdb_api_key: str
     default_download_path: Optional[str] = None
     max_download_speed: int
     max_upload_speed: int

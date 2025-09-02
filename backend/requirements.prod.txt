@@ -1,0 +1,30 @@
+# Core FastAPI and dependencies
+fastapi==0.116.1
+uvicorn==0.35.0
+python-multipart==0.0.20
+websockets==15.0.1
+
+# HTTP Tools
+httptools==0.6.4
+httpcore==1.0.9
+httpx==0.28.1
+
+# Database
+sqlalchemy==2.0.43
+alembic==1.16.4
+
+# Authentication
+python-jose[cryptography]==3.5.0
+passlib[bcrypt]==1.7.4
+
+# Torrent handling
+# Note: This requires python3-libtorrent and libtorrent-rasterbar2.0 system packages
+# Install with: apt-get install -y python3-libtorrent libtorrent-rasterbar2.0
+# Then symlink: ln -s /usr/lib/python3/dist-packages/libtorrent.*.so /path/to/venv/lib/python3.11/site-packages/libtorrent.so
+
+# Utilities
+pydantic==2.11.7
+pydantic-settings==2.10.1
+python-dotenv==1.1.1
+aiofiles==24.1.0
+

@@ -17,6 +17,9 @@ class AppSettings(Base):
     language = Column(String(10), default="en")  # ISO language code
     timezone = Column(String(50), default="UTC")
     
+    # API Keys
+    tmdb_api_key = Column(String(255), default="")  # TMDB API key for movie information
+    
     # Download Settings
     default_download_path = Column(String(500))
     max_download_speed = Column(Integer, default=0)  # 0 for unlimited (bytes/sec)

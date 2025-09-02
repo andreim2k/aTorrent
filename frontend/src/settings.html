@@ -232,6 +232,45 @@
                 <span x-show="downloadPathDirty" class="text-warning-main ml-2 font-medium">⚠ Unsaved changes</span>
               </p>
             </div>
+
+          <!-- TMDB API Settings Section -->
+          <div class="mui-card p-6">
+            <div class="flex items-center mb-6">
+              <svg class="w-6 h-6 mr-3 text-primary-main" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2zM12 15.4l3.76 2.27-1-4.28 3.32-2.88-4.38-.38L12 6.1l-1.7 4.03-4.38.38 3.32 2.88-1 4.28L12 15.4z"/>
+              </svg>
+              <div>
+                <h3 class="text-lg font-bold">Movie Information</h3>
+                <p class="text-xs text-text-secondary">Configure TMDB integration for movie details in torrent popups</p>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium mb-2">TMDB API Key</label>
+              <input type="password" 
+                     x-model="localTmdbApiKey" 
+                     @input="tmdbApiKeyDirty = (localTmdbApiKey !== settings.tmdb_api_key)"
+                     @blur="saveTmdbApiKey()"
+                     @keydown.enter="saveTmdbApiKey()"
+                     class="mui-input"
+                     placeholder="Enter your TMDB API key">
+              <p class="text-xs text-text-secondary mt-1">
+                Get your free API key from 
+                <a href="https://www.themoviedb.org/settings/api" target="_blank" class="text-primary-main hover:text-primary-light underline">
+                  The Movie Database (TMDB)
+                </a>
+                (press Enter or click outside to save)
+                <span x-show="tmdbApiKeyDirty" class="text-warning-main ml-2 font-medium">⚠ Unsaved changes</span>
+              </p>
+              <p class="text-xs text-text-secondary mt-2">
+                <strong>How to get your API key:</strong>
+                <br>1. Create a free account on TMDB
+                <br>2. Go to your account Settings → API
+                <br>3. Copy your "API Key (v3 auth)" and paste it here
+                <br>4. This enables rich movie information in torrent details
+              </p>
+            </div>
+          </div>
           </div>
         </div>
       </template>
@@ -261,8 +300,11 @@
         changingPassword: false,
         savingSettings: false,
         downloadPathDirty: false,
+        tmdbApiKeyDirty: false,
+        localTmdbApiKey: ,
         localDownloadPath: '',
         settings: {
+          tmdb_api_key: ,
           default_download_path: ''
         },
         passwordForm: {
@@ -305,6 +347,8 @@
               this.settings = data;
               this.localDownloadPath = data.default_download_path || '';
               this.downloadPathDirty = false;
+              this.localTmdbApiKey = data.tmdb_api_key || ;
+              this.tmdbApiKeyDirty = false;
             }
           } catch (error) {
             console.error('Failed to load settings:', error);
@@ -350,6 +394,41 @@
           } catch (error) {
             console.error('Failed to save settings:', error);
             this.showAlert('error', 'Failed to save settings');
+          } finally {
+            this.savingSettings = false;
+          }
+        },
+        
+        async saveTmdbApiKey() {
+          if (!this.tmdbApiKeyDirty) return;
+          
+          this.savingSettings = true;
+          const token = getCookie('access_token');
+          
+          try {
+            const response = await fetch(`${API_BASE}/settings`, {
+              method: 'PUT',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                ...this.settings,
+                tmdb_api_key: this.localTmdbApiKey
+              })
+            });
+            
+            if (response.ok) {
+              this.settings.tmdb_api_key = this.localTmdbApiKey;
+              this.tmdbApiKeyDirty = false;
+              this.showAlert('success', 'TMDB API key saved successfully');
+            } else {
+              const error = await response.json();
+              this.showAlert('error', error.detail || 'Failed to save TMDB API key');
+            }
+          } catch (error) {
+            console.error('Failed to save TMDB API key:', error);
+            this.showAlert('error', 'Failed to save TMDB API key');
           } finally {
             this.savingSettings = false;
           }

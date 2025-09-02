@@ -384,7 +384,7 @@
           const wsUrl = 'ws://192.168.50.2:8000/api/v1/system/ws';
           const connectSystemStats = () => {
             this.systemStatsWS = new WebSocket(wsUrl);
-            this.systemStatsWS.onopen = () => console.log('System stats WebSocket connected');
+            this.systemStatsWS.onopen = () => {};
             this.systemStatsWS.onmessage = (event) => {
               try {
                 const message = JSON.parse(event.data);
@@ -398,7 +398,7 @@
             };
             this.systemStatsWS.onerror = (error) => console.error('System stats WebSocket error:', error);
             this.systemStatsWS.onclose = () => {
-              console.log('System stats WebSocket disconnected, reconnecting...');
+              // WebSocket disconnected, reconnecting...
               setTimeout(connectSystemStats, 3000);
             };
           };
