@@ -272,7 +272,7 @@
               <!-- Middle: Name and details stacked -->
               <div class="flex-1 min-w-0">
                 <!-- 1. Torrent name on top with truncation -->
-                <p class="font-medium truncate mb-2" x-text="formatFileName(torrent.name)" :title="torrent.name"></p>
+                <p @click.stop="showDetails(torrent)" class="font-medium truncate mb-2 cursor-pointer hover:text-primary-main" x-text="formatFileName(torrent.name)" :title="torrent.name"></p>
                 
                 <!-- 2. Details row below name -->
                 <div class="flex items-center gap-3 flex-wrap">
@@ -370,6 +370,206 @@
         </div>
       </div>
     </div>
+
+    <!-- Torrent Details Modal -->
+    <div x-show="showDetailsDialog" x-cloak class="fixed inset-0 bg-black/75 flex items-center justify-center z-50" @click.self="showDetailsDialog = false">
+      <div class="mui-card backdrop-blur rounded-xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
+        <!-- Dialog Header -->
+        <div class="flex justify-between items-start p-6 border-b border-white/10">
+          <div class="flex-1">
+            <h3 class="text-xl font-bold mb-2" x-text="formatFileName(selectedTorrent?.name)"></h3>
+            <div class="flex flex-wrap gap-4 text-sm text-text-secondary">
+              <span>Size: <span class="text-white" x-text="formatBytes(selectedTorrent?.total_size || 0)"></span></span>
+              <span>Progress: <span class="text-white" x-text="Math.round((selectedTorrent?.progress || 0) * 100) + '%'"></span></span>
+              <span>Status: <span class="text-white capitalize" x-text="selectedTorrent?.status"></span></span>
+            </div>
+          </div>
+          <button @click="showDetailsDialog = false" class="text-gray-400 hover:text-white text-2xl ml-4">&times;</button>
+        </div>
+        
+        <!-- Tab Navigation -->
+        <div class="px-6 pt-4">
+          <div class="flex border-b border-white/10">
+            <button @click="activeTab = 'content'" 
+                    :class="activeTab === 'content' ? 'border-primary-main text-primary-main' : 'border-transparent text-text-secondary hover:text-white'"
+                    class="px-4 py-2 border-b-2 font-medium transition-colors">
+              Files & Content
+            </button>
+            <button @click="activeTab = 'movie'" 
+                    :class="activeTab === 'movie' ? 'border-primary-main text-primary-main' : 'border-transparent text-text-secondary hover:text-white'"
+                    class="px-4 py-2 border-b-2 font-medium transition-colors ml-6">
+              Movie Info
+            </button>
+          </div>
+        </div>
+        
+        <!-- Tab Content -->
+        <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+          <!-- Files & Content Tab -->
+          <div x-show="activeTab === 'content'" x-transition>
+            <div x-show="loadingContent" class="flex items-center justify-center py-8">
+              <div class="mui-spinner"></div>
+              <span class="ml-2">Loading torrent content...</span>
+            </div>
+            
+            <div x-show="contentError" class="text-center py-8 text-error-main">
+              Failed to load torrent content
+            </div>
+            
+            <div x-show="torrentContent && !loadingContent && !contentError">
+              <!-- Content Summary -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-gradient-to-br from-gray-700/50 to-gray-800/50 backdrop-blur-sm border border-white/10 p-4 rounded-lg">
+                  <h4 class="text-sm text-text-secondary mb-1">Total Files</h4>
+                  <p class="text-2xl font-bold" x-text="torrentContent?.total_files || 0"></p>
+                </div>
+                <div class="bg-gradient-to-br from-gray-700/50 to-gray-800/50 backdrop-blur-sm border border-white/10 p-4 rounded-lg">
+                  <h4 class="text-sm text-text-secondary mb-1">Video Files</h4>
+                  <p class="text-2xl font-bold text-primary-main" x-text="torrentContent?.video_files || 0"></p>
+                </div>
+                <div class="bg-gradient-to-br from-gray-700/50 to-gray-800/50 backdrop-blur-sm border border-white/10 p-4 rounded-lg">
+                  <h4 class="text-sm text-text-secondary mb-1">Subtitle Files</h4>
+                  <p class="text-2xl font-bold text-success-main" x-text="torrentContent?.subtitle_files || 0"></p>
+                </div>
+              </div>
+              
+              <!-- File Groups -->
+              <template x-for="(entry, index) in Object.entries(torrentContent?.file_groups || {})" :key="entry[0]">
+                <div x-show="entry[1].length > 0" class="mb-6">
+                  <h4 class="text-lg font-semibold mb-3 capitalize flex items-center gap-2">
+                    <span x-text="entry[0]"></span>
+                    <span class="text-sm text-text-secondary">(<span x-text="entry[1].length"></span> files)</span>
+                  </h4>
+                  
+                  <div class="space-y-2">
+                    <template x-for="file in entry[1]" :key="file.name">
+                      <div class="bg-gradient-to-br from-gray-700/50 to-gray-800/50 backdrop-blur-sm border border-white/10 p-4 rounded-lg">
+                        <div class="flex-1 min-w-0">
+                          <p class="font-medium truncate" x-text="file.name"></p>
+                        </div>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+          
+          <!-- Movie Info Tab -->
+          <div x-show="activeTab === 'movie'" x-transition>
+            <div x-show="loadingMovieInfo" class="flex items-center justify-center py-8">
+              <div class="mui-spinner"></div>
+              <span class="ml-2">Loading movie information...</span>
+            </div>
+            
+            <div x-show="movieInfo && movieInfo.found && !loadingMovieInfo">
+              <!-- Data Source Indicator -->
+              <div x-show="movieInfo?.is_mock_data" class="mb-4 p-3 bg-warning-main/10 border border-warning-main/30 rounded-lg">
+                <div class="flex items-center gap-2 text-warning-main">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                  </svg>
+                  <span class="text-sm font-medium">Sample Data</span>
+                </div>
+                <p class="text-xs mt-1 text-warning-main/80">This is placeholder data. Configure your TMDB API key in Settings for real movie information.</p>
+                <p x-show="movieInfo?.api_error" class="text-xs mt-1 text-error-main" x-text="movieInfo?.api_error"></p>
+              </div>
+              
+              <!-- Movie Header -->
+              <div class="flex gap-6 mb-6">
+                <img x-show="movieInfo?.poster_path" :src="movieInfo?.poster_path" 
+                     class="w-48 h-72 object-cover rounded-lg shadow-lg flex-shrink-0">
+                <div class="flex-1">
+                  <h2 class="text-3xl font-bold mb-2" x-text="movieInfo?.title"></h2>
+                  <p x-show="movieInfo?.tagline" class="text-lg italic text-text-secondary mb-4" x-text="movieInfo?.tagline"></p>
+                  
+                  <!-- Movie Stats -->
+                  <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div x-show="movieInfo?.release_date">
+                      <span class="text-text-secondary">Release Date:</span>
+                      <span class="ml-2 font-medium" x-text="movieInfo?.release_date ? new Date(movieInfo.release_date).getFullYear() : 'N/A'"></span>
+                    </div>
+                    <div x-show="movieInfo?.runtime">
+                      <span class="text-text-secondary">Runtime:</span>
+                      <span class="ml-2 font-medium" x-text="movieInfo?.runtime ? (movieInfo.runtime + ' minutes') : 'N/A'"></span>
+                    </div>
+                    <div x-show="movieInfo?.vote_average">
+                      <span class="text-text-secondary">Rating:</span>
+                      <span class="ml-2 font-medium flex items-center">
+                        ⭐ <span x-text="movieInfo?.vote_average ? movieInfo.vote_average.toFixed(1) : 'N/A'"></span>
+                        <span class="text-text-secondary ml-1">(<span x-text="movieInfo?.vote_count?.toLocaleString()"></span> votes)</span>
+                      </span>
+                    </div>
+                    <div x-show="movieInfo?.director">
+                      <span class="text-text-secondary">Director:</span>
+                      <span class="ml-2 font-medium" x-text="movieInfo?.director"></span>
+                    </div>
+                  </div>
+                  
+                  <!-- Genres -->
+                  <div x-show="movieInfo?.genres && movieInfo?.genres.length > 0" class="mb-4">
+                    <span class="text-text-secondary">Genres:</span>
+                    <div class="flex flex-wrap gap-2 mt-2">
+                      <template x-for="genre in movieInfo?.genres" :key="genre">
+                        <span class="bg-primary-main/20 text-primary-main px-2 py-1 rounded-full text-xs" x-text="genre"></span>
+                      </template>
+                    </div>
+                  </div>
+                  
+                  <!-- Overview -->
+                  <div x-show="movieInfo?.overview" class="mb-4">
+                    <h4 class="font-semibold mb-2">Overview</h4>
+                    <p class="text-text-secondary leading-relaxed" x-text="movieInfo?.overview"></p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Cast & Crew -->
+              <div x-show="movieInfo?.cast && movieInfo?.cast.length > 0" class="mb-6">
+                <h4 class="text-lg font-semibold mb-4">Cast</h4>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                  <template x-for="actor in (movieInfo?.cast || []).slice(0, 10)" :key="actor.name">
+                    <div class="text-center">
+                      <img x-show="actor.profile_path" :src="actor.profile_path" 
+                           class="w-20 h-20 rounded-full object-cover mx-auto mb-2">
+                      <div x-show="!actor.profile_path" 
+                           class="w-20 h-20 rounded-full bg-gray-600 flex items-center justify-center mx-auto mb-2">
+                        <span class="text-2xl">👤</span>
+                      </div>
+                      <p class="font-medium text-sm" x-text="actor.name"></p>
+                      <p class="text-xs text-text-secondary" x-text="actor.character"></p>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </div>
+            
+            <div x-show="movieInfo && !movieInfo.found && !loadingMovieInfo" class="text-center py-8">
+              <div x-show="movieInfo?.error" class="mb-4 p-4 bg-error-main/10 border border-error-main/30 rounded-lg">
+                <div class="flex items-center gap-2 text-error-main mb-2">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                  <span class="font-semibold" x-text="movieInfo?.error || 'Error loading movie info'"></span>
+                </div>
+                <p class="text-sm text-error-main/80" x-text="movieInfo?.message || 'Please check your settings and try again.'"></p>
+              </div>
+              <p class="text-text-secondary">No movie information found for this torrent.</p>
+            </div>
+            
+            <div x-show="!movieInfo && !loadingMovieInfo" class="text-center py-8">
+              <p class="text-text-secondary">Movie information not available.</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Dialog Footer -->
+        <div class="px-6 py-4 border-t border-white/10 flex justify-end gap-2">
+          <button @click="showDetailsDialog = false" class="mui-btn mui-btn-outlined">Close</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -421,6 +621,16 @@
         showAddDialog: false,
         selectedFiles: [],
         autoStartDownloads: true,
+        
+        // Torrent details variables
+        showDetailsDialog: false,
+        selectedTorrent: null,
+        movieInfo: null,
+        loadingMovieInfo: false,
+        torrentContent: null,
+        loadingContent: false,
+        contentError: false,
+        activeTab: 'content',
         
         // Computed properties for button states
         get canResumeAll() {
@@ -726,6 +936,66 @@
           if (fileInput) fileInput.value = '';
         },
         
+        
+        async showDetails(torrent) {
+          this.selectedTorrent = torrent;
+          this.showDetailsDialog = true;
+          this.activeTab = 'content';
+          this.movieInfo = null;
+          this.torrentContent = null;
+          this.loadingMovieInfo = false;
+          this.loadingContent = false;
+          this.contentError = false;
+
+          // Fetch torrent content and movie info in parallel
+          await Promise.all([
+            this.fetchTorrentContent(torrent.id),
+            this.fetchMovieInfo(torrent.id)
+          ]);
+        },
+
+        async fetchTorrentContent(torrentId) {
+          this.loadingContent = true;
+          this.contentError = false;
+          
+          try {
+            const token = getCookie('access_token');
+            const response = await fetch(`${API_BASE}/torrents/${torrentId}/content`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (response.ok) {
+              this.torrentContent = await response.json();
+            } else {
+              this.contentError = true;
+            }
+          } catch (error) {
+            this.contentError = true;
+          } finally {
+            this.loadingContent = false;
+          }
+        },
+
+        async fetchMovieInfo(torrentId) {
+          this.loadingMovieInfo = true;
+          
+          try {
+            const token = getCookie('access_token');
+            const response = await fetch(`${API_BASE}/torrents/${torrentId}/movie-info`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (response.ok) {
+              this.movieInfo = await response.json();
+            }
+          } catch (error) {
+            // Silent fail for movie info - not critical
+            this.movieInfo = { found: false };
+          } finally {
+            this.loadingMovieInfo = false;
+          }
+        },
+
         logout() {
           document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
           document.cookie = 'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
