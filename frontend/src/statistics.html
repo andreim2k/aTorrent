@@ -317,8 +317,27 @@
 
   <script>
     // API Configuration
-    const API_BASE = 'http://192.168.50.2:8000/api/v1';
     
+            // Dynamic API base URL configuration
+            const API_BASE = (() => {
+                const hostname = window.location.hostname;
+                const protocol = window.location.protocol;
+                const port = window.location.port;
+                
+                // For development (localhost)
+                if (hostname === "localhost" || hostname === "127.0.0.1") {
+                    return `${protocol}//localhost:8000/api/v1`;
+                }
+                
+                // For production, use same host with different port or same port
+                if (port && port !== "80" && port !== "443") {
+                    // If we're on a specific port, assume API is on 8000
+                    return `${protocol}//${hostname}:8000/api/v1`;
+                }
+                
+                // Default to same host (for reverse proxy setups)
+                return `${protocol}//${hostname}/api/v1`;
+            })();
     // Utilities
     function getCookie(name) {
       const value = `; ${document.cookie}`;

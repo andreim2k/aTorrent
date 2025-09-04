@@ -25,12 +25,15 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./aTorrent.db"
 
     # CORS - Allow environment override
+    # More secure CORS configuration
     ALLOWED_ORIGINS: List[str] = [
-        "*",
-        "http://192.168.50.2:3000",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000", 
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        # Production origins - add your production domains here
         os.getenv("FRONTEND_URL", "http://localhost:3000"),
-        "http://127.0.0.1:3000",
-    ]
+    ] if not os.getenv("DEVELOPMENT_MODE", "false").lower() == "true" else ["*"]
 
     # Trusted hosts
     ALLOWED_HOSTS: List[str] = ["localhost", "127.0.0.1", "*"]
@@ -68,3 +71,21 @@ def ensure_downloads_dir() -> Path:
     downloads_path = settings.absolute_download_path
     downloads_path.mkdir(parents=True, exist_ok=True)
     return downloads_path
+
+    # External API Keys
+    DEFAULT_TMDB_API_KEY: str = os.getenv("DEFAULT_TMDB_API_KEY", "")
+    
+    # Rate limiting
+    RATE_LIMIT_REQUESTS: int = int(os.getenv("RATE_LIMIT_REQUESTS", "100"))
+    RATE_LIMIT_WINDOW: int = int(os.getenv("RATE_LIMIT_WINDOW", "3600"))  # 1 hour
+    
+    # Security
+    SECURE_COOKIES: bool = os.getenv("SECURE_COOKIES", "false").lower() == "true"
+    COOKIE_SAMESITE: str = os.getenv("COOKIE_SAMESITE", "lax")
+    
+    # WebSocket
+    WEBSOCKET_PING_INTERVAL: int = int(os.getenv("WEBSOCKET_PING_INTERVAL", "30"))
+    
+    # Torrent service constants
+    TORRENT_UPDATE_INTERVAL: float = float(os.getenv("TORRENT_UPDATE_INTERVAL", "0.2"))
+    ALERT_PROCESSING_INTERVAL: float = float(os.getenv("ALERT_PROCESSING_INTERVAL", "0.2"))

@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db, get_authenticated
+from app.core.config import settings
 from app.models.settings import AppSettings
 from app.schemas.settings import AppSettingsUpdate, AppSettingsResponse
 
@@ -25,7 +26,7 @@ def get_settings(
             app_password_hash="",  # Will be set during initialization
             theme="dark",
             language="en",
-            tmdb_api_key="a71d76587da20baba148ea7911f7a343",  # Default API key
+            tmdb_api_key=settings.DEFAULT_TMDB_API_KEY or "a71d76587da20baba148ea7911f7a343",  # Default API key
             default_download_path=DEFAULT_DOWNLOAD_PATH,
             max_download_speed=0,
             max_upload_speed=0,
