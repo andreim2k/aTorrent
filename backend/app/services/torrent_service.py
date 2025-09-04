@@ -93,6 +93,9 @@ class TorrentService:
 
             self.session.apply_settings(settings)
 
+            # Apply user settings from database
+            self._apply_user_settings_to_session()
+
             # Set alert mask to get all alerts
             self.session.set_alert_mask(lt.alert.category_t.all_categories)
 
@@ -201,6 +204,54 @@ class TorrentService:
         except Exception as e:
             logger.error(f"Error updating torrent in database: {e}")
 
+
+    def _apply_user_settings_to_session(self):
+        """Apply user settings from database to libtorrent session"""
+        try:
+            db = self._get_db()
+            try:
+                user_settings = db.query(AppSettings).first()
+                if user_settings and self.session:
+                    # Get current session settings
+                    lt_settings = self.session.get_settings()
+                    
+                    # Apply user settings to libtorrent
+                    lt_settings["active_downloads"] = user_settings.max_active_downloads or 5
+                    lt_settings["max_download_rate"] = user_settings.max_download_speed or 0
+                    lt_settings["max_upload_rate"] = user_settings.max_upload_speed or 0
+                    
+                    # Apply the updated settings
+                    self.session.apply_settings(lt_settings)
+                    
+                    logger.info(f"Applied user settings: max_active_downloads={user_settings.max_active_downloads}")
+
+                    # Refresh queue to apply new limits immediately
+                    self.refresh_torrent_queue()
+                    
+            finally:
+
+    def refresh_torrent_queue(self):
+        """Force libtorrent to re-evaluate the download queue after settings change"""
+        try:
+            if not self.session:
+                return
+                
+            # Force queue refresh by pausing and resuming all auto-managed torrents
+            for handle in self.handles.values():
+                if handle.is_valid():
+                    # Only refresh auto-managed torrents
+                    status = handle.status()
+                    if status.auto_managed:
+                        handle.pause()
+                        handle.resume()
+                        
+            logger.info("Refreshed torrent queue after settings change")
+            
+        except Exception as e:
+            logger.warning(f"Failed to refresh torrent queue: {e}")
+                db.close()
+        except Exception as e:
+            logger.warning(f"Failed to apply user settings to session: {e}")
     def _get_download_path(self) -> str:
         """Get download path from settings"""
         try:

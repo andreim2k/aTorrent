@@ -528,6 +528,33 @@
                                 </p>
                             </div>
 
+                            <!-- Max Active Downloads -->
+                            <div class="mt-6">
+                                <label class="block text-xs font-medium mb-2"
+                                    >Max Active Downloads</label
+                                >
+                                <input
+                                    type="number"
+                                    x-model="localMaxActiveDownloads"
+                                    @input="maxActiveDownloadsDirty = (localMaxActiveDownloads !== settings.max_active_downloads)"
+                                    @blur="saveMaxActiveDownloads()"
+                                    @keydown.enter="saveMaxActiveDownloads()"
+                                    class="mui-input"
+                                    placeholder="5"
+                                    min="1"
+                                    max="50"
+                                />
+                                <p class="text-xs text-text-secondary mt-1">
+                                    Maximum number of torrents downloading simultaneously (press
+                                    Enter or click outside to save)
+                                    <span
+                                        x-show="maxActiveDownloadsDirty"
+                                        class="text-warning-main ml-2 font-medium"
+                                        >⚠ Unsaved changes</span
+                                    >
+                                </p>
+                            </div>
+
                         </div>
 
                         <!-- Movie Information Section (Separate Card) -->
@@ -624,12 +651,15 @@
                     changingPassword: false,
                     savingSettings: false,
                     downloadPathDirty: false,
+                    maxActiveDownloadsDirty: false,
                     tmdbApiKeyDirty: false,
                     localTmdbApiKey: "",
                     localDownloadPath: "",
+                    localMaxActiveDownloads: 5,
                     settings: {
                         tmdb_api_key: "",
                         default_download_path: "",
+                        max_active_downloads: 5,
                     },
                     passwordForm: {
                         currentPassword: "",
@@ -676,6 +706,8 @@
                                 this.settings = data;
                                 this.localDownloadPath =
                                     data.default_download_path || "";
+                                this.localMaxActiveDownloads =
+                                    data.max_active_downloads || 5;
                                 this.downloadPathDirty = false;
                                 this.localTmdbApiKey = data.tmdb_api_key;
                                 this.tmdbApiKeyDirty = false;
@@ -736,6 +768,51 @@
                             console.error("Failed to save settings:", error);
                             this.showAlert("error", "Failed to save settings");
                         } finally {
+
+                    async saveMaxActiveDownloads() {
+                        if (!this.maxActiveDownloadsDirty) return;
+
+                        this.savingSettings = true;
+                        const token = getCookie("access_token");
+
+                        try {
+                            const response = await fetch(
+                                `${API_BASE}/settings`,
+                                {
+                                    method: "PUT",
+                                    headers: {
+                                        Authorization: `Bearer ${token}`,
+                                        "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                        ...this.settings,
+                                        max_active_downloads:
+                                            parseInt(this.localMaxActiveDownloads),
+                                    }),
+                                },
+                            );
+
+                            if (response.ok) {
+                                this.settings.max_active_downloads =
+                                    parseInt(this.localMaxActiveDownloads);
+                                this.maxActiveDownloadsDirty = false;
+                                this.showAlert(
+                                    "success",
+                                    "Settings saved successfully",
+                                );
+                            } else {
+                                this.showAlert(
+                                    "error",
+                                    "Failed to save settings",
+                                );
+                            }
+                        } catch (error) {
+                            console.error("Failed to save settings:", error);
+                            this.showAlert("error", "Failed to save settings");
+                        } finally {
+                            this.savingSettings = false;
+                        }
+                    },
                             this.savingSettings = false;
                         }
                     },
