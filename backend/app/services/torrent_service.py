@@ -534,7 +534,7 @@ class TorrentService:
 
                                 params = lt.parse_magnet_uri(torrent.magnet_link)
                                 params.save_path = (
-                                    torrent.download_path or self.downloads_path
+                                    torrent.download_path or self._get_download_path()
                                 )
                                 handle = self.session.add_torrent(params)
                                 self.handles[info_hash] = handle
@@ -881,7 +881,7 @@ class TorrentService:
                         if hasattr(torrent, "magnet_link") and torrent.magnet_link:
                             params = lt.parse_magnet_uri(torrent.magnet_link)
                             params.save_path = (
-                                torrent.download_path or self.downloads_path
+                                torrent.download_path or self._get_download_path()
                             )
                             handle = self.session.add_torrent(params)
                             self.handles[torrent.info_hash] = handle
