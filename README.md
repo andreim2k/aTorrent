@@ -22,6 +22,7 @@
 - **WebSocket Support**: Live torrent status updates and progress tracking
 - **Authentication**: JWT-based secure authentication system
 - **Cross-Platform**: Runs on x86_64 and ARM64 architectures
+- **Download Queue Management**: Configurable maximum concurrent downloads with automatic queue management
 
 ### 🛡️ File Management
 - **Automatic Filename Sanitization**: Removes commas and replaces spaces with dots in torrent names
@@ -203,6 +204,7 @@ See `backend/SYSTEM_DEPENDENCIES.md` for detailed platform-specific requirements
 - `SECRET_KEY`: JWT secret key (auto-generated if not provided)
 - `FRONTEND_URL`: Frontend URL for CORS (default: http://localhost:3000)
 - `DOWNLOAD_PATH`: Default download directory (configurable via web interface)
+- `MAX_ACTIVE_DOWNLOADS`: Maximum concurrent downloads (default: 5, configurable via web interface)
 
 ### Service Management
 ```bash

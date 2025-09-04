@@ -217,38 +217,15 @@ class TorrentService:
                     
                     # Apply user settings to libtorrent
                     lt_settings["active_downloads"] = user_settings.max_active_downloads or 5
-                    lt_settings["max_download_rate"] = user_settings.max_download_speed or 0
-                    lt_settings["max_upload_rate"] = user_settings.max_upload_speed or 0
+                    lt_settings["download_rate_limit"] = user_settings.max_download_speed or 0
+                    lt_settings["upload_rate_limit"] = user_settings.max_upload_speed or 0
                     
                     # Apply the updated settings
                     self.session.apply_settings(lt_settings)
                     
                     logger.info(f"Applied user settings: max_active_downloads={user_settings.max_active_downloads}")
-
-                    # Refresh queue to apply new limits immediately
-                    self.refresh_torrent_queue()
                     
             finally:
-
-    def refresh_torrent_queue(self):
-        """Force libtorrent to re-evaluate the download queue after settings change"""
-        try:
-            if not self.session:
-                return
-                
-            # Force queue refresh by pausing and resuming all auto-managed torrents
-            for handle in self.handles.values():
-                if handle.is_valid():
-                    # Only refresh auto-managed torrents
-                    status = handle.status()
-                    if status.auto_managed:
-                        handle.pause()
-                        handle.resume()
-                        
-            logger.info("Refreshed torrent queue after settings change")
-            
-        except Exception as e:
-            logger.warning(f"Failed to refresh torrent queue: {e}")
                 db.close()
         except Exception as e:
             logger.warning(f"Failed to apply user settings to session: {e}")

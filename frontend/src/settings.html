@@ -545,8 +545,7 @@
                                     max="50"
                                 />
                                 <p class="text-xs text-text-secondary mt-1">
-                                    Maximum number of torrents downloading simultaneously (press
-                                    Enter or click outside to save)
+                                    Maximum number of torrents downloading simultaneously
                                     <span
                                         x-show="maxActiveDownloadsDirty"
                                         class="text-warning-main ml-2 font-medium"
@@ -708,6 +707,7 @@
                                     data.default_download_path || "";
                                 this.localMaxActiveDownloads =
                                     data.max_active_downloads || 5;
+                        max_active_downloads: 5,
                                 this.downloadPathDirty = false;
                                 this.localTmdbApiKey = data.tmdb_api_key;
                                 this.tmdbApiKeyDirty = false;
@@ -768,6 +768,9 @@
                             console.error("Failed to save settings:", error);
                             this.showAlert("error", "Failed to save settings");
                         } finally {
+                            this.savingSettings = false;
+                        }
+                    },
 
                     async saveMaxActiveDownloads() {
                         if (!this.maxActiveDownloadsDirty) return;
@@ -801,18 +804,16 @@
                                     "Settings saved successfully",
                                 );
                             } else {
+                                const error = await response.json();
                                 this.showAlert(
                                     "error",
-                                    "Failed to save settings",
+                                    error.detail || "Failed to save settings",
                                 );
                             }
                         } catch (error) {
                             console.error("Failed to save settings:", error);
                             this.showAlert("error", "Failed to save settings");
                         } finally {
-                            this.savingSettings = false;
-                        }
-                    },
                             this.savingSettings = false;
                         }
                     },
