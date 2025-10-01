@@ -9,6 +9,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
   
   <!-- WebSocket Client -->
+  <script src="/js/api-config.js"></script>
   <script src="/js/websocket-client.js"></script>
   
   <!-- Tailwind CSS from CDN (for development, should be built for production) -->
@@ -576,25 +577,24 @@
     // API Configuration
     
             // Dynamic API base URL configuration
-            const API_BASE = (() => {
-                const hostname = window.location.hostname;
-                const protocol = window.location.protocol;
-                const port = window.location.port;
-                
-                // For development (localhost)
-                if (hostname === "localhost" || hostname === "127.0.0.1") {
-                    return `${protocol}//localhost:8000/api/v1`;
-                }
-                
-                // For production, use same host with different port or same port
-                if (port && port !== "80" && port !== "443") {
-                    // If we're on a specific port, assume API is on 8000
-                    return `${protocol}//${hostname}:8000/api/v1`;
-                }
-                
-                // Default to same host (for reverse proxy setups)
-                return `${protocol}//${hostname}/api/v1`;
+                        // API Base with automatic fallback
+            let API_BASE = null;
+            
+            // Initialize API_BASE with backend detection
+            (async () => {
+                await window.apiConfig.initialize();
+                API_BASE = `${window.apiConfig.baseUrl}/api/v1`;
+                console.log('API_BASE initialized:', API_BASE);
             })();
+            
+            // Helper function to ensure API_BASE is initialized
+            async function ensureApiInitialized() {
+                if (!API_BASE) {
+                    await window.apiConfig.initialize();
+                    API_BASE = `${window.apiConfig.baseUrl}/api/v1`;
+                }
+                return API_BASE;
+            }
     // Utilities
     function getCookie(name) {
       const value = `; ${document.cookie}`;

@@ -10,15 +10,21 @@ class TorrentWebSocket {
     this.shouldReconnect = true;
   }
 
-  connect() {
+  async connect() {
     // Don't create a new connection if one already exists and is open
     if (this.ws && (this.ws.readyState === WebSocket.CONNECTING || this.ws.readyState === WebSocket.OPEN)) {
       return;
     }
     
-    // Use direct connection to backend port
-    const wsUrl = 'ws://prometheus:8000/ws';
+    // Wait for API config to initialize if not already done
+    if (!window.apiConfig.isInitialized) {
+      await window.apiConfig.initialize();
+    }
     
+    // Use the detected backend from apiConfig
+    const wsUrl = `${window.apiConfig.wsUrl}/ws`;
+    
+    console.log(`Connecting to WebSocket: ${wsUrl}`);
     
     try {
       this.ws = new WebSocket(wsUrl);
@@ -26,6 +32,7 @@ class TorrentWebSocket {
       this.ws.onopen = () => {
         this.isConnected = true;
         this.reconnectAttempts = 0;
+        console.log('WebSocket connected');
         
         // Send subscribe message
         this.send({ type: 'subscribe' });
@@ -50,11 +57,13 @@ class TorrentWebSocket {
       
       this.ws.onclose = () => {
         this.isConnected = false;
+        console.log('WebSocket disconnected');
         this.emit('disconnected');
         
         // Attempt to reconnect
         if (this.shouldReconnect && this.reconnectAttempts < this.maxReconnectAttempts) {
           this.reconnectAttempts++;
+          console.log(`Reconnecting in ${this.reconnectInterval/1000}s (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
           setTimeout(() => this.connect(), this.reconnectInterval);
         }
       };

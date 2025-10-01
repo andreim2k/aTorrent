@@ -7,6 +7,7 @@
   
   <!-- Alpine.js from CDN -->
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
+  <script src="/js/api-config.js"></script>
   
   <!-- Tailwind CSS from CDN -->
   <script src="https://cdn.tailwindcss.com?v=3.4.1"></script>
@@ -100,7 +101,7 @@
           this.error = null;
           
           try {
-            const response = await fetch('http://prometheus:8000/api/v1/auth/login', {
+            const response = await window.apiConfig.fetchWithFallback('/api/v1/auth/login', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ password: this.password })
