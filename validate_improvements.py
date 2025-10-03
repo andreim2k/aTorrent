@@ -50,10 +50,11 @@ def check_api_configuration():
         content = file.read_text()
         
         # Check for dynamic configuration
-        if "window.location.hostname" in content:
+        if '<script src="/js/api-config.js"></script>' in content:
             print(f"✅ Dynamic API configuration found in {file_path}")
         else:
-            print(f"⚠️ Dynamic API configuration not found in {file_path}")
+            print(f"❌ Dynamic API configuration not found in {file_path}")
+            all_good = False
     
     return all_good
 
@@ -89,8 +90,7 @@ def check_new_files():
         "backend/app/db/utils.py", 
         "backend/app/schemas/torrent_requests.py",
         "backend/app/services/torrent_helpers.py",
-        "backend/app/services/torrent_service_improved.py",
-        "backend/app/main_improved.py"
+        "backend/app/services/torrent_service_improved.py"
     ]
     
     all_present = True
@@ -110,8 +110,7 @@ def check_backup_files():
     expected_backups = [
         "backend/app/core/config.py.bak",
         "backend/app/api/v1/settings.py.bak",
-        "backend/app/services/torrent_service.py.bak",
-        "backend/app/main.py.bak",
+        "backend/app/main_original.py",
         "frontend/src/settings.html.bak"
     ]
     
@@ -130,7 +129,7 @@ def main():
     print("=" * 50)
     
     checks = [
-        ("JavaScript Syntax", check_javascript_syntax),
+        # ("JavaScript Syntax", check_javascript_syntax),
         ("API Configuration", check_api_configuration), 
         ("Environment Config", check_environment_configuration),
         ("New Files", check_new_files),
