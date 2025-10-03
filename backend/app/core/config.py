@@ -49,6 +49,24 @@ class Settings(BaseSettings):
     MAX_CONNECTIONS: int = 200
     MAX_TORRENTS: int = 100
 
+    # External API Keys
+    DEFAULT_TMDB_API_KEY: str = os.getenv("DEFAULT_TMDB_API_KEY", "")
+
+    # Rate limiting
+    RATE_LIMIT_REQUESTS: int = int(os.getenv("RATE_LIMIT_REQUESTS", "100"))
+    RATE_LIMIT_WINDOW: int = int(os.getenv("RATE_LIMIT_WINDOW", "3600"))  # 1 hour
+
+    # Security
+    SECURE_COOKIES: bool = os.getenv("SECURE_COOKIES", "false").lower() == "true"
+    COOKIE_SAMESITE: str = os.getenv("COOKIE_SAMESITE", "lax")
+
+    # WebSocket
+    WEBSOCKET_PING_INTERVAL: int = int(os.getenv("WEBSOCKET_PING_INTERVAL", "30"))
+
+    # Torrent service constants
+    TORRENT_UPDATE_INTERVAL: float = float(os.getenv("TORRENT_UPDATE_INTERVAL", "0.2"))
+    ALERT_PROCESSING_INTERVAL: float = float(os.getenv("ALERT_PROCESSING_INTERVAL", "0.2"))
+
     class Config:
         env_file = ".env"
         case_sensitive = True
@@ -71,21 +89,3 @@ def ensure_downloads_dir() -> Path:
     downloads_path = settings.absolute_download_path
     downloads_path.mkdir(parents=True, exist_ok=True)
     return downloads_path
-
-    # External API Keys
-    DEFAULT_TMDB_API_KEY: str = os.getenv("DEFAULT_TMDB_API_KEY", "")
-    
-    # Rate limiting
-    RATE_LIMIT_REQUESTS: int = int(os.getenv("RATE_LIMIT_REQUESTS", "100"))
-    RATE_LIMIT_WINDOW: int = int(os.getenv("RATE_LIMIT_WINDOW", "3600"))  # 1 hour
-    
-    # Security
-    SECURE_COOKIES: bool = os.getenv("SECURE_COOKIES", "false").lower() == "true"
-    COOKIE_SAMESITE: str = os.getenv("COOKIE_SAMESITE", "lax")
-    
-    # WebSocket
-    WEBSOCKET_PING_INTERVAL: int = int(os.getenv("WEBSOCKET_PING_INTERVAL", "30"))
-    
-    # Torrent service constants
-    TORRENT_UPDATE_INTERVAL: float = float(os.getenv("TORRENT_UPDATE_INTERVAL", "0.2"))
-    ALERT_PROCESSING_INTERVAL: float = float(os.getenv("ALERT_PROCESSING_INTERVAL", "0.2"))
