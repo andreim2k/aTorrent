@@ -26,7 +26,7 @@ def get_settings(
             app_password_hash="",  # Will be set during initialization
             theme="dark",
             language="en",
-            tmdb_api_key=settings.DEFAULT_TMDB_API_KEY or "a71d76587da20baba148ea7911f7a343",  # Default API key
+            tmdb_api_key=settings.DEFAULT_TMDB_API_KEY,
             default_download_path=DEFAULT_DOWNLOAD_PATH,
             max_download_speed=0,
             max_upload_speed=0,
@@ -121,7 +121,7 @@ def reset_settings(
     # Reset settings to defaults (keep the current download path or use default)
     settings.theme = "dark"
     settings.language = "en"
-    settings.tmdb_api_key = "a71d76587da20baba148ea7911f7a343"  # Default API key
+    settings.tmdb_api_key = settings.DEFAULT_TMDB_API_KEY
     # Only reset download path if it's empty or invalid, otherwise keep user's choice
     if not settings.default_download_path:
         settings.default_download_path = DEFAULT_DOWNLOAD_PATH
