@@ -495,27 +495,29 @@ class TorrentService:
             if not self.session:
                 return {"error": "Torrent service not initialized"}
 
-            # Get torrent
+            # Get torrent and extract needed attributes while session is active
             torrent = DatabaseManager.get_single_record(
                 Torrent,
                 Torrent.id == torrent_id
             )
-            
+
             if not torrent:
                 return {"error": "Torrent not found"}
 
+            # Extract attributes we need before session closes
             info_hash = torrent.info_hash
-            
+            torrent_progress = torrent.progress or 0.0
+
             # Update handle if available
             if info_hash in self.handles:
                 handle = self.handles[info_hash]
-                
+
                 if action == "pause":
                     handle.pause()
                     new_status = TORRENT_STATUS_PAUSED
                 elif action == "resume":
                     handle.resume()
-                    new_status = TORRENT_STATUS_DOWNLOADING if torrent.progress < 1.0 else TORRENT_STATUS_SEEDING
+                    new_status = TORRENT_STATUS_DOWNLOADING if torrent_progress < 1.0 else TORRENT_STATUS_SEEDING
                 else:
                     return {"error": f"Unknown action: {action}"}
             else:
@@ -523,7 +525,7 @@ class TorrentService:
                 if action == "pause":
                     new_status = TORRENT_STATUS_PAUSED
                 elif action == "resume":
-                    new_status = TORRENT_STATUS_DOWNLOADING if torrent.progress < 1.0 else TORRENT_STATUS_SEEDING
+                    new_status = TORRENT_STATUS_DOWNLOADING if torrent_progress < 1.0 else TORRENT_STATUS_SEEDING
                 else:
                     return {"error": f"Unknown action: {action}"}
 
@@ -533,9 +535,9 @@ class TorrentService:
                 Torrent.id == torrent_id,
                 {"status": new_status}
             )
-            
+
             return {"success": True, "action": action, "status": new_status}
-            
+
         except Exception as e:
             logger.error(f"Error controlling torrent: {e}")
             return {"error": str(e)}

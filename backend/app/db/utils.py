@@ -40,7 +40,13 @@ class DatabaseManager:
     def get_single_record(model, filter_condition):
         """Get a single record with proper session management."""
         with get_db_context() as db:
-            return db.query(model).filter(filter_condition).first()
+            record = db.query(model).filter(filter_condition).first()
+            if record:
+                # Force-load all attributes to prevent lazy loading errors
+                # after the session closes
+                db.refresh(record)
+                db.expunge(record)
+            return record
     
     @staticmethod
     def get_all_records(model, filter_condition=None):
