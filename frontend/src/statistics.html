@@ -12,6 +12,15 @@
   <script src="/js/api-config.js"></script>
   <script src="/js/websocket-client.js"></script>
   
+  <!-- Error Handler -->
+  <script src="/js/modules/error-handler.js"></script>
+  
+  <!-- API Client -->
+  <script src="/js/modules/api-client.js"></script>
+  
+  <!-- Torrent Manager -->
+  <script src="/js/modules/torrent-manager.js"></script>
+  
   
   <!-- Tailwind CSS from CDN -->
   <script src="https://cdn.tailwindcss.com?v=3.4.1"></script>
@@ -323,6 +332,30 @@
       const parts = value.split(`; ${name}=`);
       if (parts.length === 2) return parts.pop().split(';').shift();
     }
+
+    // API Configuration
+    let API_BASE = null;
+
+    async function initializeApiBase() {
+      if (!API_BASE) {
+        if (!window.apiConfig) {
+          console.error('window.apiConfig not available!');
+          return null;
+        }
+        await window.apiConfig.initialize();
+        API_BASE = `${window.apiConfig.baseUrl}/api/v1`;
+        console.log('API_BASE initialized:', API_BASE);
+      }
+      return API_BASE;
+    }
+
+    async function ensureApiInitialized() {
+      return await initializeApiBase();
+    }
+
+    initializeApiBase().then(() => {
+      console.log('Statistics API_BASE ready:', API_BASE);
+    });
     
     function formatBytes(bytes) {
       if (bytes === 0) return '0.00 GB';
@@ -378,8 +411,15 @@
           return mhz.toFixed(0) + ' MHz';
         },
         
-        setupSystemStatsWebSocket() {
-          const wsUrl = 'ws://192.168.50.2:8000/api/v1/system/ws';
+        async setupSystemStatsWebSocket() {
+          // Wait for API config to initialize
+          if (!window.apiConfig.isInitialized) {
+            await window.apiConfig.initialize();
+          }
+
+          const wsUrl = `${window.apiConfig.wsUrl}/api/v1/system/ws`;
+          console.log('Connecting to system stats WebSocket:', wsUrl);
+
           const connectSystemStats = () => {
             this.systemStatsWS = new WebSocket(wsUrl);
             this.systemStatsWS.onopen = () => {};
@@ -625,24 +665,45 @@
           
           try {
             // Fetch various statistics
+            let apiBase = await ensureApiInitialized();
+            console.log('Fetching stats from API base:', apiBase);
+            
+            if (!apiBase) {
+              console.error('Failed to initialize API base URL, using fallback');
+              apiBase = 'http://poseidon:8000/api/v1';
+              console.log('Using fallback API base:', apiBase);
+            }
+            
             const [statsRes, sessionRes, torrentsRes] = await Promise.all([
-              fetch(`${API_BASE}/torrents/stats/overview`, {
+              fetch(`${apiBase}/torrents/stats/overview`, {
                 headers: { 'Authorization': `Bearer ${token}` }
               }),
-              fetch(`${API_BASE}/torrents/stats/session`, {
+              fetch(`${apiBase}/torrents/stats/session`, {
                 headers: { 'Authorization': `Bearer ${token}` }
               }),
-              fetch(`${API_BASE}/torrents/`, {
+              fetch(`${apiBase}/torrents/`, {
                 headers: { 'Authorization': `Bearer ${token}` }
               })
             ]);
             
+            console.log('API responses:', {
+              stats: statsRes.status,
+              session: sessionRes.status,
+              torrents: torrentsRes.status
+            });
+            
             if (statsRes.ok) {
               this.torrentStats = await statsRes.json();
+              console.log('Torrent stats:', this.torrentStats);
+            } else {
+              console.error('Stats API error:', statsRes.status, await statsRes.text());
             }
             
             if (sessionRes.ok) {
               this.sessionStats = await sessionRes.json();
+              console.log('Session stats:', this.sessionStats);
+            } else {
+              console.error('Session API error:', sessionRes.status, await sessionRes.text());
             }
             
             // Combine stats from both endpoints
@@ -652,6 +713,8 @@
               download_rate: this.torrentStats.total_download_speed || 0,
               upload_rate: this.torrentStats.total_upload_speed || 0
             };
+            
+            console.log('Updated stats object:', this.stats);
             
             if (torrentsRes.ok) {
               const torrents = await torrentsRes.json();
@@ -666,7 +729,7 @@
             }
               // Get top 5 active torrents by speed
           } catch (error) {
-            // Handle error silently
+            console.error('Error fetching stats:', error);
           }
         },
         
