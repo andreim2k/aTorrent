@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from app.api.deps import get_db, get_authenticated, get_torrent_service_dep
 from app.models.torrent import Torrent
 from app.services.torrent_service import TorrentService
+from app.db.utils import DatabaseManager, get_db_context
 from app.schemas.torrent import (
     TorrentCreate,
     TorrentUpdate,
@@ -24,7 +24,6 @@ async def bulk_pause_torrents(
     bulk_request: BulkTorrentOperation,
     authenticated: bool = Depends(get_authenticated),
     torrent_service: Optional[TorrentService] = Depends(get_torrent_service_dep),
-    db: Session = Depends(get_db),
 ):
     """Pause multiple torrents"""
     results = []
@@ -32,12 +31,15 @@ async def bulk_pause_torrents(
         if torrent_service is not None:
             result = await torrent_service.pause_torrent(torrent_id)
         else:
-            torrent = db.query(Torrent).filter(Torrent.id == torrent_id).first()
+            torrent = DatabaseManager.get_single_record(Torrent, Torrent.id == torrent_id)
             if not torrent:
                 result = {"error": "Torrent not found"}
             else:
-                torrent.status = "paused"
-                db.commit()
+                DatabaseManager.update_record(
+                    Torrent,
+                    Torrent.id == torrent_id,
+                    {"status": "paused"}
+                )
                 result = {"success": True, "message": "Torrent paused"}
         results.append({"torrent_id": torrent_id, "result": result})
     return {"results": results}
@@ -48,7 +50,6 @@ async def bulk_resume_torrents(
     bulk_request: BulkTorrentOperation,
     authenticated: bool = Depends(get_authenticated),
     torrent_service: Optional[TorrentService] = Depends(get_torrent_service_dep),
-    db: Session = Depends(get_db),
 ):
     """Resume multiple torrents"""
     results = []
@@ -56,15 +57,16 @@ async def bulk_resume_torrents(
         if torrent_service is not None:
             result = await torrent_service.resume_torrent(torrent_id)
         else:
-            torrent = db.query(Torrent).filter(Torrent.id == torrent_id).first()
+            torrent = DatabaseManager.get_single_record(Torrent, Torrent.id == torrent_id)
             if not torrent:
                 result = {"error": "Torrent not found"}
             else:
-                if torrent.progress >= 1.0:
-                    torrent.status = "seeding"
-                else:
-                    torrent.status = "downloading"
-                db.commit()
+                new_status = "seeding" if torrent.progress >= 1.0 else "downloading"
+                DatabaseManager.update_record(
+                    Torrent,
+                    Torrent.id == torrent_id,
+                    {"status": new_status}
+                )
                 result = {"success": True, "message": "Torrent resumed"}
         results.append({"torrent_id": torrent_id, "result": result})
     return {"results": results}
@@ -76,7 +78,6 @@ async def bulk_delete_torrents(
     delete_files: bool = Query(False),
     authenticated: bool = Depends(get_authenticated),
     torrent_service: Optional[TorrentService] = Depends(get_torrent_service_dep),
-    db: Session = Depends(get_db),
 ):
     """Delete multiple torrents"""
     results = []
@@ -84,12 +85,11 @@ async def bulk_delete_torrents(
         if torrent_service is not None:
             result = await torrent_service.remove_torrent(torrent_id, delete_files)
         else:
-            torrent = db.query(Torrent).filter(Torrent.id == torrent_id).first()
+            torrent = DatabaseManager.get_single_record(Torrent, Torrent.id == torrent_id)
             if not torrent:
                 result = {"error": "Torrent not found"}
             else:
-                db.delete(torrent)
-                db.commit()
+                DatabaseManager.delete_record(Torrent, Torrent.id == torrent_id)
                 result = {"success": True, "message": "Torrent deleted"}
         results.append({"torrent_id": torrent_id, "result": result})
     return {"results": results}
@@ -98,43 +98,45 @@ async def bulk_delete_torrents(
 # Stats endpoints
 @router.get("/stats/overview", response_model=TorrentStats)
 def get_torrent_stats(
-    authenticated: bool = Depends(get_authenticated), db: Session = Depends(get_db)
+    authenticated: bool = Depends(get_authenticated)
 ):
     """Get torrent statistics overview"""
-    torrents = db.query(Torrent).all()
+    # Use DatabaseManager to avoid session issues
+    with get_db_context() as db:
+        torrents = db.query(Torrent).all()
 
-    stats = {
-        "total_torrents": len(torrents),
-        "active_torrents": 0,
-        "downloading": 0,
-        "seeding": 0,
-        "paused": 0,
-        "completed": 0,
-        "total_download_speed": 0.0,
-        "total_upload_speed": 0.0,
-        "total_downloaded": 0,
-        "total_uploaded": 0,
-    }
+        stats = {
+            "total_torrents": len(torrents),
+            "active_torrents": 0,
+            "downloading": 0,
+            "seeding": 0,
+            "paused": 0,
+            "completed": 0,
+            "total_download_speed": 0.0,
+            "total_upload_speed": 0.0,
+            "total_downloaded": 0,
+            "total_uploaded": 0,
+        }
 
-    for torrent in torrents:
-        if torrent.status in ["downloading", "seeding"]:
-            stats["active_torrents"] += 1
-            stats["total_download_speed"] += torrent.download_speed or 0
-            stats["total_upload_speed"] += torrent.upload_speed or 0
+        for torrent in torrents:
+            if torrent.status in ["downloading", "seeding"]:
+                stats["active_torrents"] += 1
+                stats["total_download_speed"] += torrent.download_speed or 0
+                stats["total_upload_speed"] += torrent.upload_speed or 0
 
-        if torrent.status == "downloading":
-            stats["downloading"] += 1
-        elif torrent.status == "seeding":
-            stats["seeding"] += 1
-        elif torrent.status == "paused":
-            stats["paused"] += 1
-        elif torrent.status == "completed":
-            stats["completed"] += 1
+            if torrent.status == "downloading":
+                stats["downloading"] += 1
+            elif torrent.status == "seeding":
+                stats["seeding"] += 1
+            elif torrent.status == "paused":
+                stats["paused"] += 1
+            elif torrent.status == "completed":
+                stats["completed"] += 1
 
-        stats["total_downloaded"] += torrent.downloaded or 0
-        stats["total_uploaded"] += torrent.uploaded or 0
+            stats["total_downloaded"] += torrent.downloaded or 0
+            stats["total_uploaded"] += torrent.uploaded or 0
 
-    return stats
+        return stats
 
 
 @router.get("/stats/session", response_model=SessionStats)
@@ -169,18 +171,17 @@ async def get_torrents(
     status_filter: Optional[str] = Query(None, alias="status"),
     authenticated: bool = Depends(get_authenticated),
     torrent_service: Optional[TorrentService] = Depends(get_torrent_service_dep),
-    db: Session = Depends(get_db),
 ):
     """Get list of all torrents with real-time data"""
     if torrent_service is not None:
         torrents_status = await torrent_service.get_all_torrents_status()
     else:
         # Fallback to database data when torrent service is unavailable
-        query = db.query(Torrent)
+        filter_condition = None
         if status_filter and status_filter != "all":
-            query = query.filter(Torrent.status == status_filter)
+            filter_condition = Torrent.status == status_filter
 
-        torrents = query.offset(skip).limit(limit).all()
+        torrents = DatabaseManager.get_all_records(Torrent, filter_condition)
         torrents_status = [
             {
                 "id": t.id,
@@ -227,7 +228,6 @@ async def add_torrent(
     torrent_data: TorrentCreate,
     authenticated: bool = Depends(get_authenticated),
     torrent_service: Optional[TorrentService] = Depends(get_torrent_service_dep),
-    db: Session = Depends(get_db),
 ):
     """Add a new torrent"""
     if torrent_service is not None:
@@ -258,7 +258,6 @@ async def get_torrent(
     torrent_id: int,
     authenticated: bool = Depends(get_authenticated),
     torrent_service: Optional[TorrentService] = Depends(get_torrent_service_dep),
-    db: Session = Depends(get_db),
 ):
     """Get detailed torrent information"""
     if torrent_service is not None:
@@ -272,7 +271,7 @@ async def get_torrent(
         return result
     else:
         # Fallback: get torrent info from database when service is unavailable
-        torrent = db.query(Torrent).filter(Torrent.id == torrent_id).first()
+        torrent = DatabaseManager.get_single_record(Torrent, Torrent.id == torrent_id)
 
         if not torrent:
             raise HTTPException(
@@ -321,7 +320,6 @@ async def delete_torrent(
     delete_files: bool = Query(False),
     authenticated: bool = Depends(get_authenticated),
     torrent_service: Optional[TorrentService] = Depends(get_torrent_service_dep),
-    db: Session = Depends(get_db),
 ):
     """Delete a torrent"""
     if torrent_service is not None:
@@ -332,15 +330,14 @@ async def delete_torrent(
                 status_code=status.HTTP_404_NOT_FOUND, detail=result["error"]
             )
     else:
-        torrent = db.query(Torrent).filter(Torrent.id == torrent_id).first()
+        torrent = DatabaseManager.get_single_record(Torrent, Torrent.id == torrent_id)
 
         if not torrent:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Torrent not found"
             )
 
-        db.delete(torrent)
-        db.commit()
+        DatabaseManager.delete_record(Torrent, Torrent.id == torrent_id)
 
 
 # Individual torrent operations
@@ -349,7 +346,6 @@ async def pause_torrent(
     torrent_id: int,
     authenticated: bool = Depends(get_authenticated),
     torrent_service: Optional[TorrentService] = Depends(get_torrent_service_dep),
-    db: Session = Depends(get_db),
 ):
     """Pause a torrent"""
     if torrent_service is not None:
@@ -362,15 +358,18 @@ async def pause_torrent(
 
         return result
     else:
-        torrent = db.query(Torrent).filter(Torrent.id == torrent_id).first()
+        torrent = DatabaseManager.get_single_record(Torrent, Torrent.id == torrent_id)
 
         if not torrent:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Torrent not found"
             )
 
-        torrent.status = "paused"
-        db.commit()
+        DatabaseManager.update_record(
+            Torrent,
+            Torrent.id == torrent_id,
+            {"status": "paused"}
+        )
 
         return {"success": True, "message": "Torrent paused"}
 
@@ -380,7 +379,6 @@ async def resume_torrent(
     torrent_id: int,
     authenticated: bool = Depends(get_authenticated),
     torrent_service: Optional[TorrentService] = Depends(get_torrent_service_dep),
-    db: Session = Depends(get_db),
 ):
     """Resume a torrent"""
     if torrent_service is not None:
@@ -393,18 +391,19 @@ async def resume_torrent(
 
         return result
     else:
-        torrent = db.query(Torrent).filter(Torrent.id == torrent_id).first()
+        torrent = DatabaseManager.get_single_record(Torrent, Torrent.id == torrent_id)
 
         if not torrent:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Torrent not found"
             )
 
-        if torrent.progress >= 1.0:
-            torrent.status = "seeding"
-        else:
-            torrent.status = "downloading"
-        db.commit()
+        new_status = "seeding" if torrent.progress >= 1.0 else "downloading"
+        DatabaseManager.update_record(
+            Torrent,
+            Torrent.id == torrent_id,
+            {"status": new_status}
+        )
 
         return {"success": True, "message": "Torrent resumed"}
 
@@ -414,7 +413,6 @@ async def recheck_torrent(
     torrent_id: int,
     authenticated: bool = Depends(get_authenticated),
     torrent_service: Optional[TorrentService] = Depends(get_torrent_service_dep),
-    db: Session = Depends(get_db),
 ):
     """Force recheck of torrent files"""
     if torrent_service is not None:

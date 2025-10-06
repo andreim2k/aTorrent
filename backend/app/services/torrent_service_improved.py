@@ -1,4 +1,4 @@
-"""Improved torrent service with better structure and error handling."""
+"""Consolidated torrent service with improved structure and error handling."""
 
 import libtorrent as lt
 import os
@@ -18,6 +18,9 @@ from app.core.constants import (
     TORRENT_STATUS_PAUSED,
     TORRENT_STATUS_DOWNLOADING,
     TORRENT_STATUS_SEEDING,
+    TORRENT_STATUS_COMPLETED,
+    TORRENT_STATUS_CHECKING,
+    TORRENT_STATUS_ALLOCATING,
 )
 from app.db.utils import get_db_context, DatabaseManager
 from app.models.torrent import Torrent
@@ -33,8 +36,8 @@ from app.services.torrent_helpers import (
 logger = logging.getLogger(__name__)
 
 
-class ImprovedTorrentService:
-    """Improved torrent service with better structure and error handling."""
+class TorrentService:
+    """Consolidated torrent service with improved structure and error handling."""
 
     def __init__(self, downloads_path: str = None):
         self.downloads_path = downloads_path or getattr(settings, "DOWNLOADS_PATH", "./downloads")
@@ -553,3 +556,104 @@ class ImprovedTorrentService:
             "payload_download_rate": 0,
             "payload_upload_rate": 0,
         }
+
+    async def get_torrent_status(self, torrent_id: int) -> Dict[str, Any]:
+        """Get detailed torrent status."""
+        try:
+            torrent = DatabaseManager.get_single_record(
+                Torrent,
+                Torrent.id == torrent_id
+            )
+            
+            if not torrent:
+                return {"error": "Torrent not found"}
+
+            # Update with real-time data if available
+            self._update_torrent_from_handle(torrent)
+            
+            # Calculate additional metrics
+            eta = TorrentCalculations.calculate_eta(
+                torrent.total_size, torrent.downloaded, torrent.download_speed
+            )
+            ratio = TorrentCalculations.calculate_ratio(
+                torrent.downloaded, torrent.uploaded
+            )
+            
+            # Get peer information
+            peers_info = self._get_peer_information(torrent.info_hash)
+            
+            return {
+                "id": torrent.id,
+                "info_hash": torrent.info_hash,
+                "name": torrent.name,
+                "status": torrent.status,
+                "progress": torrent.progress,
+                "total_size": torrent.total_size,
+                "downloaded": torrent.downloaded,
+                "uploaded": torrent.uploaded,
+                "download_speed": torrent.download_speed,
+                "upload_speed": torrent.upload_speed,
+                "peers_connected": peers_info.get("num_peers", 0),
+                "peers_total": peers_info.get("num_peers", 0),
+                "seeds_connected": peers_info.get("num_seeds", 0),
+                "seeds_total": peers_info.get("num_seeds", 0),
+                "ratio": ratio,
+                "availability": getattr(torrent, "availability", 0.0),
+                "eta": eta,
+                "time_active": getattr(torrent, "time_active", 0),
+                "download_path": torrent.download_path,
+                "priority": getattr(torrent, "priority", 1),
+                "sequential_download": getattr(torrent, "sequential_download", False),
+                "file_count": getattr(torrent, "file_count", 0),
+                "files_info": getattr(torrent, "files_info", None),
+                "label": getattr(torrent, "label", None),
+                "category": getattr(torrent, "category", None),
+                "tags": getattr(torrent, "tags", None),
+                "created_at": torrent.created_at,
+                "updated_at": torrent.updated_at,
+                "completed_at": getattr(torrent, "completed_at", None),
+                "started_at": getattr(torrent, "started_at", None),
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting torrent status: {e}")
+            return {"error": str(e)}
+
+    async def recheck_torrent(self, torrent_id: int) -> Dict[str, Any]:
+        """Force recheck of torrent files."""
+        try:
+            if not self.session:
+                return {"error": "Torrent service not initialized"}
+
+            torrent = DatabaseManager.get_single_record(
+                Torrent,
+                Torrent.id == torrent_id
+            )
+            
+            if not torrent:
+                return {"error": "Torrent not found"}
+
+            info_hash = torrent.info_hash
+            
+            if info_hash in self.handles:
+                handle = self.handles[info_hash]
+                
+                # Force recheck the torrent
+                handle.force_recheck()
+                
+                # Update status to checking
+                DatabaseManager.update_record(
+                    Torrent,
+                    Torrent.id == torrent_id,
+                    {"status": TORRENT_STATUS_CHECKING}
+                )
+                
+                logger.debug(f"Initiated recheck for torrent: {torrent.name}")
+                return {"success": True, "message": "Recheck initiated"}
+            else:
+                logger.warning(f"No libtorrent handle found for torrent: {torrent.name}")
+                return {"error": "Torrent handle not found in session"}
+
+        except Exception as e:
+            logger.error(f"Error rechecking torrent: {e}")
+            return {"error": str(e)}

@@ -16,8 +16,8 @@ from app.api.v1.api import api_router
 from app.api.v1.system import router as system_router
 from app.db.init_db import init_db
 
-# Use improved torrent service
-from app.services.torrent_service_improved import ImprovedTorrentService
+# Use consolidated torrent service
+from app.services.torrent_service import TorrentService
 from app.core.websocket_manager import WebSocketManager
 
 # Enhanced logging configuration
@@ -86,9 +86,9 @@ async def startup_event():
         init_db()
         logger.info("Database initialized successfully")
 
-        # Initialize improved torrent service
+        # Initialize consolidated torrent service
         logger.info("Initializing torrent service...")
-        torrent_service = ImprovedTorrentService(downloads_path=settings.DOWNLOAD_PATH)
+        torrent_service = TorrentService(downloads_path=settings.DOWNLOAD_PATH)
         await torrent_service.initialize()
         logger.info("Torrent service initialized successfully")
 
@@ -290,7 +290,7 @@ async def health_check():
 
 
 # Enhanced service accessors with validation
-def get_torrent_service() -> ImprovedTorrentService:
+def get_torrent_service() -> TorrentService:
     """Get torrent service with validation."""
     if not torrent_service:
         raise HTTPException(status_code=503, detail="Torrent service not initialized")

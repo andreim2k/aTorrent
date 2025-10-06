@@ -634,6 +634,15 @@
 
         <script src="/js/api-config.js"></script>
         <script src="/js/websocket-client.js"></script>
+        
+        <!-- Error Handler -->
+        <script src="/js/modules/error-handler.js"></script>
+        
+        <!-- API Client -->
+        <script src="/js/modules/api-client.js"></script>
+        
+        <!-- Torrent Manager -->
+        <script src="/js/modules/torrent-manager.js"></script>
         <script>
             // Utilities
             function getCookie(name) {
@@ -641,6 +650,26 @@
                 const parts = value.split(`; ${name}=`);
                 if (parts.length === 2) return parts.pop().split(";").shift();
             }
+
+            // API Configuration
+            let API_BASE = null;
+
+            async function initializeApiBase() {
+                if (!API_BASE) {
+                    await window.apiConfig.initialize();
+                    API_BASE = `${window.apiConfig.baseUrl}/api/v1`;
+                    console.log('API_BASE initialized:', API_BASE);
+                }
+                return API_BASE;
+            }
+
+            async function ensureApiInitialized() {
+                return await initializeApiBase();
+            }
+
+            initializeApiBase().then(() => {
+                console.log('Settings API_BASE ready:', API_BASE);
+            });
 
             // Alpine.js App
             function settingsApp() {
@@ -690,8 +719,9 @@
                         const token = getCookie("access_token");
 
                         try {
+                            const apiBase = await ensureApiInitialized();
                             const response = await fetch(
-                                `${API_BASE}/settings`,
+                                `${apiBase}/settings`,
                                 {
                                     headers: {
                                         Authorization: `Bearer ${token}`,
@@ -731,8 +761,9 @@
                         const token = getCookie("access_token");
 
                         try {
+                            const apiBase = await ensureApiInitialized();
                             const response = await fetch(
-                                `${API_BASE}/settings`,
+                                `${apiBase}/settings`,
                                 {
                                     method: "PUT",
                                     headers: {
@@ -777,8 +808,9 @@
                         const token = getCookie("access_token");
 
                         try {
+                            const apiBase = await ensureApiInitialized();
                             const response = await fetch(
-                                `${API_BASE}/settings`,
+                                `${apiBase}/settings`,
                                 {
                                     method: "PUT",
                                     headers: {
@@ -823,8 +855,9 @@
                         const token = getCookie("access_token");
 
                         try {
+                            const apiBase = await ensureApiInitialized();
                             const response = await fetch(
-                                `${API_BASE}/settings`,
+                                `${apiBase}/settings`,
                                 {
                                     method: "PUT",
                                     headers: {
@@ -936,8 +969,9 @@
                         const token = getCookie("access_token");
 
                         try {
+                            const apiBase = await ensureApiInitialized();
                             const response = await fetch(
-                                `${API_BASE}/auth/change-password`,
+                                `${apiBase}/auth/change-password`,
                                 {
                                     method: "POST",
                                     headers: {

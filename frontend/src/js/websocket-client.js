@@ -8,6 +8,7 @@ class TorrentWebSocket {
     this.listeners = new Map();
     this.isConnected = false;
     this.shouldReconnect = true;
+    this.errorHandler = window.errorHandler;
   }
 
   async connect() {
@@ -51,7 +52,10 @@ class TorrentWebSocket {
       };
       
       this.ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
+        this.errorHandler.handle(error, {
+          type: 'WebSocketError',
+          context: 'websocket_connection'
+        });
         this.emit('error', error);
       };
       
@@ -76,7 +80,10 @@ class TorrentWebSocket {
       }, 30000);
       
     } catch (error) {
-      console.error('Failed to create WebSocket connection:', error);
+      this.errorHandler.handle(error, {
+        type: 'WebSocketConnectionError',
+        context: 'websocket_creation'
+      });
     }
   }
   
@@ -128,7 +135,10 @@ class TorrentWebSocket {
         try {
           callback(data);
         } catch (error) {
-          console.error(`Error in WebSocket listener for event ${event}:`, error);
+          this.errorHandler.handle(error, {
+            type: 'WebSocketListenerError',
+            context: `websocket_listener_${event}`
+          });
         }
       });
     }

@@ -24,7 +24,7 @@ security = HTTPBearer()
 
 
 def get_db() -> Generator:
-    """Database dependency"""
+    """Database dependency - deprecated, use DatabaseManager instead"""
     try:
         db = SessionLocal()
         yield db

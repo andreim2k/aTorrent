@@ -2,14 +2,17 @@
 class ApiConfig {
   constructor() {
     this.backends = [
-      'prometheus',
-      '192.168.50.2'
+      'poseidon',
+      '192.168.1.100',
+      'localhost',
+      '127.0.0.1'
     ];
     this.currentBackendIndex = 0;
     this.port = 8000;
     this.testEndpoint = '/health';
     this.backendHost = null;
     this.isInitialized = false;
+    this.errorHandler = window.errorHandler;
   }
 
   get baseUrl() {
@@ -43,6 +46,11 @@ class ApiConfig {
         return true;
       }
     } catch (error) {
+      this.errorHandler.handle(error, {
+        type: 'BackendTestError',
+        context: `backend_test_${host}`,
+        userVisible: false
+      });
       console.log(`✗ Backend not available at ${host}:${this.port}`);
     }
     return false;
@@ -103,6 +111,12 @@ class ApiConfig {
         const fallbackUrl = `${this.baseUrl}${endpoint}`;
         return await fetch(fallbackUrl, options);
       }
+      
+      this.errorHandler.handle(error, {
+        type: 'ApiRequestError',
+        context: `api_request_${endpoint}`,
+        userVisible: true
+      });
       
       throw error;
     }
