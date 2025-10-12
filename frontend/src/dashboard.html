@@ -581,17 +581,31 @@
             let API_BASE = null;
             
             // Initialize API_BASE with backend detection
-            (async () => {
-                await window.apiConfig.initialize();
-                API_BASE = `${window.apiConfig.baseUrl}/api/v1`;
-                console.log('API_BASE initialized:', API_BASE);
-            })();
+            async function initializeApiBase() {
+                try {
+                    if (window.apiConfig && typeof window.apiConfig.initialize === 'function') {
+                        await window.apiConfig.initialize();
+                        API_BASE = `${window.apiConfig.baseUrl}/api/v1`;
+                        console.log('API_BASE initialized:', API_BASE);
+                    } else {
+                        console.error('apiConfig not available. Make sure api-config.js is loaded.');
+                        // Fallback to default
+                        API_BASE = 'http://localhost:8000/api/v1';
+                    }
+                } catch (error) {
+                    console.error('Failed to initialize API config:', error);
+                    // Fallback to default
+                    API_BASE = 'http://localhost:8000/api/v1';
+                }
+            }
+            
+            // Initialize immediately
+            initializeApiBase();
             
             // Helper function to ensure API_BASE is initialized
             async function ensureApiInitialized() {
                 if (!API_BASE) {
-                    await window.apiConfig.initialize();
-                    API_BASE = `${window.apiConfig.baseUrl}/api/v1`;
+                    await initializeApiBase();
                 }
                 return API_BASE;
             }
@@ -783,6 +797,9 @@
           this.loading = true;
           const token = getCookie('access_token');
           
+          // Ensure API_BASE is initialized
+          await ensureApiInitialized();
+          
           try {
             // Fetch torrents
             const torrentsRes = await fetch(`${API_BASE}/torrents/?limit=10`, {
@@ -810,6 +827,9 @@
           const token = getCookie('access_token');
           const action = torrent.status === 'paused' ? 'resume' : 'pause';
           
+          // Ensure API_BASE is initialized
+          await ensureApiInitialized();
+          
           try {
             await fetch(`${API_BASE}/torrents/${torrent.id}/${action}`, {
               method: 'POST',
@@ -825,6 +845,8 @@
           if (!confirm("Delete this torrent and its files?")) return;
           
           const token = getCookie("access_token");
+          // Ensure API_BASE is initialized
+          await ensureApiInitialized();
           try {
             await fetch(`${API_BASE}/torrents/${id}?delete_files=true`, {
               method: "DELETE",
@@ -839,6 +861,8 @@
           if (!this.canResumeAll) return;
           
           const token = getCookie('access_token');
+          // Ensure API_BASE is initialized
+          await ensureApiInitialized();
           const torrentIds = this.torrents
             .filter(t => t.status === 'paused')
             .map(t => t.id);
@@ -862,6 +886,8 @@
           if (!this.canPauseAll) return;
           
           const token = getCookie('access_token');
+          // Ensure API_BASE is initialized
+          await ensureApiInitialized();
           const torrentIds = this.torrents
             .filter(t => t.status !== 'paused')
             .map(t => t.id);
@@ -919,6 +945,8 @@
           if (this.selectedFiles.length === 0) return;
           
           const token = getCookie('access_token');
+          // Ensure API_BASE is initialized
+          await ensureApiInitialized();
           
           for (const file of this.selectedFiles) {
             try {
@@ -979,6 +1007,8 @@
           
           try {
             const token = getCookie('access_token');
+            // Ensure API_BASE is initialized
+            await ensureApiInitialized();
             const response = await fetch(`${API_BASE}/torrents/${torrentId}/content`, {
               headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -1000,6 +1030,8 @@
           
           try {
             const token = getCookie('access_token');
+            // Ensure API_BASE is initialized
+            await ensureApiInitialized();
             const response = await fetch(`${API_BASE}/torrents/${torrentId}/movie-info`, {
               headers: { 'Authorization': `Bearer ${token}` }
             });

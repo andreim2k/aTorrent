@@ -324,17 +324,31 @@
             let API_BASE = null;
             
             // Initialize API_BASE with backend detection
-            (async () => {
-                await window.apiConfig.initialize();
-                API_BASE = `${window.apiConfig.baseUrl}/api/v1`;
-                console.log('API_BASE initialized:', API_BASE);
-            })();
+            async function initializeApiBase() {
+                try {
+                    if (window.apiConfig && typeof window.apiConfig.initialize === 'function') {
+                        await window.apiConfig.initialize();
+                        API_BASE = `${window.apiConfig.baseUrl}/api/v1`;
+                        console.log('API_BASE initialized:', API_BASE);
+                    } else {
+                        console.error('apiConfig not available. Make sure api-config.js is loaded.');
+                        // Fallback to default
+                        API_BASE = 'http://localhost:8000/api/v1';
+                    }
+                } catch (error) {
+                    console.error('Failed to initialize API config:', error);
+                    // Fallback to default
+                    API_BASE = 'http://localhost:8000/api/v1';
+                }
+            }
+            
+            // Initialize immediately
+            initializeApiBase();
             
             // Helper function to ensure API_BASE is initialized
             async function ensureApiInitialized() {
                 if (!API_BASE) {
-                    await window.apiConfig.initialize();
-                    API_BASE = `${window.apiConfig.baseUrl}/api/v1`;
+                    await initializeApiBase();
                 }
                 return API_BASE;
             }
@@ -643,6 +657,9 @@
         
         async fetchStats() {
           const token = getCookie('access_token');
+          
+          // Ensure API_BASE is initialized
+          await ensureApiInitialized();
           
           try {
             // Fetch various statistics

@@ -13,6 +13,9 @@
 
         <!-- Tailwind CSS from CDN -->
         <script src="https://cdn.tailwindcss.com?v=3.4.1"></script>
+        
+        <!-- API Configuration -->
+        <script src="js/api-config.js"></script>
         <script>
             tailwind.config = {
                 darkMode: "class",
@@ -640,17 +643,31 @@
             let API_BASE = null;
             
             // Initialize API_BASE with backend detection
-            (async () => {
-                await window.apiConfig.initialize();
-                API_BASE = `${window.apiConfig.baseUrl}/api/v1`;
-                console.log('API_BASE initialized:', API_BASE);
-            })();
+            async function initializeApiBase() {
+                try {
+                    if (window.apiConfig && typeof window.apiConfig.initialize === 'function') {
+                        await window.apiConfig.initialize();
+                        API_BASE = `${window.apiConfig.baseUrl}/api/v1`;
+                        console.log('API_BASE initialized:', API_BASE);
+                    } else {
+                        console.error('apiConfig not available. Make sure api-config.js is loaded.');
+                        // Fallback to default
+                        API_BASE = 'http://localhost:8000/api/v1';
+                    }
+                } catch (error) {
+                    console.error('Failed to initialize API config:', error);
+                    // Fallback to default
+                    API_BASE = 'http://localhost:8000/api/v1';
+                }
+            }
+            
+            // Initialize immediately
+            initializeApiBase();
             
             // Helper function to ensure API_BASE is initialized
             async function ensureApiInitialized() {
                 if (!API_BASE) {
-                    await window.apiConfig.initialize();
-                    API_BASE = `${window.apiConfig.baseUrl}/api/v1`;
+                    await initializeApiBase();
                 }
                 return API_BASE;
             }
@@ -708,9 +725,12 @@
                         this.loading = true;
                         const token = getCookie("access_token");
 
+                        // Ensure API_BASE is initialized
+                        await ensureApiInitialized();
+
                         try {
                             const response = await fetch(
-                                `${API_BASE}/settings`,
+                                `${API_BASE}/settings/`,
                                 {
                                     headers: {
                                         Authorization: `Bearer ${token}`,
@@ -749,9 +769,21 @@
                         this.savingSettings = true;
                         const token = getCookie("access_token");
 
+                        if (!token) {
+                            this.showAlert("error", "Authentication required. Please log in again.");
+                            this.savingSettings = false;
+                            return;
+                        }
+
                         try {
+// Ensure API_BASE is initialized
+                            await ensureApiInitialized();
+                            
+// Ensure API_BASE is initialized
+                            await ensureApiInitialized();
+                            
                             const response = await fetch(
-                                `${API_BASE}/settings`,
+                                `${API_BASE}/settings/`,
                                 {
                                     method: "PUT",
                                     headers: {
@@ -775,15 +807,19 @@
                                     "Settings saved successfully",
                                 );
                             } else {
-                                const error = await response.json();
-                                this.showAlert(
-                                    "error",
-                                    error.detail || "Failed to save settings",
-                                );
+                                let errorMessage = "Failed to save settings";
+                                try {
+                                    const error = await response.json();
+                                    errorMessage = error.detail || errorMessage;
+                                } catch (e) {
+                                    // If response is not JSON, use status text
+                                    errorMessage = `Server error: ${response.status} ${response.statusText}`;
+                                }
+                                this.showAlert("error", errorMessage);
                             }
                         } catch (error) {
                             console.error("Failed to save settings:", error);
-                            this.showAlert("error", "Failed to save settings");
+                            this.showAlert("error", "Network error. Please check your connection.");
                         } finally {
                             this.savingSettings = false;
                         }
