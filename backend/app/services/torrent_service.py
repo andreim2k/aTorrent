@@ -605,7 +605,27 @@ class TorrentService:
             
             # Get peer information
             peers_info = self._get_peer_information(torrent.info_hash)
-            
+
+            # Get file information from handle if available
+            files_info = []
+            file_count = 0
+            if torrent.info_hash in self.handles:
+                handle = self.handles[torrent.info_hash]
+                if handle.is_valid() and handle.has_metadata():
+                    torrent_info = handle.torrent_file()
+                    if torrent_info:
+                        file_storage = torrent_info.files()
+                        file_count = file_storage.num_files()
+                        for i in range(file_count):
+                            file_entry = file_storage.at(i)
+                            files_info.append({
+                                "index": i,
+                                "name": file_entry.path,
+                                "size": file_entry.size,
+                                "progress": handle.file_progress()[i] / file_entry.size if file_entry.size > 0 else 0.0,
+                                "priority": handle.file_priority(i)
+                            })
+
             return {
                 "id": torrent.id,
                 "info_hash": torrent.info_hash,
@@ -628,8 +648,8 @@ class TorrentService:
                 "download_path": torrent.download_path,
                 "priority": getattr(torrent, "priority", 1),
                 "sequential_download": getattr(torrent, "sequential_download", False),
-                "file_count": getattr(torrent, "file_count", 0),
-                "files_info": getattr(torrent, "files_info", None),
+                "file_count": file_count if file_count > 0 else getattr(torrent, "file_count", 0),
+                "files_info": files_info if files_info else getattr(torrent, "files_info", None),
                 "label": getattr(torrent, "label", None),
                 "category": getattr(torrent, "category", None),
                 "tags": getattr(torrent, "tags", None),
