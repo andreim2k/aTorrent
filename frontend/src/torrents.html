@@ -86,9 +86,14 @@
     .mui-btn-contained:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
     .mui-btn-outlined { background: transparent; color: #667eea; border: 2px solid #667eea; font-weight: 600; }
     .mui-btn-outlined:hover { background: rgba(102, 126, 234, 0.15); }
-    .mui-input { padding: 10px 14px; background: rgba(144, 202, 249, 0.08); border: 1px solid rgba(144, 202, 249, 0.2); border-radius: 6px; color: rgba(144, 202, 249, 0.9); font-size: 14px; transition: all 0.2s; }
-    .mui-input:focus { outline: none; border-color: rgba(144, 202, 249, 0.5); background: rgba(144, 202, 249, 0.12); box-shadow: 0 0 0 3px rgba(144, 202, 249, 0.1); }
-    .mui-input:hover { border-color: rgba(144, 202, 249, 0.4); background: rgba(144, 202, 249, 0.1); }
+    .mui-input { padding: 10px 14px; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 12px; color: var(--text-primary); font-size: 14px; transition: all 0.2s; font-weight: 500; }
+    .mui-input:focus { outline: none; border-color: #667eea; background: var(--glass-bg); box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+    .mui-input:hover { border-color: #667eea; background: var(--glass-bg); }
+    /* Select/Dropdown Styling */
+    select, .mui-select { padding: 10px 14px; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 12px; color: var(--text-primary); font-size: 14px; font-weight: 500; transition: all 0.3s ease; cursor: pointer; appearance: none; padding-right: 36px; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23667eea' d='M2 4l4 4 4-4'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+    select:focus, .mui-select:focus { outline: none; border-color: #667eea; background-color: var(--glass-bg); box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+    select:hover, .mui-select:hover { border-color: #667eea; background-color: var(--glass-bg); }
+    select option, .mui-select option { background: var(--bg-secondary); color: var(--text-primary); }
     /* Custom File Input Styling */
     .mui-file-input {
       position: relative;
@@ -348,7 +353,7 @@
                  placeholder="Search torrents..." class="mui-input flex-1 min-w-[200px]">
           
           <div class="relative inline-block">
-            <select id="status-filter" x-model="statusFilter" @change="filterTorrents()" class="bg-gray-700 border border-blue-400 rounded text-blue-300 px-3 py-2 text-sm focus:outline-none focus:ring-0 focus:border-blue-500 hover:bg-gray-600 appearance-none cursor-pointer pr-8">
+            <select id="status-filter" x-model="statusFilter" @change="filterTorrents()" class="mui-select">
               <option value="">All Status</option>
               <option value="downloading">Downloading</option>
               <option value="seeding">Seeding</option>
@@ -356,22 +361,16 @@
               <option value="checking">Checking</option>
               <option value="error">Error</option>
             </select>
-            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-              <span class="text-blue-400 text-sm">▼</span>
-            </div>
           </div>
           
           <div class="relative inline-block">
-            <select id="sort-filter" x-model="sortBy" @change="sortTorrents()" class="bg-gray-700 border border-blue-400 rounded text-blue-300 px-3 py-2 text-sm focus:outline-none focus:ring-0 focus:border-blue-500 hover:bg-gray-600 appearance-none cursor-pointer pr-8">
+            <select id="sort-filter" x-model="sortBy" @change="sortTorrents()" class="mui-select">
               <option value="name">Sort by Name</option>
               <option value="size">Sort by Size</option>
               <option value="progress">Sort by Progress</option>
               <option value="speed">Sort by Speed</option>
               <option value="added">Sort by Date Added</option>
             </select>
-            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-              <span class="text-blue-400 text-sm">▼</span>
-            </div>
           </div>
         </div>
       </div>

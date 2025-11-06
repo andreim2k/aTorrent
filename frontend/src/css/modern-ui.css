@@ -348,6 +348,57 @@ html[data-theme="dark"] .modern-gradient-dashboard {
 }
 
 /* ==========================
+   MODERN SELECT/DROPDOWNS
+   ========================== */
+
+select, .modern-select, .mui-select {
+  width: 100%;
+  max-width: 100%;
+  padding: 12px 16px 12px 14px;
+  background-color: var(--input-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23667eea' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+select::placeholder, .modern-select::placeholder, .mui-select::placeholder {
+  color: var(--text-tertiary);
+}
+
+select:focus, .modern-select:focus, .mui-select:focus {
+  background-color: var(--glass-bg);
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+select:hover, .modern-select:hover, .mui-select:hover {
+  background-color: var(--glass-bg);
+  border-color: #667eea;
+}
+
+select option, .modern-select option, .mui-select option {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+select option:checked, .modern-select option:checked, .mui-select option:checked {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+}
+
+/* ==========================
    MODERN NAVIGATION
    ========================== */
 
