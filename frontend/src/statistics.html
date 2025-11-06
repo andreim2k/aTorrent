@@ -227,13 +227,13 @@
         <div class="stat-card">
           <div class="text-text-secondary text-xs mb-1">Total Downloaded</div>
           <div class="text-lg sm:text-xl font-bold" x-text="formatBytes(stats.all_time_download || 0)"></div>
-          <div class="text-xs text-success-main mt-2">↓ <span x-text="formatSpeed(stats.download_rate || 0)"></span></div>
+          <div class="text-xs text-white mt-2">↓ <span x-text="formatSpeed(stats.download_rate || 0)"></span></div>
         </div>
         
         <div class="stat-card">
           <div class="text-text-secondary text-xs mb-1">Total Uploaded</div>
           <div class="text-lg sm:text-xl font-bold" x-text="formatBytes(stats.all_time_upload || 0)"></div>
-          <div class="text-xs text-success-main mt-2">↑ <span x-text="formatSpeed(stats.upload_rate || 0)"></span></div>
+          <div class="text-xs text-white mt-2">↑ <span x-text="formatSpeed(stats.upload_rate || 0)"></span></div>
         </div>
         
         <div class="stat-card">
@@ -348,7 +348,7 @@
               <div class="space-y-2">
                 <div class="flex justify-between text-xs text-text-secondary">
                   <span>↓ Download Rate:</span>
-                  <span id="network-download-rate" class="text-success-main font-medium">0 MB/s</span>
+                  <span id="network-download-rate" class="text-white font-medium">0 MB/s</span>
                 </div>
                 <div class="flex justify-between text-xs text-text-secondary">
                   <span>↑ Upload Rate:</span>
@@ -673,9 +673,9 @@
             if (activeInterfaces.length > 0) {
               interfacesContainer.innerHTML = activeInterfaces.slice(0, 3).map(iface => `
                 <div class="text-xs">
-                  <span class="text-white font-medium">${iface.name}</span>: 
-                  <span class="text-success-main">↓${this.formatBytesSystem(iface.bytes_recv)}</span> 
-                  <span class="text-primary-main">↑${this.formatBytesSystem(iface.bytes_sent)}</span>
+                  <span class="text-white font-medium">${iface.name}</span>:
+                  <span class="text-white">↓${this.formatBytesSystem(iface.bytes_recv)}</span>
+                  <span class="text-white">↑${this.formatBytesSystem(iface.bytes_sent)}</span>
                 </div>
               `).join('');
             } else {
