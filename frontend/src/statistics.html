@@ -216,24 +216,24 @@
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 py-8">
-      <div class="mb-6">
-        <h2 class="text-2xl font-bold mb-2">Statistics</h2>
-        <p class="text-text-secondary">Monitor your torrent client performance and history</p>
+    <main class="max-w-7xl mx-auto container-responsive py-6 sm:py-8">
+      <div class="page-heading-section mb-8 animate-fade-in">
+        <h2 class="page-heading-title">Statistics</h2>
+        <p class="page-heading-subtitle">Monitor your torrent client performance and history</p>
       </div>
 
       <!-- Summary Stats -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 animate-fade-in-up">
         <div class="stat-card">
           <div class="text-text-secondary text-xs mb-1">Total Downloaded</div>
           <div class="text-lg sm:text-xl font-bold" x-text="formatBytes(stats.all_time_download || 0)"></div>
-          <div class="text-xs text-white mt-2">↓ <span x-text="formatSpeed(stats.download_rate || 0)"></span></div>
+          <div class="text-xs card-text mt-2">↓ <span x-text="formatSpeed(stats.download_rate || 0)"></span></div>
         </div>
-        
+
         <div class="stat-card">
           <div class="text-text-secondary text-xs mb-1">Total Uploaded</div>
           <div class="text-lg sm:text-xl font-bold" x-text="formatBytes(stats.all_time_upload || 0)"></div>
-          <div class="text-xs text-white mt-2">↑ <span x-text="formatSpeed(stats.upload_rate || 0)"></span></div>
+          <div class="text-xs card-text mt-2">↑ <span x-text="formatSpeed(stats.upload_rate || 0)"></span></div>
         </div>
         
         <div class="stat-card">
@@ -253,25 +253,25 @@
 
       <!-- System Statistics Card -->
       <div class="mb-8">
-        <h3 class="text-xl font-bold mb-4 text-white">System Statistics</h3>
+        <h3 class="text-xl font-bold mb-4 card-text">System Statistics</h3>
         <div class="mui-card p-6">
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- CPU Stats -->
             <div class="space-y-4">
-              <h4 class="text-lg font-semibold text-white mb-3">CPU Usage</h4>
-              
+              <h4 class="text-lg font-semibold card-text mb-3">CPU Usage</h4>
+
               <!-- Overall CPU -->
               <div class="space-y-2">
                 <div class="flex justify-between items-center">
                   <span class="text-sm text-text-secondary">Overall</span>
-                  <span class="text-sm font-medium text-white" id="cpu-usage-percent">0.0%</span>
+                  <span class="text-sm font-medium card-text" id="cpu-usage-percent">0.0%</span>
                 </div>
                 <div class="w-full bg-gray-700 rounded-full h-2">
-                  <div class="bg-primary-main h-2 rounded-full transition-all duration-300" 
+                  <div class="bg-primary-main h-2 rounded-full transition-all duration-300"
                        id="cpu-usage-bar" style="width: 0%"></div>
                 </div>
               </div>
-              
+
               <!-- Per-core CPU -->
               <div class="space-y-2">
                 <span class="text-sm text-text-secondary">Per Core</span>
@@ -279,93 +279,93 @@
                   <!-- CPU cores will be populated dynamically -->
                 </div>
               </div>
-              
+
               <!-- CPU Info -->
               <div class="text-xs text-text-secondary space-y-1">
-                <div>Cores: <span id="cpu-cores-count" class="text-white">0</span> logical, <span id="cpu-cores-physical" class="text-white">0</span> physical</div>
-                <div>Frequency: <span id="cpu-frequency" class="text-white">0 MHz</span></div>
-                <div>Load Average: <span id="cpu-load-avg" class="text-white">0.00, 0.00, 0.00</span></div>
+                <div>Cores: <span id="cpu-cores-count" class="card-text">0</span> logical, <span id="cpu-cores-physical" class="card-text">0</span> physical</div>
+                <div>Frequency: <span id="cpu-frequency" class="card-text">0 MHz</span></div>
+                <div>Load Average: <span id="cpu-load-avg" class="card-text">0.00, 0.00, 0.00</span></div>
               </div>
             </div>
 
             <!-- Memory Stats -->
             <div class="space-y-4">
-              <h4 class="text-lg font-semibold text-white mb-3">Memory Usage</h4>
+              <h4 class="text-lg font-semibold card-text mb-3">Memory Usage</h4>
               
               <!-- RAM Usage -->
               <div class="space-y-2">
                 <div class="flex justify-between items-center">
                   <span class="text-sm text-text-secondary">RAM</span>
-                  <span class="text-sm font-medium text-white" id="memory-usage-percent">0.0%</span>
+                  <span class="text-sm font-medium card-text" id="memory-usage-percent">0.0%</span>
                 </div>
                 <div class="w-full bg-gray-700 rounded-full h-2">
-                  <div class="bg-success-main h-2 rounded-full transition-all duration-300" 
+                  <div class="bg-success-main h-2 rounded-full transition-all duration-300"
                        id="memory-usage-bar" style="width: 0%"></div>
                 </div>
                 <div class="flex justify-between text-xs text-text-secondary">
-                  <span>Used: <span id="memory-used" class="text-white">0 GB</span></span>
-                  <span>Total: <span id="memory-total" class="text-white">0 GB</span></span>
+                  <span>Used: <span id="memory-used" class="card-text">0 GB</span></span>
+                  <span>Total: <span id="memory-total" class="card-text">0 GB</span></span>
                 </div>
               </div>
-              
+
               <!-- Swap Usage -->
               <div class="space-y-2">
                 <div class="flex justify-between items-center">
                   <span class="text-sm text-text-secondary">Swap</span>
-                  <span class="text-sm font-medium text-white" id="swap-usage-percent">0.0%</span>
+                  <span class="text-sm font-medium card-text" id="swap-usage-percent">0.0%</span>
                 </div>
                 <div class="w-full bg-gray-700 rounded-full h-2">
-                  <div class="bg-warning-main h-2 rounded-full transition-all duration-300" 
+                  <div class="bg-warning-main h-2 rounded-full transition-all duration-300"
                        id="swap-usage-bar" style="width: 0%"></div>
                 </div>
                 <div class="flex justify-between text-xs text-text-secondary">
-                  <span>Used: <span id="swap-used" class="text-white">0 GB</span></span>
-                  <span>Total: <span id="swap-total" class="text-white">0 GB</span></span>
+                  <span>Used: <span id="swap-used" class="card-text">0 GB</span></span>
+                  <span>Total: <span id="swap-total" class="card-text">0 GB</span></span>
                 </div>
               </div>
             </div>
 
             <!-- Disk Stats -->
             <div class="space-y-4">
-              <h4 class="text-lg font-semibold text-white mb-3">Disk Usage</h4>
+              <h4 class="text-lg font-semibold card-text mb-3">Disk Usage</h4>
               <div id="disk-partitions-container" class="space-y-3">
                 <!-- Disk partitions will be populated dynamically -->
               </div>
               
               <!-- Disk I/O -->
               <div class="text-xs text-text-secondary space-y-1 pt-2 border-t border-gray-600">
-                <div class="font-medium text-white mb-1">I/O Activity</div>
-                <div>Read: <span id="disk-read-rate" class="text-white">0 MB/s</span></div>
-                <div>Write: <span id="disk-write-rate" class="text-white">0 MB/s</span></div>
+                <div class="font-medium card-text mb-1">I/O Activity</div>
+                <div>Read: <span id="disk-read-rate" class="card-text">0 MB/s</span></div>
+                <div>Write: <span id="disk-write-rate" class="card-text">0 MB/s</span></div>
               </div>
             </div>
 
             <!-- Network Stats -->
             <div class="space-y-4">
-              <h4 class="text-lg font-semibold text-white mb-3">Network Activity</h4>
+              <h4 class="text-lg font-semibold card-text mb-3">Network Activity</h4>
               
               <!-- Overall Network -->
               <div class="space-y-2">
                 <div class="flex justify-between text-xs text-text-secondary">
                   <span>↓ Download Rate:</span>
-                  <span id="network-download-rate" class="text-white font-medium">0 MB/s</span>
+                  <span id="network-download-rate" class="card-text font-medium">0 MB/s</span>
                 </div>
                 <div class="flex justify-between text-xs text-text-secondary">
                   <span>↑ Upload Rate:</span>
-                  <span id="network-upload-rate" class="text-white font-medium">0 MB/s</span>
+                  <span id="network-upload-rate" class="card-text font-medium">0 MB/s</span>
                 </div>
               </div>
-              
+
               <!-- Total Transfer -->
               <div class="text-xs text-text-secondary space-y-1 pt-2 border-t border-gray-600">
-                <div class="font-medium text-white mb-1">Total Transfer</div>
-                <div>Downloaded: <span id="network-total-download" class="text-white">0 GB</span></div>
-                <div>Uploaded: <span id="network-total-upload" class="text-white">0 GB</span></div>
+                <div class="font-medium card-text mb-1">Total Transfer</div>
+                <div>Downloaded: <span id="network-total-download" class="card-text">0 GB</span></div>
+                <div>Uploaded: <span id="network-total-upload" class="card-text">0 GB</span></div>
               </div>
-              
+
               <!-- Active Interfaces -->
               <div class="text-xs text-text-secondary space-y-1 pt-2 border-t border-gray-600">
-                <div class="font-medium text-white mb-1">Active Interfaces</div>
+                <div class="font-medium card-text mb-1">Active Interfaces</div>
                 <div id="network-interfaces-container">
                   <!-- Network interfaces will be populated dynamically -->
                 </div>
@@ -569,7 +569,7 @@
                   <div class="bg-primary-light h-1 rounded-full transition-all duration-300" 
                        style="width: ${Math.min(coreUsage, 100)}%"></div>
                 </div>
-                <span class="text-xs text-white w-10 text-right">${coreUsage.toFixed(0)}%</span>
+                <span class="text-xs card-text w-10 text-right">${coreUsage.toFixed(0)}%</span>
               </div>
             `).join('');
           }
@@ -628,7 +628,7 @@
               <div class="space-y-1">
                 <div class="flex justify-between items-center">
                   <span class="text-sm text-text-secondary">${partition.device} (${partition.mountpoint})</span>
-                  <span class="text-sm font-medium text-white">${partition.percent.toFixed(1)}%</span>
+                  <span class="text-sm font-medium card-text">${partition.percent.toFixed(1)}%</span>
                 </div>
                 <div class="w-full bg-gray-700 rounded-full h-1">
                   <div class="bg-warning-main h-1 rounded-full transition-all duration-300" 
@@ -673,9 +673,9 @@
             if (activeInterfaces.length > 0) {
               interfacesContainer.innerHTML = activeInterfaces.slice(0, 3).map(iface => `
                 <div class="text-xs">
-                  <span class="text-white font-medium">${iface.name}</span>:
-                  <span class="text-white">↓${this.formatBytesSystem(iface.bytes_recv)}</span>
-                  <span class="text-white">↑${this.formatBytesSystem(iface.bytes_sent)}</span>
+                  <span class="card-text font-medium">${iface.name}</span>:
+                  <span class="card-text">↓${this.formatBytesSystem(iface.bytes_recv)}</span>
+                  <span class="card-text">↑${this.formatBytesSystem(iface.bytes_sent)}</span>
                 </div>
               `).join('');
             } else {

@@ -114,6 +114,20 @@ body {
   color: var(--text-primary) !important;
 }
 
+/* Adaptive text colors for light/dark themes */
+.text-adaptive {
+  color: var(--text-primary);
+}
+
+/* Card content text - adapts to light/dark theme */
+.card-text {
+  color: var(--text-primary);
+}
+
+.card-label {
+  color: var(--text-secondary);
+}
+
 /* Ensure secondary text is still readable */
 p, span, div {
   /* Ensure secondary text has sufficient contrast */
@@ -1025,18 +1039,310 @@ select option:checked, .modern-select option:checked, .mui-select option:checked
    ========================== */
 
 .text-gradient {
-  background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@media (prefers-color-scheme: light) {
+  .text-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .text-gradient {
+    background: linear-gradient(135deg, #80b5ff 0%, #c084fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+html[data-theme="dark"] .text-gradient {
+  background: linear-gradient(135deg, #80b5ff 0%, #c084fc 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .glow-text {
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  text-shadow: 0 0 20px rgba(102, 126, 234, 0.4),
+              0 0 40px rgba(102, 126, 234, 0.2);
+}
+
+@media (prefers-color-scheme: light) {
+  .glow-text {
+    text-shadow: 0 0 20px rgba(102, 126, 234, 0.3),
+                0 0 40px rgba(102, 126, 234, 0.15);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .glow-text {
+    text-shadow: 0 0 30px rgba(128, 181, 255, 0.6),
+                0 0 60px rgba(192, 132, 252, 0.4);
+  }
+}
+
+html[data-theme="dark"] .glow-text {
+  text-shadow: 0 0 30px rgba(128, 181, 255, 0.6),
+              0 0 60px rgba(192, 132, 252, 0.4);
 }
 
 .blur-backdrop {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+}
+
+/* ==========================
+   THEME-AWARE TEXT COLORS
+   ========================== */
+
+/* Override text-white for light theme */
+@media (prefers-color-scheme: light) {
+  .text-white {
+    color: var(--text-primary) !important;
+  }
+
+  body.text-white {
+    color: var(--text-primary);
+  }
+}
+
+html[data-theme="light"] .text-white {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="light"] body.text-white {
+  color: var(--text-primary);
+}
+
+/* Ensure dark theme still has white text */
+@media (prefers-color-scheme: dark) {
+  .text-white {
+    color: #ffffff;
+  }
+}
+
+html[data-theme="dark"] .text-white {
+  color: #ffffff;
+}
+
+/* Status color overrides for light theme */
+@media (prefers-color-scheme: light) {
+  .text-green-300,
+  .text-green-400 {
+    color: #059669 !important;
+  }
+
+  .text-yellow-300,
+  .text-yellow-400 {
+    color: #d97706 !important;
+  }
+
+  .text-red-300,
+  .text-red-400 {
+    color: #dc2626 !important;
+  }
+
+  .text-blue-400 {
+    color: #2563eb !important;
+  }
+}
+
+html[data-theme="light"] .text-green-300,
+html[data-theme="light"] .text-green-400 {
+  color: #059669 !important;
+}
+
+html[data-theme="light"] .text-yellow-300,
+html[data-theme="light"] .text-yellow-400 {
+  color: #d97706 !important;
+}
+
+html[data-theme="light"] .text-red-300,
+html[data-theme="light"] .text-red-400 {
+  color: #dc2626 !important;
+}
+
+html[data-theme="light"] .text-blue-400 {
+  color: #2563eb !important;
+}
+
+/* ==========================
+   PAGE HEADING STYLES
+   ========================== */
+
+.page-heading-section {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+}
+
+.page-heading-section:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.page-heading-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@media (min-width: 640px) {
+  .page-heading-title {
+    font-size: 1.875rem;
+  }
+}
+
+.page-heading-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 400;
+  margin: 0;
+}
+
+@media (min-width: 640px) {
+  .page-heading-subtitle {
+    font-size: 1rem;
+  }
+}
+
+/* ==========================
+   DISABLED BUTTON STYLES
+   ========================== */
+
+/* Disabled contained buttons */
+.mui-btn-contained:disabled,
+.mui-btn-contained[disabled] {
+  background: var(--text-tertiary) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.mui-btn-contained:disabled:hover,
+.mui-btn-contained[disabled]:hover {
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Disabled outlined buttons */
+.mui-btn-outlined:disabled,
+.mui-btn-outlined[disabled] {
+  border-color: var(--text-tertiary) !important;
+  color: var(--text-tertiary) !important;
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+  background: transparent !important;
+}
+
+.mui-btn-outlined:disabled:hover,
+.mui-btn-outlined[disabled]:hover {
+  background: transparent !important;
+  border-color: var(--text-tertiary) !important;
+}
+
+/* Disabled danger buttons */
+.mui-btn-danger:disabled,
+.mui-btn-danger[disabled] {
+  background: var(--text-tertiary) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  border: none !important;
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.mui-btn-danger:disabled:hover,
+.mui-btn-danger[disabled]:hover {
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Generic disabled button */
+button:disabled,
+button[disabled] {
+  cursor: not-allowed !important;
+}
+
+/* ==========================
+   STATUS COLOR VISIBILITY
+   ========================== */
+
+/* Make status colors visible on dark theme */
+@media (prefers-color-scheme: dark) {
+  .text-primary-main {
+    color: #80b5ff !important;
+  }
+
+  .text-success-main {
+    color: #4ef5a0 !important;
+  }
+
+  .text-error-main {
+    color: #ff6b7a !important;
+  }
+
+  .text-warning-main {
+    color: #ffb84d !important;
+  }
+
+  .bg-primary-main\/20 {
+    background-color: rgba(128, 181, 255, 0.2) !important;
+  }
+
+  .bg-success-main\/20 {
+    background-color: rgba(78, 245, 160, 0.2) !important;
+  }
+
+  .bg-error-main\/20 {
+    background-color: rgba(255, 107, 122, 0.2) !important;
+  }
+}
+
+html[data-theme="dark"] .text-primary-main {
+  color: #80b5ff !important;
+}
+
+html[data-theme="dark"] .text-success-main {
+  color: #4ef5a0 !important;
+}
+
+html[data-theme="dark"] .text-error-main {
+  color: #ff6b7a !important;
+}
+
+html[data-theme="dark"] .text-warning-main {
+  color: #ffb84d !important;
+}
+
+html[data-theme="dark"] .bg-primary-main\/20 {
+  background-color: rgba(128, 181, 255, 0.2) !important;
+}
+
+html[data-theme="dark"] .bg-success-main\/20 {
+  background-color: rgba(78, 245, 160, 0.2) !important;
+}
+
+html[data-theme="dark"] .bg-error-main\/20 {
+  background-color: rgba(255, 107, 122, 0.2) !important;
 }
 
