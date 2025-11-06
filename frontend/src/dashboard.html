@@ -343,22 +343,20 @@
           </div>
         </div>
 
-        <!-- Loading Spinner - Only shown while loading -->
-        <template x-if="loading">
-          <div class="space-y-2">
+        <div class="space-y-2">
+          <!-- Loading Spinner - Only shown while loading AND no torrents yet -->
+          <template x-if="loading && torrents.length === 0">
             <div class="text-center py-8"><div class="mui-spinner"></div></div>
-          </div>
-        </template>
+          </template>
 
-        <!-- Torrents List - Only shown when not loading -->
-        <template x-if="!loading">
-          <div class="space-y-2">
-            <template x-if="torrents.length === 0">
-              <div class="text-center py-8 text-text-secondary">No torrents found.</div>
-            </template>
+          <!-- Empty State - Only shown when not loading AND no torrents -->
+          <template x-if="!loading && torrents.length === 0">
+            <div class="text-center py-8 text-text-secondary">No torrents found.</div>
+          </template>
 
-            <template x-for="(torrent, index) in torrents" :key="torrent.id">
-              <div class="p-4 border-b border-white/10 flex items-center gap-4">
+          <!-- Torrents List - Always show when there's data -->
+          <template x-for="(torrent, index) in torrents" :key="torrent.id">
+            <div class="p-4 border-b border-white/10 flex items-center gap-4">
               
               <!-- Middle: Name and details stacked -->
               <div class="flex-1 min-w-0">
@@ -408,9 +406,8 @@
                 </button>
               </div>
             </div>
-            </template>
-          </div>
-        </template>
+          </template>
+        </div>
       </div>
     </main>
     <!-- Footer -->

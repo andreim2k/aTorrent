@@ -454,8 +454,8 @@
               </tr>
             </thead>
             <tbody>
-              <!-- Loading Spinner - Only shown while loading -->
-              <template x-if="loading">
+              <!-- Loading Spinner - Only shown while loading AND no torrents yet -->
+              <template x-if="loading && filteredTorrents.length === 0">
                 <tr>
                   <td colspan="9" class="text-center py-8">
                     <div class="mui-spinner"></div>
@@ -463,17 +463,17 @@
                 </tr>
               </template>
 
-              <!-- Torrents List - Only shown when not loading -->
-              <template x-if="!loading">
-                <template x-if="filteredTorrents.length === 0">
-                  <tr>
-                    <td colspan="9" class="text-center py-8 text-text-secondary">
-                      No torrents found
-                    </td>
-                  </tr>
-                </template>
+              <!-- Empty State - Only shown when not loading AND no torrents -->
+              <template x-if="!loading && filteredTorrents.length === 0">
+                <tr>
+                  <td colspan="9" class="text-center py-8 text-text-secondary">
+                    No torrents found
+                  </td>
+                </tr>
+              </template>
 
-                <template x-for="torrent in filteredTorrents" :key="torrent.id">
+              <!-- Torrents List - Always show when there's data -->
+              <template x-for="torrent in filteredTorrents" :key="torrent.id">
                 <tr class="border-b border-white/5 torrent-row" :class="{'selected-row': selectedTorrents.includes(torrent.id)}" @click="toggleSelect(torrent.id)">
                   <td class="p-4">
                     <input type="checkbox" :value="torrent.id" 
@@ -543,7 +543,6 @@
                     <span x-text="torrent.eta ? formatTime(torrent.eta) : '-'"></span>
                   </td>
                 </tr>
-                </template>
               </template>
             </tbody>
           </table>
