@@ -35,8 +35,8 @@
     --bg-secondary: #16213e;
     --bg-tertiary: #0f3460;
     --text-primary: #ffffff;
-    --text-secondary: rgba(255, 255, 255, 0.7);
-    --text-tertiary: rgba(255, 255, 255, 0.5);
+    --text-secondary: rgba(255, 255, 255, 0.85);
+    --text-tertiary: rgba(255, 255, 255, 0.65);
     --border-color: rgba(255, 255, 255, 0.1);
     --glass-bg: rgba(255, 255, 255, 0.08);
     --glass-border: rgba(255, 255, 255, 0.15);
@@ -55,8 +55,8 @@ html[data-theme="dark"] {
   --bg-secondary: #16213e;
   --bg-tertiary: #0f3460;
   --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --text-tertiary: rgba(255, 255, 255, 0.5);
+  --text-secondary: rgba(255, 255, 255, 0.85);
+  --text-tertiary: rgba(255, 255, 255, 0.65);
   --border-color: rgba(255, 255, 255, 0.1);
   --glass-bg: rgba(255, 255, 255, 0.08);
   --glass-border: rgba(255, 255, 255, 0.15);
@@ -103,6 +103,25 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Text Color Utilities - Improved Visibility */
+.text-text-secondary {
+  color: var(--text-secondary) !important;
+}
+
+.text-text-primary {
+  color: var(--text-primary) !important;
+}
+
+/* Ensure secondary text is still readable */
+p, span, div {
+  /* Ensure secondary text has sufficient contrast */
+}
+
+.subtitle-text, .description-text {
+  color: var(--text-secondary) !important;
+  font-weight: 500;
 }
 
 /* ==========================
