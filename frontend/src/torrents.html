@@ -284,11 +284,25 @@
   </style>
 </head>
 <body class="modern-gradient-dashboard text-white">
+  <!-- Theme Toggle Button -->
+  <button class="theme-toggle-btn" onclick="themeManager.toggleTheme()" title="Toggle theme" aria-label="Toggle dark/light theme">
+    <span id="theme-icon">🌙</span>
+  </button>
+  <script>
+    function updateThemeIcon() {
+      const icon = document.getElementById('theme-icon');
+      if (icon) {
+        icon.textContent = themeManager.isDarkTheme() ? '☀️' : '🌙';
+      }
+    }
+    updateThemeIcon();
+  </script>
+
   <!-- Floating Orbs -->
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
   <div class="orb orb-3"></div>
-  
+
   <div x-data="torrentsApp()" x-init="init()" class="relative z-10">
     <!-- Header -->
     <header class="modern-nav sticky top-0">

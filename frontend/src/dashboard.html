@@ -208,6 +208,20 @@
   </style>
 </head>
 <body class="modern-gradient-dashboard text-white">
+  <!-- Theme Toggle Button -->
+  <button class="theme-toggle-btn" onclick="themeManager.toggleTheme()" title="Toggle theme" aria-label="Toggle dark/light theme">
+    <span id="theme-icon">🌙</span>
+  </button>
+  <script>
+    function updateThemeIcon() {
+      const icon = document.getElementById('theme-icon');
+      if (icon) {
+        icon.textContent = themeManager.isDarkTheme() ? '☀️' : '🌙';
+      }
+    }
+    updateThemeIcon();
+  </script>
+
   <!-- Floating Orbs -->
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
