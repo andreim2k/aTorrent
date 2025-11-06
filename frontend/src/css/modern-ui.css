@@ -975,6 +975,21 @@ select option:checked, .modern-select option:checked, .mui-select option:checked
   .hide-mobile {
     display: none !important;
   }
+
+  /* Mobile button styling - icons only */
+  .btn-icon-mobile .btn-text {
+    display: none !important;
+  }
+
+  .btn-icon-mobile {
+    padding: 8px !important;
+    min-width: auto !important;
+    width: auto !important;
+  }
+
+  .btn-icon-mobile svg {
+    display: block !important;
+  }
 }
 
 @media (min-width: 769px) {

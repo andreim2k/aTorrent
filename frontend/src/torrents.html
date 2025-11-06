@@ -354,8 +354,11 @@
           <p class="page-heading-subtitle">Manage all your torrents in one place</p>
         </div>
         <div class="flex flex-wrap gap-2">
-          <button id="main-add-btn" @click="showAddDialog = true" class="mui-btn mui-btn-contained whitespace-nowrap" style="color: #000 !important; padding: 12px 24px !important; border-radius: 8px !important; font-weight: 500 !important; white-space: nowrap !important; border: none !important; transition: all 0.2s ease !important;">
-            + Add Torrent(s)
+          <button id="main-add-btn" @click="showAddDialog = true" class="mui-btn mui-btn-contained whitespace-nowrap btn-icon-mobile" style="color: #000 !important; border: none !important; transition: all 0.2s ease !important;">
+            <span class="btn-text">+ Add Torrent(s)</span>
+            <svg class="hidden sm:inline w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
           </button>
         </div>
       </div>
@@ -394,16 +397,36 @@
         <div class="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4">
           <span class="selection-text"><span x-text="selectedTorrents.length"></span> torrent(s) selected</span>
           <div class="flex flex-wrap gap-2">
-            <button @click="bulkAction('pause')" 
+            <button @click="bulkAction('pause')"
                     :disabled="!canPauseSelected"
                     :class="canPauseSelected ? '' : 'opacity-50 cursor-not-allowed'"
-                    class="mui-btn mui-btn-outlined">Pause Selected</button>
-            <button @click="bulkAction('resume')" 
+                    class="mui-btn mui-btn-outlined btn-icon-mobile">
+              <span class="btn-text">Pause Selected</span>
+              <svg class="hidden sm:inline w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+              </svg>
+            </button>
+            <button @click="bulkAction('resume')"
                     :disabled="!canResumeSelected"
                     :class="canResumeSelected ? '' : 'opacity-50 cursor-not-allowed'"
-                    class="mui-btn mui-btn-outlined">Resume Selected</button>
-            <button @click="bulkAction('delete')" class="mui-btn mui-btn-danger">Delete Selected</button>
-            <button @click="selectedTorrents = []" class="mui-btn mui-btn-outlined">Clear Selection</button>
+                    class="mui-btn mui-btn-outlined btn-icon-mobile">
+              <span class="btn-text">Resume Selected</span>
+              <svg class="hidden sm:inline w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            </button>
+            <button @click="bulkAction('delete')" class="mui-btn mui-btn-danger btn-icon-mobile">
+              <span class="btn-text">Delete Selected</span>
+              <svg class="hidden sm:inline w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+              </svg>
+            </button>
+            <button @click="selectedTorrents = []" class="mui-btn mui-btn-outlined btn-icon-mobile">
+              <span class="btn-text">Clear Selection</span>
+              <svg class="hidden sm:inline w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+              </svg>
+            </button>
           </div>
         </div>
       </div>

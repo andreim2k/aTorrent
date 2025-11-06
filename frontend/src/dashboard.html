@@ -330,16 +330,36 @@
 
         <div class="flex flex-col sm:flex-row gap-2 mb-4">
           <div class="flex gap-2 justify-center sm:justify-start flex-wrap">
-          <button @click="showAddDialog = true" class="mui-btn mui-btn-contained whitespace-nowrap">+ Add Torrent(s)</button>
+          <button @click="showAddDialog = true" class="mui-btn mui-btn-contained whitespace-nowrap btn-icon-mobile">
+            <span class="btn-text">+ Add Torrent(s)</span>
+            <svg class="hidden sm:inline w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+          </button>
           <button @click="resumeAll()"
                   :disabled="!canResumeAll"
-                  class="mui-btn mui-btn-outlined whitespace-nowrap">Resume All</button>
+                  class="mui-btn mui-btn-outlined whitespace-nowrap btn-icon-mobile">
+            <span class="btn-text">Resume All</span>
+            <svg class="hidden sm:inline w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </button>
           <button @click="pauseAll()"
                   :disabled="!canPauseAll"
-                  class="mui-btn mui-btn-outlined whitespace-nowrap">Pause All</button>
+                  class="mui-btn mui-btn-outlined whitespace-nowrap btn-icon-mobile">
+            <span class="btn-text">Pause All</span>
+            <svg class="hidden sm:inline w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+            </svg>
+          </button>
           <button @click="deleteAll()"
                   :disabled="torrents.length === 0"
-                  class="mui-btn mui-btn-outlined mui-btn-danger whitespace-nowrap">Delete All</button>
+                  class="mui-btn mui-btn-outlined mui-btn-danger whitespace-nowrap btn-icon-mobile">
+            <span class="btn-text">Delete All</span>
+            <svg class="hidden sm:inline w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+            </svg>
+          </button>
           </div>
         </div>
 
