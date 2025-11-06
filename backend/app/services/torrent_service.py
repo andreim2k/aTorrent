@@ -606,25 +606,58 @@ class TorrentService:
             # Get peer information
             peers_info = self._get_peer_information(torrent.info_hash)
 
-            # Get file information from handle if available
+            # Get file information from handle or by loading torrent file
             files_info = []
             file_count = 0
+
+            # Try to get from active handle first
             if torrent.info_hash in self.handles:
-                handle = self.handles[torrent.info_hash]
-                if handle.is_valid() and handle.has_metadata():
-                    torrent_info = handle.torrent_file()
-                    if torrent_info:
+                try:
+                    handle = self.handles[torrent.info_hash]
+                    logger.info(f"Handle found for {torrent.info_hash}")
+                    if handle.is_valid() and handle.has_metadata():
+                        torrent_info = handle.torrent_file()
+                        if torrent_info:
+                            file_storage = torrent_info.files()
+                            file_count = file_storage.num_files()
+                            logger.info(f"Found {file_count} files in torrent from handle")
+                            for i in range(file_count):
+                                file_entry = file_storage.at(i)
+                                files_info.append({
+                                    "index": i,
+                                    "name": file_entry.path,
+                                    "size": file_entry.size,
+                                    "progress": handle.file_progress()[i] / file_entry.size if file_entry.size > 0 else 1.0,
+                                    "priority": handle.file_priority(i)
+                                })
+                except Exception as e:
+                    logger.error(f"Error getting file info from handle: {e}")
+
+            # If no handle or failed, try to load torrent file from disk
+            if file_count == 0 and torrent.download_path:
+                try:
+                    # Look for .torrent file or .fastresume
+                    torrent_file_path = os.path.join(self.downloads_path, f"{torrent.info_hash}.torrent")
+                    if os.path.exists(torrent_file_path):
+                        logger.info(f"Loading torrent info from file: {torrent_file_path}")
+                        torrent_info = lt.torrent_info(torrent_file_path)
                         file_storage = torrent_info.files()
                         file_count = file_storage.num_files()
+                        logger.info(f"Found {file_count} files in torrent from file")
                         for i in range(file_count):
                             file_entry = file_storage.at(i)
                             files_info.append({
                                 "index": i,
                                 "name": file_entry.path,
                                 "size": file_entry.size,
-                                "progress": handle.file_progress()[i] / file_entry.size if file_entry.size > 0 else 0.0,
-                                "priority": handle.file_priority(i)
+                                "progress": 1.0 if torrent.progress == 100.0 else 0.0,
+                                "priority": 4  # Normal priority
                             })
+                except Exception as e:
+                    logger.error(f"Error loading torrent file: {e}")
+
+            if file_count == 0:
+                logger.warning(f"Could not get file info for torrent {torrent.id}")
 
             return {
                 "id": torrent.id,
