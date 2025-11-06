@@ -385,14 +385,14 @@
                 
                 <!-- 2. Details row below name -->
                 <div class="flex items-center gap-3 flex-wrap">
-                  <span class="mui-chip" 
+                  <span class="mui-chip"
                         :class="{'bg-primary-main/20 text-primary-main': torrent.status === 'downloading',
                                  'bg-success-main/20 text-success-main': torrent.status === 'seeding',
                                  'bg-white/10': torrent.status === 'paused'}"
                         x-text="torrent.status"></span>
                   <span class="text-xs text-text-secondary" x-text="formatBytes(torrent.total_size)"></span>
-                  <span x-show="torrent.download_speed > 0" class="text-xs text-primary-main">↓ <span x-text="formatSpeed(torrent.download_speed)"></span></span>
-                  <span x-show="torrent.upload_speed > 0" class="text-xs text-success-main">↑ <span x-text="formatSpeed(torrent.upload_speed)"></span></span>
+                  <span class="text-xs text-primary-main">↓ <span x-text="formatSpeed(torrent.download_speed || 0)"></span></span>
+                  <span class="text-xs text-success-main">↑ <span x-text="formatSpeed(torrent.upload_speed || 0)"></span></span>
                   <div class="relative w-20 sm:w-24">
                     <div class="w-full h-7 bg-gray-800/50 rounded-lg border border-white/10 overflow-hidden">
                       <div class="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-300 relative" 
