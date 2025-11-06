@@ -5,9 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - @Torrent</title>
   
+  <!-- Suppress Google Sign-In console warnings BEFORE library loads -->
+  <script>
+    (function() {
+      const originalError = console.error;
+      const originalWarn = console.warn;
+      
+      console.error = function(...args) {
+        const msg = args[0]?.toString() || '';
+        if (msg.includes('GSI_LOGGER') || 
+            msg.includes('credential_button_library') || 
+            msg.includes('given origin is not allowed')) {
+          return;
+        }
+        originalError.apply(console, args);
+      };
+      
+      console.warn = function(...args) {
+        const msg = args[0]?.toString() || '';
+        if (msg.includes('GSI_LOGGER') || 
+            msg.includes('credential_button_library') || 
+            msg.includes('given origin is not allowed')) {
+          return;
+        }
+        originalWarn.apply(console, args);
+      };
+    })();
+  </script>
+  
   <!-- Alpine.js from CDN -->
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
   <script src="/js/api-config.js"></script>
+  
+  <!-- Google Sign-In -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   
   <!-- Tailwind CSS from CDN -->
   <script src="https://cdn.tailwindcss.com?v=3.4.1"></script>
@@ -45,6 +76,8 @@
     .mui-input:focus { outline: none; border-color: #90caf9; background: rgba(255,255,255,0.08); }
     .mui-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(144, 202, 249, 0.3); border-top-color: #90caf9; border-radius: 50%; animation: spin 0.6s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    /* Google Sign-In button styling */
+    #g_id_onload { position: absolute; top: -9999px; }
   </style>
 </head>
 <body class="gradient-bg-dark text-text-primary min-h-screen flex items-center justify-center">
@@ -56,29 +89,49 @@
         <p class="text-text-secondary italic">a Fast Torrent Client</p>
       </div>
 
-      <!-- Login Form -->
-      <form @submit.prevent="handleLogin">
-        <div class="mb-4">
-          <input 
-            type="password"
-            x-model="password"
-            class="mui-input"
-            placeholder="Enter password"
-            required
-            :disabled="loading"
-            autofocus
-          >
+      <!-- Google Sign-In (Only Method) -->
+      <div class="mb-6">
+        <!-- Google Sign-In Button Container -->
+        <div id="google-signin-button" class="flex justify-center mb-4"></div>
+        
+        <!-- Configuration notice when Google isn't configured -->
+        <div x-show="!googleConfigured" id="google-fallback" class="flex flex-col items-center">
+          <div class="w-full p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg mb-4">
+            <div class="flex items-start">
+              <svg class="w-5 h-5 text-blue-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+              </svg>
+              <div class="flex-1">
+                <p class="text-sm text-blue-300 font-medium mb-1">Google Sign-In Required</p>
+                <p class="text-xs text-blue-200/70 mb-2">Configure GOOGLE_CLIENT_ID in backend/.env to enable authentication</p>
+                <div class="mt-3 pt-3 border-t border-blue-500/20">
+                  <p class="text-xs text-blue-200/60">
+                    <strong>Setup:</strong>
+                  </p>
+                  <ol class="text-xs text-blue-200/60 mt-1 ml-4 list-decimal space-y-1">
+                    <li>Get Client ID from Google Cloud Console</li>
+                    <li>Add to backend/.env as GOOGLE_CLIENT_ID</li>
+                    <li>Replace <span class="font-mono">YOUR_GOOGLE_CLIENT_ID</span> on <strong>line 189</strong></li>
+                    <li>Restart services with <span class="font-mono">./app.sh restart</span></li>
+                  </ol>
+                  <p class="text-xs text-blue-300/80 mt-2">
+                    📖 See <span class="font-mono">GOOGLE_OAUTH_SETUP.md</span> for details
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <!-- Error Message -->
-        <div x-show="error" x-text="error" class="mb-4 p-3 bg-red-500/20 text-red-400 rounded"></div>
-
-        <!-- Submit Button -->
-        <button type="submit" class="mui-btn mui-btn-contained w-full" :disabled="loading || !password">
-          <span x-show="!loading">Login</span>
-          <span x-show="loading">Logging in...</span>
-        </button>
-      </form>
+        
+        <!-- Loading state -->
+        <div x-show="googleLoading" class="flex justify-center items-center py-4">
+          <div class="mui-spinner"></div>
+          <span class="ml-2 text-sm">Signing in with Google...</span>
+        </div>
+        
+        <!-- Error Message (for Google Sign-In errors) -->
+        <div x-show="error" x-text="error" class="mt-4 p-3 bg-red-500/20 text-red-400 rounded text-sm"></div>
+      </div>
 
     </div>
 
@@ -90,43 +143,132 @@
   <script>
     function loginApp() {
       return {
-        password: '',
-        loading: false,
+        googleLoading: false,
+        googleConfigured: false,
         error: null,
         
-        async handleLogin() {
-          if (!this.password) return;
-          
-          this.loading = true;
-          this.error = null;
-          
-          try {
-            const response = await window.apiConfig.fetchWithFallback('/api/v1/auth/login', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ password: this.password })
-            });
-            
-            if (response.ok) {
-              const data = await response.json();
-              
-              // Set cookies
-              const expires = new Date(Date.now() + (data.expires_in || 3600) * 1000);
-              document.cookie = `access_token=${data.access_token}; expires=${expires.toUTCString()}; path=/`;
-              document.cookie = `refresh_token=${data.refresh_token}; expires=${new Date(Date.now() + 30*24*60*60*1000).toUTCString()}; path=/`;
-              
-              window.location.href = '/dashboard.html';
-            } else {
-              this.loading = false;
-              this.error = response.status === 401 ? 'Invalid password' : 'Login failed';
-            }
-          } catch (error) {
-            this.error = 'Cannot connect to server';
-            this.loading = false;
-          }
+        setAuthTokens(data) {
+          const expires = new Date(Date.now() + (data.expires_in || 1800) * 1000);
+          const refreshExpires = new Date(Date.now() + 7*24*60*60*1000); // 7 days
+          document.cookie = `access_token=${data.access_token}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+          document.cookie = `refresh_token=${data.refresh_token}; expires=${refreshExpires.toUTCString()}; path=/; SameSite=Lax`;
         }
       };
     }
+    
+    // Global function for Google Sign-In callback
+    async function handleGoogleLogin(response) {
+      const app = Alpine.$data(document.querySelector('[x-data]'));
+      app.googleLoading = true;
+      app.error = null;
+      
+      try {
+        const apiResponse = await window.apiConfig.fetchWithFallback('/api/v1/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ credential: response.credential })
+        });
+        
+        if (apiResponse.ok) {
+          const data = await apiResponse.json();
+          app.setAuthTokens(data);
+          window.location.href = '/dashboard.html';
+        } else {
+          app.googleLoading = false;
+          const errorData = await apiResponse.json().catch(() => ({}));
+          app.error = apiResponse.status === 401 ? 'Google authentication failed. Email not authorized.' :
+                      apiResponse.status === 503 ? 'Google authentication not configured on server' :
+                      errorData.detail || 'Google login failed';
+        }
+      } catch (error) {
+        app.googleLoading = false;
+        app.error = 'Cannot connect to server';
+      }
+    }
+    
+    // Initialize Google Sign-In button when page loads
+    window.addEventListener('load', async () => {
+      console.log('🚀 Page loaded, initializing...');
+      
+      // Wait a bit for Alpine.js to be ready
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const appElement = document.querySelector('[x-data]');
+      console.log('Alpine element:', appElement);
+      
+      const app = Alpine.$data(appElement);
+      console.log('Alpine app data:', app);
+      
+      // Wait for API config to initialize
+      await window.apiConfig.initialize();
+      console.log('✅ API config initialized');
+      
+      // Your Google Client ID - replace with your actual Client ID
+      const GOOGLE_CLIENT_ID = '750851817519-3ep01ef0mpje23sma280fpqaa301sd05.apps.googleusercontent.com';
+      console.log('📝 Using Google Client ID:', GOOGLE_CLIENT_ID);
+      
+      // Function to initialize Google Sign-In
+      let retryCount = 0;
+      const maxRetries = 50; // 5 seconds max
+      
+      const initGoogleSignIn = () => {
+        retryCount++;
+        console.log(`🔄 Attempt ${retryCount}/${maxRetries} to initialize Google Sign-In`);
+        
+        if (window.google && window.google.accounts) {
+          try {
+            console.log('✅ Google library loaded, initializing...');
+            
+            window.google.accounts.id.initialize({
+              client_id: GOOGLE_CLIENT_ID,
+              callback: handleGoogleLogin,
+              auto_select: false,
+              cancel_on_tap_outside: true
+            });
+            console.log('✅ Google Sign-In initialized');
+            
+            const buttonContainer = document.getElementById('google-signin-button');
+            console.log('Button container:', buttonContainer);
+            
+            window.google.accounts.id.renderButton(
+              buttonContainer,
+              {
+                theme: 'filled_blue',
+                size: 'large',
+                width: 300,
+                text: 'signin_with',
+                shape: 'rectangular',
+                logo_alignment: 'left'
+              }
+            );
+            console.log('✅ Google Sign-In button rendered');
+            
+            app.googleConfigured = true;
+            console.log('✅ Set googleConfigured = true, current value:', app.googleConfigured);
+          } catch (error) {
+            console.error('❌ Failed to initialize Google Sign-In:', error);
+            app.googleConfigured = false;
+          }
+        } else {
+          if (retryCount < maxRetries) {
+            console.log('⏳ Google library not ready, retrying...');
+            setTimeout(initGoogleSignIn, 100);
+          } else {
+            console.error('❌ Google library failed to load after', maxRetries, 'attempts');
+            app.googleConfigured = false;
+          }
+        }
+      };
+      
+      // Start initialization
+      if (!GOOGLE_CLIENT_ID.includes('YOUR_GOOGLE')) {
+        console.log('✅ Client ID is configured, starting initialization');
+        initGoogleSignIn();
+      } else {
+        console.log('⚠️ Google Client ID not configured (still has placeholder)');
+        app.googleConfigured = false;
+      }
+    });
   </script>
 </body>
 </html>

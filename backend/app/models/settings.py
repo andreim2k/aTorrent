@@ -21,6 +21,12 @@ class AppSettings(Base):
 
     # Authentication
     app_password_hash = Column(String(255), nullable=False)
+    
+    # Google OAuth fields (for single-user app)
+    google_user_email = Column(String(255), nullable=True)
+    google_user_name = Column(String(255), nullable=True)
+    google_user_picture = Column(Text, nullable=True)
+    google_user_id = Column(String(255), nullable=True)
 
     # UI Settings
     theme = Column(String(20), default="dark")  # dark, light, auto

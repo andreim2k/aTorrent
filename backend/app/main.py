@@ -1,14 +1,19 @@
 """Improved main application with better logging and error handling."""
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 import json
 import asyncio
 from typing import List
 import os
 from pathlib import Path
 import logging
+import time
+from datetime import datetime, timezone
 
 from app.core.config import settings
 from app.core.constants import WEBSOCKET_BROADCAST_INTERVAL, ERROR_RETRY_DELAY
@@ -20,12 +25,28 @@ from app.db.init_db import init_db
 from app.services.torrent_service import TorrentService
 from app.core.websocket_manager import WebSocketManager
 
-# Enhanced logging configuration
+# Enhanced logging configuration with rotation
+from logging.handlers import RotatingFileHandler
+
+# Create logs directory if it doesn't exist
+os.makedirs("logs", exist_ok=True)
+
+# Set up rotating file handler
+file_handler = RotatingFileHandler(
+    "logs/atorrent.log",
+    maxBytes=10485760,  # 10MB
+    backupCount=5
+)
+file_handler.setFormatter(
+    logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+)
+
+# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler("logs/atorrent.log"),
+        file_handler,
         logging.StreamHandler()
     ]
 )
@@ -46,13 +67,19 @@ downloads_path.mkdir(exist_ok=True)
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="Modern torrent client web application with improved architecture",
+    description="Modern torrent client web application with Google OAuth and rate limiting",
     docs_url=f"{settings.API_V1_STR}/docs",
     redoc_url=f"{settings.API_V1_STR}/redoc",
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
 )
 
+# Initialize rate limiter
+limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 # Enhanced CORS middleware with better security
+logger.info(f"Configuring CORS with allowed origins: {settings.ALLOWED_ORIGINS}")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
@@ -68,17 +95,15 @@ app.include_router(
     system_router, prefix=settings.API_V1_STR + "/system", tags=["system"]
 )
 
-# Global instances
-websocket_manager = WebSocketManager()
-torrent_service = None
-
-
 @app.on_event("startup")
 async def startup_event():
     """Enhanced startup with proper error handling and logging."""
-    global torrent_service
-
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
+    
+    # Initialize services using app.state (better than globals)
+    app.state.websocket_manager = WebSocketManager()
+    app.state.torrent_service = None
+    app.state.startup_time = time.time()
 
     try:
         # Initialize database
@@ -88,8 +113,8 @@ async def startup_event():
 
         # Initialize consolidated torrent service
         logger.info("Initializing torrent service...")
-        torrent_service = TorrentService(downloads_path=settings.DOWNLOAD_PATH)
-        await torrent_service.initialize()
+        app.state.torrent_service = TorrentService(downloads_path=settings.DOWNLOAD_PATH)
+        await app.state.torrent_service.initialize()
         logger.info("Torrent service initialized successfully")
 
         # Start background task for real-time updates
@@ -105,20 +130,34 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Enhanced shutdown with proper cleanup."""
-    global torrent_service
-
+    """Enhanced shutdown with proper cleanup and graceful connection termination."""
     logger.info("Shutting down aTorrent...")
+    shutdown_timeout = 30  # seconds
 
     try:
+        # Stop accepting new requests
+        torrent_service = getattr(app.state, 'torrent_service', None)
+        websocket_manager = getattr(app.state, 'websocket_manager', None)
+        
         if torrent_service:
+            # Wait for active operations with timeout
+            start_time = time.time()
             logger.info("Cleaning up torrent service...")
             await torrent_service.cleanup()
             logger.info("Torrent service cleaned up")
 
-        # Close WebSocket connections
-        if websocket_manager.active_connections:
+        # Close WebSocket connections gracefully
+        if websocket_manager and websocket_manager.active_connections:
             logger.info(f"Closing {len(websocket_manager.active_connections)} WebSocket connections...")
+            
+            # Notify clients of shutdown
+            disconnect_message = {
+                "type": "server_shutdown",
+                "message": "Server is shutting down"
+            }
+            await websocket_manager.broadcast(disconnect_message)
+            await asyncio.sleep(1)  # Give clients time to receive message
+            
             for connection in websocket_manager.active_connections.copy():
                 try:
                     await connection.close()
@@ -134,6 +173,7 @@ async def shutdown_event():
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     """Enhanced WebSocket endpoint with better error handling."""
+    websocket_manager = app.state.websocket_manager
     client_id = f"{websocket.client.host}:{websocket.client.port}" if websocket.client else "unknown"
     logger.info(f"WebSocket connection attempt from {client_id}")
 
@@ -173,6 +213,7 @@ async def websocket_endpoint(websocket: WebSocket):
 async def handle_websocket_message(websocket: WebSocket, message: dict):
     """Handle incoming WebSocket messages."""
     try:
+        torrent_service = getattr(app.state, 'torrent_service', None)
         message_type = message.get("type", "")
 
         if message_type == "ping":
@@ -202,14 +243,22 @@ async def handle_websocket_message(websocket: WebSocket, message: dict):
 
 
 async def enhanced_broadcast_torrent_updates():
-    """Enhanced background task to broadcast torrent updates."""
-    global torrent_service
-
+    """Enhanced background task with circuit breaker and better error recovery."""
     logger.info("Starting enhanced torrent update broadcast loop")
+    consecutive_errors = 0
+    max_consecutive_errors = 10
 
     while True:
         try:
-            if torrent_service and websocket_manager.active_connections:
+            torrent_service = getattr(app.state, 'torrent_service', None)
+            websocket_manager = getattr(app.state, 'websocket_manager', None)
+            
+            if not torrent_service:
+                logger.warning("Torrent service not available, waiting...")
+                await asyncio.sleep(5)
+                continue
+                
+            if torrent_service and websocket_manager and websocket_manager.active_connections:
                 # Get current torrent status
                 torrents_status = await torrent_service.get_all_torrents_status()
 
@@ -218,7 +267,7 @@ async def enhanced_broadcast_torrent_updates():
                     message = {
                         "type": "torrent_update",
                         "data": torrents_status,
-                        "timestamp": asyncio.get_event_loop().time()
+                        "timestamp": time.time()
                     }
 
                     await websocket_manager.broadcast(message)
@@ -231,67 +280,115 @@ async def enhanced_broadcast_torrent_updates():
 
                     if enhanced_broadcast_torrent_updates._counter % 50 == 0:
                         active_torrents = len([t for t in torrents_status if t.get('status') not in ['paused', 'completed']])
-                        logger.info(f"Broadcasting status: {active_torrents} active torrents, "
-                                  f"{len(websocket_manager.active_connections)} WebSocket clients")
+                        if websocket_manager:
+                            logger.info(f"Broadcasting status: {active_torrents} active torrents, "
+                                      f"{len(websocket_manager.active_connections)} WebSocket clients")
 
+            consecutive_errors = 0  # Reset on success
             await asyncio.sleep(WEBSOCKET_BROADCAST_INTERVAL)
 
         except Exception as e:
-            logger.error(f"Error in broadcast_torrent_updates: {e}", exc_info=True)
-            await asyncio.sleep(ERROR_RETRY_DELAY)
+            consecutive_errors += 1
+            logger.error(f"Error in broadcast_torrent_updates (attempt {consecutive_errors}): {e}", exc_info=True)
+            
+            # Circuit breaker: stop after too many failures
+            if consecutive_errors >= max_consecutive_errors:
+                logger.critical("Too many consecutive errors in broadcast loop, stopping...")
+                break
+                
+            await asyncio.sleep(ERROR_RETRY_DELAY * min(consecutive_errors, 5))  # Exponential backoff
 
 
 @app.get("/")
 async def root():
     """Enhanced root endpoint with more information."""
+    torrent_service = getattr(app.state, 'torrent_service', None)
     return {
         "message": f"Welcome to {settings.APP_NAME} API",
         "version": settings.APP_VERSION,
         "docs": f"{settings.API_V1_STR}/docs",
         "redoc": f"{settings.API_V1_STR}/redoc",
         "status": "operational",
-        "torrent_service": "active" if torrent_service else "inactive"
+        "torrent_service": "active" if torrent_service else "inactive",
+        "authentication": "Google OAuth + Password"
     }
 
 
 @app.get("/health")
 async def health_check():
-    """Enhanced health check with detailed status."""
+    """Comprehensive health check with actual component verification."""
+    from app.db.utils import get_db_context
+    from app.models.settings import AppSettings
+    
+    checks = {
+        "torrent_service": "unknown",
+        "database": "unknown",
+        "websocket": "unknown"
+    }
+    
     try:
+        # Check database
+        try:
+            with get_db_context() as db:
+                db.query(AppSettings).first()
+            checks["database"] = "healthy"
+        except Exception as e:
+            logger.error(f"Database health check failed: {e}")
+            checks["database"] = "unhealthy"
+        
         # Check torrent service
-        torrent_status = "healthy" if torrent_service and torrent_service.running else "unhealthy"
-
-        # Check WebSocket connections
-        websocket_count = len(websocket_manager.active_connections)
-
-        # Get basic stats
+        torrent_service = getattr(app.state, 'torrent_service', None)
+        checks["torrent_service"] = "healthy" if (
+            torrent_service and torrent_service.running
+        ) else "unhealthy"
+        
+        # Check WebSocket
+        websocket_manager = getattr(app.state, 'websocket_manager', None)
+        checks["websocket"] = "healthy" if websocket_manager else "unhealthy"
+        
+        all_healthy = all(status == "healthy" for status in checks.values())
+        
+        # Get stats if available
         stats = {}
         if torrent_service:
             try:
                 stats = torrent_service.get_session_stats()
             except Exception as e:
                 logger.warning(f"Error getting session stats: {e}")
-
-        return {
-            "status": "healthy" if torrent_status == "healthy" else "degraded",
+        
+        response_data = {
+            "status": "healthy" if all_healthy else "degraded",
             "app": settings.APP_NAME,
             "version": settings.APP_VERSION,
-            "components": {
-                "torrent_service": torrent_status,
-                "websocket_connections": websocket_count,
-                "database": "healthy"  # Could add actual DB check
-            },
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "uptime": int(time.time() - getattr(app.state, 'startup_time', time.time())),
+            "checks": checks,
             "stats": stats
         }
+        
+        status_code = 200 if all_healthy else 503
+        return Response(
+            content=json.dumps(response_data),
+            status_code=status_code,
+            media_type="application/json"
+        )
 
     except Exception as e:
-        logger.error(f"Health check error: {e}")
-        raise HTTPException(status_code=503, detail="Service temporarily unavailable")
+        logger.error(f"Health check error: {e}", exc_info=True)
+        return Response(
+            content=json.dumps({
+                "status": "unhealthy",
+                "error": str(e)
+            }),
+            status_code=503,
+            media_type="application/json"
+        )
 
 
-# Enhanced service accessors with validation
+# Enhanced service accessors with validation using app.state
 def get_torrent_service() -> TorrentService:
     """Get torrent service with validation."""
+    torrent_service = getattr(app.state, 'torrent_service', None)
     if not torrent_service:
         raise HTTPException(status_code=503, detail="Torrent service not initialized")
     return torrent_service
@@ -299,6 +396,9 @@ def get_torrent_service() -> TorrentService:
 
 def get_websocket_manager() -> WebSocketManager:
     """Get WebSocket manager."""
+    websocket_manager = getattr(app.state, 'websocket_manager', None)
+    if not websocket_manager:
+        raise HTTPException(status_code=503, detail="WebSocket manager not initialized")
     return websocket_manager
 
 

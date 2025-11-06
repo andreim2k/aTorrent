@@ -3,6 +3,7 @@ from pydantic import Field, validator
 from typing import List, Union, Optional
 import os
 import secrets
+import socket
 from pathlib import Path
 
 
@@ -15,31 +16,32 @@ class Settings(BaseSettings):
     APP_NAME: str = Field(default="@Torrent", description="Application name")
     APP_VERSION: str = Field(default="1.0.0", description="Application version")
     DEBUG: bool = Field(default=False, description="Debug mode")
+    DEVELOPMENT_MODE: bool = Field(default=False, description="Development mode (allows wildcard CORS)")
     API_V1_STR: str = Field(default="/api/v1", description="API version string")
 
     # Security - Generate secure defaults
     SECRET_KEY: str = Field(default_factory=_generate_secret_key, description="Secret key for JWT")
     ALGORITHM: str = Field(default="HS256", description="JWT algorithm")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=30, ge=1, le=1440, description="Token expiration in minutes")
+    
+    # Google OAuth
+    GOOGLE_CLIENT_ID: str = Field(default="", description="Google OAuth client ID")
+    GOOGLE_CLIENT_SECRET: str = Field(default="", description="Google OAuth client secret")
+    GOOGLE_REDIRECT_URI: str = Field(default="http://localhost:3000/auth/callback", description="Google OAuth redirect URI")
+    ALLOWED_GOOGLE_DOMAINS: List[str] = Field(default_factory=list, description="Allowed Google email domains (empty = allow all)")
 
     # Database
     DATABASE_URL: str = Field(default="sqlite:///./aTorrent.db", description="Database connection URL")
 
-    # CORS - Allow environment override
-    # More secure CORS configuration
+    # CORS - Secure configuration
     ALLOWED_ORIGINS: List[str] = Field(
         default_factory=lambda: [
-            "http://localhost:3000",
-            "http://127.0.0.1:3000", 
-            "http://localhost:8000",
-            "http://127.0.0.1:8000",
-            "http://poseidon:3000",
-            "http://poseidon:8000",
-            "http://192.168.1.100:3000",
-            "http://192.168.1.100:8000",
-            # Production origins - add your production domains here
             os.getenv("FRONTEND_URL", "http://localhost:3000"),
-        ] if not os.getenv("DEVELOPMENT_MODE", "false").lower() == "true" else ["*"],
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            f"http://{socket.gethostname()}:3000",
+            f"http://{socket.gethostname()}:8000",
+        ],
         description="Allowed CORS origins"
     )
 
@@ -90,10 +92,22 @@ class Settings(BaseSettings):
         return str(path)
 
     @validator('ALLOWED_ORIGINS')
-    def validate_cors_origins(cls, v):
-        """Validate CORS origins"""
-        if "*" in v and len(v) > 1:
-            raise ValueError("Cannot specify '*' with other origins")
+    def validate_cors_origins(cls, v, values):
+        """Validate CORS origins - never allow wildcard in production."""
+        # Get development mode from the model values being validated
+        is_dev = values.get('DEVELOPMENT_MODE', False)
+        
+        if "*" in v:
+            if not is_dev:
+                raise ValueError("Wildcard CORS origin not allowed in production")
+            if len(v) > 1:
+                raise ValueError("Cannot specify '*' with other origins")
+        
+        # Ensure only valid URLs
+        for origin in v:
+            if origin != "*" and not origin.startswith(("http://", "https://")):
+                raise ValueError(f"Invalid origin URL: {origin}")
+        
         return v
 
     @validator('COOKIE_SAMESITE')
