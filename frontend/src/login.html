@@ -18,7 +18,9 @@
         const msg = args[0]?.toString() || '';
         if (msg.includes('GSI_LOGGER') ||
             msg.includes('credential_button_library') ||
-            msg.includes('given origin is not allowed')) {
+            msg.includes('given origin is not allowed') ||
+            msg.includes('accounts.google.com') ||
+            msg.includes('gsi/status')) {
           return;
         }
         originalError.apply(console, args);
@@ -28,7 +30,9 @@
         const msg = args[0]?.toString() || '';
         if (msg.includes('GSI_LOGGER') ||
             msg.includes('credential_button_library') ||
-            msg.includes('given origin is not allowed')) {
+            msg.includes('given origin is not allowed') ||
+            msg.includes('accounts.google.com') ||
+            msg.includes('gsi/status')) {
           return;
         }
         originalWarn.apply(console, args);
@@ -501,15 +505,42 @@
               cancel_on_tap_outside: true
             });
 
-            // Handle custom button click - trigger Google One Tap flow
+            // Handle custom button click - render hidden Google button and trigger
             const customButton = document.getElementById('custom-google-signin-btn');
             if (customButton) {
               customButton.addEventListener('click', (e) => {
                 e.preventDefault();
                 console.log('🔐 Custom button clicked, triggering Google Sign-In');
                 customButton.classList.add('loading');
-                // Trigger Google's One Tap UI - will call handleGoogleLogin callback
-                window.google.accounts.id.prompt();
+
+                // Create a hidden container for the native Google button
+                // This avoids the One Tap CORS error while still using Google's official SDK
+                const hiddenContainer = document.createElement('div');
+                hiddenContainer.style.display = 'none';
+                hiddenContainer.id = 'hidden-google-btn';
+                document.body.appendChild(hiddenContainer);
+
+                // Render Google button to trigger its auth flow
+                window.google.accounts.id.renderButton(hiddenContainer, {
+                  theme: 'outline',
+                  size: 'large',
+                  type: 'standard'
+                });
+
+                // Click the hidden button to trigger authentication
+                const googleBtn = hiddenContainer.querySelector('div[role="button"]');
+                if (googleBtn) {
+                  googleBtn.click();
+                  console.log('✅ Google button clicked');
+                } else {
+                  console.warn('⚠️ Could not find Google button element');
+                  customButton.classList.remove('loading');
+                }
+
+                // Clean up after a delay
+                setTimeout(() => {
+                  hiddenContainer.remove();
+                }, 2000);
               });
             }
 
