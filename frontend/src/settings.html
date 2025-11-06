@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
@@ -7,6 +7,9 @@
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <title>Settings - @Torrent</title>
+
+        <!-- Theme Manager MUST load first -->
+        <script src="/js/theme.js"></script>
 
         <!-- Modern UI Stylesheet -->
         <link rel="stylesheet" href="/css/modern-ui.css" />
@@ -67,24 +70,10 @@
         </script>
 
         <style>
-            /* Beautiful gradient background */
-            body {
-                background: linear-gradient(
-                    135deg,
-                    #0f0c29 0%,
-                    #302b63 50%,
-                    #24243e 100%
-                );
-                min-height: 100vh;
-                background-attachment: fixed;
-            }
-            /* Global font size reduction - 20% smaller */
-            .text-xs {
-                font-size: 0.7rem !important; /* ~11px instead of 12px */
-            }
-            body {
-                font-size: 14px; /* reduced from default 16px */
-            }
+            /* Use modern gradient background with theme variables */
+            .text-xs { font-size: 0.7rem !important; }
+            body { font-size: 14px; }
+
             /* Responsive navigation fixes */
             @media (max-width: 640px) {
                 .mui-btn-danger {
@@ -105,117 +94,125 @@
                     min-width: fit-content;
                 }
             }
-            body {
-                font-family:
-                    "Inter",
-                    system-ui,
-                    -apple-system,
-                    sans-serif;
-            }
+
+            /* Use modern card styles with theme variables */
             .mui-card {
-                background: linear-gradient(
-                    135deg,
-                    rgba(20, 18, 35, 0.95) 0%,
-                    rgba(35, 30, 70, 0.9) 50%,
-                    rgba(25, 25, 45, 0.95) 100%
-                );
-                backdrop-filter: blur(10px);
-                border-radius: 16px;
-                box-shadow:
-                    0 8px 32px rgba(31, 38, 135, 0.37),
-                    0 0 40px rgba(144, 202, 249, 0.1);
-                border: 1px solid rgba(255, 255, 255, 0.08);
+                background: var(--glass-bg);
+                backdrop-filter: blur(30px) saturate(180%);
+                border-radius: 20px;
+                box-shadow: var(--shadow-md);
+                border: 1px solid var(--glass-border);
+                transition: all 0.3s ease;
             }
+
+            .mui-card:hover {
+                box-shadow: var(--shadow-lg);
+                transform: translateY(-2px);
+            }
+
             .mui-btn {
                 padding: 12px 24px;
                 font-size: 0.875rem;
-                border-radius: 8px;
-                font-weight: 500;
-                transition: all 0.2s;
+                border-radius: 12px;
+                font-weight: 600;
+                transition: all 0.3s ease;
                 cursor: pointer;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
             }
             .mui-btn-contained {
-                background: #90caf9;
-                color: #000;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: #fff;
+                box-shadow: var(--shadow-md);
+                border: none;
             }
             .mui-btn-contained:hover {
-                background: #42a5f5;
+                box-shadow: var(--shadow-lg);
+                transform: translateY(-2px);
             }
             .mui-btn-contained:disabled {
-                background: #555;
-                color: #999;
+                background: var(--bg-tertiary);
+                color: var(--text-tertiary);
                 cursor: not-allowed;
             }
             .mui-btn-outlined {
-                background: transparent;
-                color: #90caf9;
-                border: 1px solid rgba(144, 202, 249, 0.5);
+                background: var(--glass-bg);
+                color: #667eea;
+                border: 2px solid #667eea;
+                font-weight: 600;
             }
             .mui-btn-outlined:hover {
-                background: rgba(144, 202, 249, 0.1);
+                background: rgba(102, 126, 234, 0.15);
             }
             .mui-input {
                 width: 100%;
                 padding: 12px 16px;
-                background: rgba(255, 255, 255, 0.05);
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                border-radius: 8px;
-                color: #fff;
+                background: var(--input-bg);
+                border: 1px solid var(--input-border);
+                border-radius: 12px;
+                color: var(--text-primary);
+                transition: all 0.3s ease;
             }
             .mui-input:focus {
                 outline: none;
-                border-color: #90caf9;
-                background: rgba(255, 255, 255, 0.08);
+                border-color: #667eea;
+                background: var(--glass-bg);
+                box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
             }
             .mui-nav-link {
                 display: inline-flex;
                 align-items: center;
                 padding: 12px 24px;
-                border-radius: 8px;
-                transition: all 0.2s;
+                border-radius: 10px;
+                transition: all 0.3s ease;
+                color: var(--text-secondary);
             }
             .mui-nav-link:hover {
-                background: rgba(255, 255, 255, 0.1);
+                background: var(--glass-bg);
+                color: var(--text-primary);
             }
             .mui-nav-link.active {
-                background: rgba(144, 202, 249, 0.2);
-                color: #90caf9;
+                background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+                color: var(--text-primary);
             }
             .mui-spinner {
                 display: inline-block;
                 width: 20px;
                 height: 20px;
-                border: 2px solid rgba(144, 202, 249, 0.3);
-                border-top-color: #90caf9;
+                border: 2px solid var(--border-color);
+                border-top-color: #667eea;
                 border-radius: 50%;
                 animation: spin 0.6s linear infinite;
             }
             .mui-btn-danger {
-                background: #dc2626;
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
                 color: #fff;
-                border: 1px solid #dc2626;
+                box-shadow: var(--shadow-md);
+                border: none;
             }
             .mui-btn-danger:hover {
-                background: #b91c1c;
-                border-color: #b91c1c;
+                box-shadow: var(--shadow-lg);
+                transform: translateY(-2px);
             }
             .mui-alert {
                 padding: 12px 16px;
-                border-radius: 8px;
+                border-radius: 12px;
                 margin-bottom: 16px;
+                background: var(--glass-bg);
+                border: 1px solid var(--glass-border);
             }
             .mui-alert-success {
-                background: rgba(102, 187, 106, 0.1);
-                color: #66bb6a;
-                border: 1px solid rgba(102, 187, 106, 0.3);
+                background: rgba(17, 153, 142, 0.12);
+                color: #38ef7d;
+                border: 1px solid rgba(56, 239, 125, 0.3);
             }
             .mui-alert-error {
-                background: rgba(244, 67, 54, 0.1);
-                color: #f44336;
-                border: 1px solid rgba(244, 67, 54, 0.3);
+                background: rgba(245, 87, 108, 0.12);
+                color: #f5576c;
+                border: 1px solid rgba(245, 87, 108, 0.3);
             }
             .mui-alert-warning {
-                background: rgba(255, 167, 38, 0.1);
+                background: rgba(255, 167, 38, 0.12);
                 color: #ffa726;
                 border: 1px solid rgba(255, 167, 38, 0.3);
             }
@@ -245,12 +242,26 @@
             }
         </style>
     </head>
-    <body class="modern-gradient-dashboard text-white">
+    <body class="modern-gradient-dashboard">
+        <!-- Theme Toggle Button -->
+        <button class="theme-toggle-btn" onclick="themeManager.toggleTheme()" title="Toggle theme" aria-label="Toggle dark/light theme" style="position: fixed; top: 20px; right: 20px; width: 44px; height: 44px; border-radius: 50%; background: var(--glass-bg); border: 1px solid var(--glass-border); backdrop-filter: blur(20px); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; transition: all 0.3s ease; box-shadow: var(--shadow-sm); z-index: 50;">
+            <span id="theme-icon">🌙</span>
+        </button>
+        <script>
+            function updateThemeIcon() {
+                const icon = document.getElementById('theme-icon');
+                if (icon) {
+                    icon.textContent = themeManager.isDarkTheme() ? '☀️' : '🌙';
+                }
+            }
+            updateThemeIcon();
+        </script>
+
         <!-- Floating Orbs -->
         <div class="orb orb-1"></div>
         <div class="orb orb-2"></div>
         <div class="orb orb-3"></div>
-        
+
         <div x-data="settingsApp()" x-init="init()" class="relative z-10">
             <!-- Header -->
             <header class="modern-nav sticky top-0">

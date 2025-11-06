@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
@@ -7,23 +7,26 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Dashboard - @Torrent</title>
-  
+
+  <!-- Theme Manager MUST load first -->
+  <script src="/js/theme.js"></script>
+
   <!-- Alpine.js from CDN -->
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
-  
+
   <!-- WebSocket Client -->
   <script src="/js/api-config.js"></script>
   <script src="/js/websocket-client.js"></script>
-  
+
   <!-- Error Handler -->
   <script src="/js/modules/error-handler.js"></script>
-  
+
   <!-- API Client -->
   <script src="/js/modules/api-client.js"></script>
-  
+
   <!-- Torrent Manager -->
   <script src="/js/modules/torrent-manager.js"></script>
-  
+
   <!-- Modern UI Stylesheet -->
   <link rel="stylesheet" href="/css/modern-ui.css">
   
@@ -71,12 +74,13 @@
     }
     /* Minimal custom styles */
     body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-    .mui-card { background: linear-gradient(135deg, rgba(20, 18, 35, 0.95) 0%, rgba(35, 30, 70, 0.9) 50%, rgba(25, 25, 45, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 16px; box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37), 0 0 40px rgba(144, 202, 249, 0.1); border: 1px solid rgba(255, 255, 255, 0.08); }
-    .mui-btn { padding: 12px 24px; font-size: 0.875rem; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
-    .mui-btn-contained { background: #90caf9; color: #000; }
-    .mui-btn-contained:hover { background: #42a5f5; }
-    .mui-btn-outlined { background: transparent; color: #90caf9; border: 1px solid rgba(144, 202, 249, 0.5); }
-    .mui-btn-outlined:hover { background: rgba(144, 202, 249, 0.1); }
+    .mui-card { background: var(--glass-bg); backdrop-filter: blur(30px) saturate(180%); border-radius: 20px; box-shadow: var(--shadow-md); border: 1px solid var(--glass-border); transition: all 0.3s ease; }
+    .mui-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+    .mui-btn { padding: 12px 24px; font-size: 0.875rem; border-radius: 12px; font-weight: 600; transition: all 0.3s ease; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
+    .mui-btn-contained { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; box-shadow: var(--shadow-md); border: none; }
+    .mui-btn-contained:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+    .mui-btn-outlined { background: transparent; color: #667eea; border: 2px solid #667eea; font-weight: 600; }
+    .mui-btn-outlined:hover { background: rgba(102, 126, 234, 0.15); }
     .mui-input { padding: 10px 14px; background: rgba(144, 202, 249, 0.08); border: 1px solid rgba(144, 202, 249, 0.2); border-radius: 6px; color: rgba(144, 202, 249, 0.9); font-size: 14px; transition: all 0.2s; }
     .mui-input:focus { outline: none; border-color: rgba(144, 202, 249, 0.5); background: rgba(144, 202, 249, 0.12); box-shadow: 0 0 0 3px rgba(144, 202, 249, 0.1); }
     .mui-input:hover { border-color: rgba(144, 202, 249, 0.4); background: rgba(144, 202, 249, 0.1); }
@@ -181,8 +185,8 @@
     .mui-checkbox input[type="checkbox"]:focus + .checkbox-custom {
       box-shadow: 0 0 0 3px rgba(144, 202, 249, 0.2);
     }
-    .mui-btn-danger { background: #dc2626; color: #fff; border: 1px solid #dc2626; }
-    .mui-btn-danger:hover { background: #b91c1c; border-color: #b91c1c; }
+    .mui-btn-danger { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: #fff; box-shadow: var(--shadow-md); border: none; }
+    .mui-btn-danger:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
     .mui-chip { display: inline-flex; padding: 0 12px; height: 24px; align-items: center; border-radius: 12px; font-size: 0.75rem; text-transform: capitalize; }
     .mui-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(144, 202, 249, 0.3); border-top-color: #90caf9; border-radius: 50%; animation: spin 0.6s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
@@ -7,27 +7,27 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Login - @Torrent</title>
-  
+
   <!-- Suppress Google Sign-In console warnings BEFORE library loads -->
   <script>
     (function() {
       const originalError = console.error;
       const originalWarn = console.warn;
-      
+
       console.error = function(...args) {
         const msg = args[0]?.toString() || '';
-        if (msg.includes('GSI_LOGGER') || 
-            msg.includes('credential_button_library') || 
+        if (msg.includes('GSI_LOGGER') ||
+            msg.includes('credential_button_library') ||
             msg.includes('given origin is not allowed')) {
           return;
         }
         originalError.apply(console, args);
       };
-      
+
       console.warn = function(...args) {
         const msg = args[0]?.toString() || '';
-        if (msg.includes('GSI_LOGGER') || 
-            msg.includes('credential_button_library') || 
+        if (msg.includes('GSI_LOGGER') ||
+            msg.includes('credential_button_library') ||
             msg.includes('given origin is not allowed')) {
           return;
         }
@@ -35,353 +35,279 @@
       };
     })();
   </script>
-  
+
+  <!-- Theme Manager MUST load first -->
+  <script src="/js/theme.js"></script>
+
   <!-- Alpine.js from CDN -->
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
   <script src="/js/api-config.js"></script>
-  
+
   <!-- Google Sign-In -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  
+
+  <!-- Modern UI Stylesheet -->
+  <link rel="stylesheet" href="/css/modern-ui.css">
+
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  
+
   <!-- Tailwind CSS from CDN -->
   <script src="https://cdn.tailwindcss.com?v=3.4.1"></script>
-  
+
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      overflow-x: hidden;
-    }
-    
-    /* Ultra Modern Gradient Background with Animation */
-    .modern-gradient-bg {
-      position: relative;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
-      background-size: 400% 400%;
-      animation: gradientShift 15s ease infinite;
-      overflow: hidden;
-    }
-    
-    @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-    
-    /* Floating Orbs Background */
-    .orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(80px);
-      opacity: 0.6;
-      animation: float 20s infinite ease-in-out;
-    }
-    
-    .orb-1 {
-      width: 500px;
-      height: 500px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      top: -200px;
-      left: -200px;
-      animation-delay: 0s;
-    }
-    
-    .orb-2 {
-      width: 400px;
-      height: 400px;
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      bottom: -150px;
-      right: -150px;
-      animation-delay: 5s;
-    }
-    
-    .orb-3 {
-      width: 350px;
-      height: 350px;
-      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      animation-delay: 10s;
-    }
-    
-    @keyframes float {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      33% { transform: translate(30px, -50px) scale(1.1); }
-      66% { transform: translate(-40px, 30px) scale(0.9); }
-    }
-    
-    /* Glassmorphism Card */
-    .glass-card {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(30px) saturate(180%);
-      -webkit-backdrop-filter: blur(30px) saturate(180%);
-      border-radius: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 
-        0 8px 32px 0 rgba(31, 38, 135, 0.37),
-        inset 0 1px 0 0 rgba(255, 255, 255, 0.3),
-        0 0 60px 0 rgba(255, 255, 255, 0.1);
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      animation: fadeInUp 0.8s ease-out;
-    }
-    
-    .glass-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 
-        0 16px 48px 0 rgba(31, 38, 135, 0.5),
-        inset 0 1px 0 0 rgba(255, 255, 255, 0.4),
-        0 0 80px 0 rgba(255, 255, 255, 0.2);
-    }
-    
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    /* Modern Logo Animation */
+    /* Login-specific styles */
     .logo-text {
       font-size: 3rem;
       font-weight: 800;
-      background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       letter-spacing: -0.02em;
-      text-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
       animation: logoGlow 3s ease-in-out infinite alternate;
     }
-    
+
     @keyframes logoGlow {
-      from { filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3)); }
-      to { filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.6)); }
+      from { filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.3)); }
+      to { filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.6)); }
     }
-    
+
     .subtitle-text {
-      color: rgba(255, 255, 255, 0.9);
+      color: var(--text-secondary);
       font-weight: 300;
       font-size: 1.125rem;
       letter-spacing: 0.05em;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
-    
+
     /* Modern Google Button Container */
     .google-btn-container {
       position: relative;
       padding: 8px;
-      background: rgba(255, 255, 255, 0.15);
+      background: var(--glass-bg);
       backdrop-filter: blur(10px);
       border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-sm);
       transition: all 0.3s ease;
     }
-    
+
     .google-btn-container:hover {
       transform: scale(1.02);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-      background: rgba(255, 255, 255, 0.2);
+      box-shadow: var(--shadow-md);
+      background: var(--stat-bg);
     }
-    
+
     /* Info Box with Glassmorphism */
     .info-box {
-      background: rgba(59, 130, 246, 0.15);
+      background: rgba(59, 130, 246, 0.12);
       backdrop-filter: blur(20px);
       border: 1px solid rgba(59, 130, 246, 0.3);
       border-radius: 16px;
       padding: 1.5rem;
       transition: all 0.3s ease;
+      color: var(--text-primary);
     }
-    
+
     .info-box:hover {
-      background: rgba(59, 130, 246, 0.2);
+      background: rgba(59, 130, 246, 0.15);
       border-color: rgba(59, 130, 246, 0.4);
       transform: translateY(-2px);
     }
-    
-    /* Loading Spinner */
-    .modern-spinner {
-      width: 24px;
-      height: 24px;
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+
+    .info-box h3 {
+      color: #667eea;
     }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+
+    .info-box p {
+      color: var(--text-secondary);
     }
-    
+
     /* Error Message */
     .error-message {
-      background: rgba(239, 68, 68, 0.15);
+      background: rgba(239, 68, 68, 0.12);
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(239, 68, 68, 0.4);
+      border: 1px solid rgba(239, 68, 68, 0.3);
       border-radius: 12px;
       padding: 1rem;
-      color: #fee2e2;
+      color: #dc2626;
       animation: shake 0.5s ease;
     }
-    
+
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
       25% { transform: translateX(-5px); }
       75% { transform: translateX(5px); }
     }
-    
+
     /* Footer */
     .footer-text {
-      color: rgba(255, 255, 255, 0.7);
+      color: var(--text-tertiary);
       font-size: 0.875rem;
       font-weight: 300;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
-    
+
     /* Setup Instructions */
     .setup-list {
       list-style: none;
       padding-left: 0;
     }
-    
+
     .setup-list li {
       position: relative;
       padding-left: 1.75rem;
       margin-bottom: 0.75rem;
-      color: rgba(219, 234, 254, 0.9);
+      color: var(--text-secondary);
       font-size: 0.875rem;
     }
-    
+
     .setup-list li:before {
       content: "→";
       position: absolute;
       left: 0;
-      color: rgba(96, 165, 250, 1);
+      color: #667eea;
       font-weight: bold;
     }
-    
+
+    .setup-list code {
+      background: rgba(102, 126, 234, 0.15);
+      border: 1px solid rgba(102, 126, 234, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.8em;
+    }
+
+    /* Theme Toggle Button */
+    .theme-toggle-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-sm);
+      z-index: 50;
+    }
+
+    .theme-toggle-btn:hover {
+      transform: scale(1.1);
+      box-shadow: var(--shadow-md);
+    }
+
+    .theme-toggle-btn:active {
+      transform: scale(0.95);
+    }
+
     /* Mobile Responsive */
     @media (max-width: 768px) {
       .logo-text {
         font-size: 2.5rem;
       }
-      
+
       .subtitle-text {
         font-size: 1rem;
       }
-      
-      .glass-card {
-        padding: 2rem !important;
-      }
-      
+
       .info-box {
         padding: 1rem;
       }
-      
+
       .setup-list li {
         font-size: 0.8125rem;
       }
+
+      .theme-toggle-btn {
+        top: 16px;
+        right: 16px;
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+      }
     }
-    
+
     @media (max-width: 480px) {
       .logo-text {
         font-size: 2rem;
       }
-      
+
       .subtitle-text {
         font-size: 0.875rem;
       }
-      
-      .glass-card {
-        padding: 1.5rem !important;
-        border-radius: 16px;
-      }
-      
-      .google-btn-container {
-        padding: 6px;
-      }
-      
+
       .info-box {
         padding: 0.875rem;
       }
-      
+
       .setup-list li {
         font-size: 0.75rem;
         padding-left: 1.5rem;
       }
-      
+
       .footer-text {
         font-size: 0.75rem;
       }
+
+      .theme-toggle-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+      }
     }
-    
+
     /* Landscape mobile */
     @media (max-width: 768px) and (orientation: landscape) {
       .logo-text {
         font-size: 1.75rem;
       }
-      
-      .glass-card {
-        padding: 1.25rem !important;
-      }
-      
+
       body {
         padding-top: 1rem;
         padding-bottom: 1rem;
       }
     }
-    
+
     /* Touch-friendly */
     @media (hover: none) and (pointer: coarse) {
       .google-btn-container {
         min-height: 56px;
       }
     }
-    
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    
-    ::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.05);
-    }
-    
-    ::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 4px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.3);
-    }
   </style>
 </head>
 
 <body>
+  <!-- Theme Toggle Button -->
+  <button class="theme-toggle-btn" onclick="themeManager.toggleTheme()" title="Toggle theme" aria-label="Toggle dark/light theme">
+    <span id="theme-icon">🌙</span>
+  </button>
+  <script>
+    // Initialize theme icon
+    function updateThemeIcon() {
+      const icon = document.getElementById('theme-icon');
+      if (icon) {
+        icon.textContent = themeManager.isDarkTheme() ? '☀️' : '🌙';
+      }
+    }
+    updateThemeIcon();
+  </script>
+
   <div class="modern-gradient-bg">
     <!-- Floating Orbs -->
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
     <div class="orb orb-3"></div>
-    
+
     <!-- Main Content -->
     <div x-data="loginApp()" class="relative z-10 min-h-screen flex items-center justify-center px-4 py-12">
       <div class="w-full max-w-md">
