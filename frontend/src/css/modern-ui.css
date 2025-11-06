@@ -211,7 +211,7 @@ html[data-theme="dark"] .modern-gradient-dashboard {
 .orb-2 {
   width: 400px;
   height: 400px;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
   bottom: -150px;
   right: -150px;
   animation-delay: 5s;
@@ -322,14 +322,14 @@ html[data-theme="dark"] .modern-gradient-dashboard {
 }
 
 .modern-btn-danger {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
   color: #ffffff;
-  box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+  box-shadow: 0 4px 15px rgba(192, 57, 43, 0.4);
 }
 
 .modern-btn-danger:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(245, 87, 108, 0.6);
+  box-shadow: 0 8px 25px rgba(192, 57, 43, 0.6);
 }
 
 .modern-btn-success {
