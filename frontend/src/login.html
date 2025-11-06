@@ -325,7 +325,7 @@
   </style>
 </head>
 
-<body>
+<body class="modern-gradient-bg">
   <!-- Theme Toggle Button -->
   <button class="theme-toggle-btn" onclick="themeManager.toggleTheme()" title="Toggle theme" aria-label="Toggle dark/light theme">
     <span id="theme-icon">🌙</span>
@@ -341,14 +341,13 @@
     updateThemeIcon();
   </script>
 
-  <div class="modern-gradient-bg">
-    <!-- Floating Orbs -->
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
+  <!-- Floating Orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
 
-    <!-- Main Content -->
-    <div x-data="loginApp()" class="relative z-10 min-h-screen flex items-center justify-center px-4 py-12">
+  <!-- Main Content -->
+  <div x-data="loginApp()" class="relative z-10 min-h-screen flex items-center justify-center px-4 py-12">
       <div class="w-full max-w-md">
         <!-- Content Container -->
         <div class="p-10 login-content">
@@ -421,7 +420,6 @@
         </div>
       </div>
     </div>
-  </div>
 
   <script>
     function loginApp() {
