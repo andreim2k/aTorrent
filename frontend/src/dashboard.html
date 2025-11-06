@@ -272,9 +272,9 @@
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto container-responsive py-6 sm:py-8">
-      <div class="mb-8 animate-fade-in">
-        <h2 class="text-2xl sm:text-3xl font-bold mb-2 text-gradient">Dashboard</h2>
-        <p class="text-white/60 text-sm sm:text-base">Welcome back! Here's an overview of your torrent activity.</p>
+      <div class="page-heading-section mb-8 animate-fade-in">
+        <h2 class="page-heading-title">Dashboard</h2>
+        <p class="page-heading-subtitle">Welcome back! Here's an overview of your torrent activity.</p>
       </div>
 
       <!-- Stats Grid -->
@@ -326,23 +326,20 @@
 
       <!-- Torrents List -->
       <div class="glass-card p-4 sm:p-6 animate-fade-in">
-        <h3 class="text-lg sm:text-xl font-bold mb-4 text-gradient">Recent Torrents</h3>
-        
+        <h3 class="text-lg sm:text-xl font-bold mb-4 card-text">Recent Torrents</h3>
+
         <div class="flex flex-col sm:flex-row gap-2 mb-4">
           <div class="flex gap-2 justify-center sm:justify-start flex-wrap">
           <button @click="showAddDialog = true" class="mui-btn mui-btn-contained whitespace-nowrap">+ Add Torrent(s)</button>
-          <button @click="resumeAll()" 
-                  :disabled="!canResumeAll" 
-                  :class="canResumeAll ? '' : 'opacity-50 cursor-not-allowed'"
+          <button @click="resumeAll()"
+                  :disabled="!canResumeAll"
                   class="mui-btn mui-btn-outlined whitespace-nowrap">Resume All</button>
-          <button @click="pauseAll()" 
+          <button @click="pauseAll()"
                   :disabled="!canPauseAll"
-                  :class="canPauseAll ? '' : 'opacity-50 cursor-not-allowed'"
                   class="mui-btn mui-btn-outlined whitespace-nowrap">Pause All</button>
-          <button @click="deleteAll()" 
+          <button @click="deleteAll()"
                   :disabled="torrents.length === 0"
-                  :class="torrents.length > 0 ? '' : 'opacity-50 cursor-not-allowed'"
-                  class="mui-btn mui-btn-outlined text-error-main border-error-main/50 hover:bg-error-main/10 whitespace-nowrap">Delete All</button>
+                  class="mui-btn mui-btn-outlined mui-btn-danger whitespace-nowrap">Delete All</button>
           </div>
         </div>
 
@@ -823,10 +820,12 @@
             window.location.href = '/login.html';
             return;
           }
-          
-          // Initial data fetch
-          await this.fetchDashboardData();
-          
+
+          // Initial data fetch (with loading indicator)
+          this.loading = true;
+          await this.fetchDashboardDataQuiet();
+          this.loading = false;
+
           // Setup WebSocket for real-time updates
           this.setupWebSocket();
         },
@@ -897,8 +896,8 @@
         startPolling() {
           if (!this.pollingInterval) {
             this.pollingInterval = setInterval(() => {
-              this.fetchDashboardData();
-            }, 200);
+              this.fetchDashboardDataQuiet();
+            }, 2000);
           }
         },
         
@@ -936,13 +935,12 @@
           this.stats = stats;
         },
         
-        async fetchDashboardData() {
-          this.loading = true;
+        async fetchDashboardDataQuiet() {
           const token = getCookie('access_token');
-          
+
           try {
             const apiBase = await ensureApiInitialized();
-            
+
             // Fetch torrents
             const torrentsRes = await fetch(`${apiBase}/torrents/?limit=10`, {
               headers: { 'Authorization': `Bearer ${token}` }
@@ -950,7 +948,7 @@
             if (torrentsRes.ok) {
               this.torrents = await torrentsRes.json();
             }
-            
+
             // Fetch stats
             const statsRes = await fetch(`${apiBase}/torrents/stats/overview`, {
               headers: { 'Authorization': `Bearer ${token}` }
@@ -960,9 +958,13 @@
             }
           } catch (error) {
             // Handle error silently or show user-friendly message
-          } finally {
-            this.loading = false;
           }
+        },
+
+        async fetchDashboardData() {
+          this.loading = true;
+          await this.fetchDashboardDataQuiet();
+          this.loading = false;
         },
         
         async toggleTorrent(torrent) {

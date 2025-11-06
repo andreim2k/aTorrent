@@ -347,11 +347,11 @@
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 py-8">
-      <div class="flex justify-between items-center mb-6">
+    <main class="max-w-7xl mx-auto container-responsive py-6 sm:py-8">
+      <div class="page-heading-section mb-8 animate-fade-in flex justify-between items-center">
         <div>
-          <h2 class="text-2xl font-bold mb-2">Torrents</h2>
-          <p class="text-text-secondary">Manage all your torrents in one place</p>
+          <h2 class="page-heading-title">Torrents</h2>
+          <p class="page-heading-subtitle">Manage all your torrents in one place</p>
         </div>
         <div class="flex flex-wrap gap-2">
           <button id="main-add-btn" @click="showAddDialog = true" class="mui-btn mui-btn-contained whitespace-nowrap" style="color: #000 !important; padding: 12px 24px !important; border-radius: 8px !important; font-weight: 500 !important; white-space: nowrap !important; border: none !important; transition: all 0.2s ease !important;">
@@ -361,7 +361,7 @@
       </div>
 
       <!-- Filters and Search -->
-      <div class="mui-card p-4 mb-6">
+      <div class="mui-card p-4 mb-6 animate-fade-in-up">
         <div class="flex gap-4 flex-wrap">
           <input type="text" x-model="searchQuery" @input="filterTorrents()" 
                  placeholder="Search torrents..." class="mui-input flex-1 min-w-[200px]">
@@ -771,10 +771,12 @@
             window.location.href = '/login.html';
             return;
           }
-          
-          // Initial fetch
-          await this.fetchTorrents();
-          
+
+          // Initial fetch (with loading indicator)
+          this.loading = true;
+          await this.fetchTorrentsQuiet();
+          this.loading = false;
+
           // Setup WebSocket for real-time updates
           this.setupWebSocket();
         },
@@ -830,25 +832,28 @@
           }
         },
         
-        async fetchTorrents() {
-          this.loading = true;
+        async fetchTorrentsQuiet() {
           const token = getCookie('access_token');
-          
+
           try {
             const apiBase = await ensureApiInitialized();
             const response = await fetch(`${apiBase}/torrents/`, {
               headers: { 'Authorization': `Bearer ${token}` }
             });
-            
+
             if (response.ok) {
               this.torrents = await response.json();
               this.filterTorrents();
             }
           } catch (error) {
             // Handle error silently
-          } finally {
-            this.loading = false;
           }
+        },
+
+        async fetchTorrents() {
+          this.loading = true;
+          await this.fetchTorrentsQuiet();
+          this.loading = false;
         },
         
         filterTorrents() {
