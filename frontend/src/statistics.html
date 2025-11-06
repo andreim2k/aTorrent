@@ -233,7 +233,7 @@
         <div class="stat-card">
           <div class="text-text-secondary text-xs mb-1">Total Uploaded</div>
           <div class="text-lg sm:text-xl font-bold" x-text="formatBytes(stats.all_time_upload || 0)"></div>
-          <div class="text-xs text-primary-main mt-2">↑ <span x-text="formatSpeed(stats.upload_rate || 0)"></span></div>
+          <div class="text-xs text-success-main mt-2">↑ <span x-text="formatSpeed(stats.upload_rate || 0)"></span></div>
         </div>
         
         <div class="stat-card">
@@ -258,7 +258,7 @@
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- CPU Stats -->
             <div class="space-y-4">
-              <h4 class="text-lg font-semibold text-primary-main mb-3">CPU Usage</h4>
+              <h4 class="text-lg font-semibold text-white mb-3">CPU Usage</h4>
               
               <!-- Overall CPU -->
               <div class="space-y-2">
@@ -290,7 +290,7 @@
 
             <!-- Memory Stats -->
             <div class="space-y-4">
-              <h4 class="text-lg font-semibold text-primary-main mb-3">Memory Usage</h4>
+              <h4 class="text-lg font-semibold text-white mb-3">Memory Usage</h4>
               
               <!-- RAM Usage -->
               <div class="space-y-2">
@@ -327,7 +327,7 @@
 
             <!-- Disk Stats -->
             <div class="space-y-4">
-              <h4 class="text-lg font-semibold text-primary-main mb-3">Disk Usage</h4>
+              <h4 class="text-lg font-semibold text-white mb-3">Disk Usage</h4>
               <div id="disk-partitions-container" class="space-y-3">
                 <!-- Disk partitions will be populated dynamically -->
               </div>
@@ -342,7 +342,7 @@
 
             <!-- Network Stats -->
             <div class="space-y-4">
-              <h4 class="text-lg font-semibold text-primary-main mb-3">Network Activity</h4>
+              <h4 class="text-lg font-semibold text-white mb-3">Network Activity</h4>
               
               <!-- Overall Network -->
               <div class="space-y-2">
@@ -352,7 +352,7 @@
                 </div>
                 <div class="flex justify-between text-xs text-text-secondary">
                   <span>↑ Upload Rate:</span>
-                  <span id="network-upload-rate" class="text-primary-main font-medium">0 MB/s</span>
+                  <span id="network-upload-rate" class="text-white font-medium">0 MB/s</span>
                 </div>
               </div>
               
