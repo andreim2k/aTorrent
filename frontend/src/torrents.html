@@ -659,69 +659,6 @@
       </div>
     </div>
 
-    <!-- Add Results Dialog -->
-    <div x-show="showResultsDialog" x-cloak class="fixed inset-0 bg-black/75 flex items-center justify-center z-50" @click.self="showResultsDialog = false">
-      <div class="mui-card backdrop-blur rounded-xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-xl font-bold">Torrent Add Results</h3>
-          <button @click="showResultsDialog = false" class="text-text-secondary hover:text-text-primary">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Successfully Added -->
-        <div x-show="addResults && addResults.added && addResults.added.length > 0" class="mb-4">
-          <div class="flex items-center mb-2">
-            <svg class="w-5 h-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-            </svg>
-            <h4 class="font-semibold text-green-400">Successfully Added (<span x-text="addResults.added.length"></span>)</h4>
-          </div>
-          <div class="bg-green-500/10 border border-green-500/20 rounded p-3">
-            <template x-for="item in addResults.added" :key="item.name">
-              <div class="text-sm text-green-300 mb-1" x-text="item.name"></div>
-            </template>
-          </div>
-        </div>
-
-        <!-- Skipped (Already Exists) -->
-        <div x-show="addResults && addResults.skipped && addResults.skipped.length > 0" class="mb-4">
-          <div class="flex items-center mb-2">
-            <svg class="w-5 h-5 text-yellow-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-            </svg>
-            <h4 class="font-semibold text-yellow-400">Skipped - Already Exists (<span x-text="addResults.skipped.length"></span>)</h4>
-          </div>
-          <div class="bg-yellow-500/10 border border-yellow-500/20 rounded p-3">
-            <template x-for="item in addResults.skipped" :key="item.name">
-              <div class="text-sm text-yellow-300 mb-1" x-text="item.name + ' - ' + item.reason"></div>
-            </template>
-          </div>
-        </div>
-
-        <!-- Errors -->
-        <div x-show="addResults && addResults.errors && addResults.errors.length > 0" class="mb-4">
-          <div class="flex items-center mb-2">
-            <svg class="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-            </svg>
-            <h4 class="font-semibold text-red-400">Errors (<span x-text="addResults.errors.length"></span>)</h4>
-          </div>
-          <div class="bg-red-500/10 border border-red-500/20 rounded p-3">
-            <template x-for="item in addResults.errors" :key="item.name">
-              <div class="text-sm text-red-300 mb-1" x-text="item.name + ' - ' + item.error"></div>
-            </template>
-          </div>
-        </div>
-
-        <div class="flex justify-end mt-4">
-          <button @click="showResultsDialog = false" class="mui-btn mui-btn-contained">Close</button>
-        </div>
-      </div>
-    </div>
-
   <script>
     // Utilities
     function getCookie(name) {
@@ -798,8 +735,6 @@
         selectedTorrents: [],
         loading: false,
         showAddDialog: false,
-        showResultsDialog: false,
-        addResults: { added: [], skipped: [], errors: [] },
         showDetailsDialog: false,
         selectedTorrent: null,
         searchQuery: '',
