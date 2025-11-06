@@ -505,9 +505,9 @@
           <div class="mui-card p-4 hover:shadow-lg transition-all duration-300 cursor-pointer"
                :class="{'ring-2 ring-primary-main': selectedTorrents.includes(torrent.id)}"
                @click="toggleSelect(torrent.id)">
-            <div class="flex items-start gap-4">
+            <div class="flex items-center gap-4">
               <!-- Checkbox -->
-              <div class="pt-1">
+              <div class="flex items-center">
                 <input type="checkbox" :value="torrent.id"
                        @change="toggleSelect(torrent.id)" @click.stop
                        :checked="selectedTorrents.includes(torrent.id)"

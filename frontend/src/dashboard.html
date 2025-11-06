@@ -1194,11 +1194,11 @@
         async fetchTorrentContent(torrentId) {
           this.loadingContent = true;
           this.contentError = false;
-          
+
           try {
             const token = getCookie('access_token');
             const apiBase = await ensureApiInitialized();
-            const response = await fetch(`${apiBase}/torrents/${torrentId}/content`, {
+            const response = await fetch(`${apiBase}/torrents/${torrentId}`, {
               headers: { 'Authorization': `Bearer ${token}` }
             });
             
