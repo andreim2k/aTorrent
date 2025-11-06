@@ -206,6 +206,14 @@
       font-size: 0.8em;
     }
 
+    /* Login Content Container - No Glass Background */
+    .login-content {
+      background: transparent !important;
+      backdrop-filter: none !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
     /* Theme Toggle Button */
     .theme-toggle-btn {
       position: fixed;
@@ -339,7 +347,7 @@
     <div x-data="loginApp()" class="relative z-10 min-h-screen flex items-center justify-center px-4 py-12">
       <div class="w-full max-w-md">
         <!-- Content Container -->
-        <div class="p-10">
+        <div class="p-10 login-content">
           <!-- Logo & Title -->
           <div class="text-center mb-10">
             <h1 class="logo-text mb-3">@Torrent</h1>
@@ -493,13 +501,14 @@
               cancel_on_tap_outside: true
             });
 
-            // Handle custom button click
+            // Handle custom button click - trigger Google One Tap flow
             const customButton = document.getElementById('custom-google-signin-btn');
             if (customButton) {
               customButton.addEventListener('click', (e) => {
                 e.preventDefault();
                 console.log('🔐 Custom button clicked, triggering Google Sign-In');
                 customButton.classList.add('loading');
+                // Trigger Google's One Tap UI - will call handleGoogleLogin callback
                 window.google.accounts.id.prompt();
               });
             }
