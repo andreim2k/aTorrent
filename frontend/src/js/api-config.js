@@ -2,10 +2,10 @@
 class ApiConfig {
   constructor() {
     this.backends = [
-      'poseidon',
-      '192.168.1.100',
       'localhost',
-      '127.0.0.1'
+      '127.0.0.1',
+      'poseidon',
+      '192.168.1.100'
     ];
     this.currentBackendIndex = 0;
     this.port = 8000;
