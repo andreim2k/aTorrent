@@ -1343,15 +1343,15 @@
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div class="bg-gradient-to-br from-gray-700/50 to-gray-800/50 backdrop-blur-sm border border-white/10 p-4 rounded-lg">
                   <h4 class="text-sm text-text-secondary mb-1">Total Files</h4>
-                  <p class="text-2xl font-bold" x-text="torrentContent?.total_files || 0"></p>
+                  <p class="text-2xl font-bold" x-text="torrentContent?.file_count || (torrentContent?.files_info?.length || 0)"></p>
                 </div>
                 <div class="bg-gradient-to-br from-gray-700/50 to-gray-800/50 backdrop-blur-sm border border-white/10 p-4 rounded-lg">
                   <h4 class="text-sm text-text-secondary mb-1">Video Files</h4>
-                  <p class="text-2xl font-bold text-primary-main" x-text="torrentContent?.video_files || 0"></p>
+                  <p class="text-2xl font-bold text-primary-main" x-text="(torrentContent?.files_info || []).filter(f => /\.(mp4|mkv|avi|mov|flv|wmv|webm)$/i.test(f.name)).length"></p>
                 </div>
                 <div class="bg-gradient-to-br from-gray-700/50 to-gray-800/50 backdrop-blur-sm border border-white/10 p-4 rounded-lg">
                   <h4 class="text-sm text-text-secondary mb-1">Subtitle Files</h4>
-                  <p class="text-2xl font-bold text-success-main" x-text="torrentContent?.subtitle_files || 0"></p>
+                  <p class="text-2xl font-bold text-success-main" x-text="(torrentContent?.files_info || []).filter(f => /\.(srt|ass|ssa|vtt|sub)$/i.test(f.name)).length"></p>
                 </div>
               </div>
               
