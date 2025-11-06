@@ -560,7 +560,7 @@
                     <span class="text-success-main" x-text="formatSpeed(torrent.upload_speed || 0)"></span>
                   </td>
                   <td class="p-4 text-xs">
-                    <span x-text="torrent.num_seeds"></span>/<span x-text="torrent.num_peers"></span>
+                    <span x-text="torrent.seeds_connected || 0"></span>/<span x-text="torrent.peers_connected || 0"></span>
                   </td>
                   <td class="p-4 text-xs whitespace-nowrap">
                     <span x-text="torrent.eta ? formatTime(torrent.eta) : '-'"></span>
