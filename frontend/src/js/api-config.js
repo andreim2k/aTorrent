@@ -2,6 +2,7 @@
 class ApiConfig {
   constructor() {
     this.backends = [
+      'poseidon.tail83e10d.ts.net',
       'localhost',
       '127.0.0.1',
       'poseidon',
