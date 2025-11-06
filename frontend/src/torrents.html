@@ -454,21 +454,26 @@
               </tr>
             </thead>
             <tbody>
-              <template x-if="!loading && filteredTorrents.length === 0">
+              <!-- Loading Spinner - Only shown while loading -->
+              <template x-if="loading">
                 <tr>
-                  <td colspan="9" class="text-center py-8 text-text-secondary">
-                    No torrents found
+                  <td colspan="9" class="text-center py-8">
+                    <div class="mui-spinner"></div>
                   </td>
                 </tr>
               </template>
 
-              <tr x-show="loading">
-                <td colspan="9" class="text-center py-8">
-                  <div class="mui-spinner"></div>
-                </td>
-              </tr>
+              <!-- Torrents List - Only shown when not loading -->
+              <template x-if="!loading">
+                <template x-if="filteredTorrents.length === 0">
+                  <tr>
+                    <td colspan="9" class="text-center py-8 text-text-secondary">
+                      No torrents found
+                    </td>
+                  </tr>
+                </template>
 
-              <template x-for="torrent in filteredTorrents" :key="torrent.id">
+                <template x-for="torrent in filteredTorrents" :key="torrent.id">
                 <tr class="border-b border-white/5 torrent-row" :class="{'selected-row': selectedTorrents.includes(torrent.id)}" @click="toggleSelect(torrent.id)">
                   <td class="p-4">
                     <input type="checkbox" :value="torrent.id" 
@@ -538,6 +543,7 @@
                     <span x-text="torrent.eta ? formatTime(torrent.eta) : '-'"></span>
                   </td>
                 </tr>
+                </template>
               </template>
             </tbody>
           </table>
