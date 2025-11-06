@@ -11,19 +11,22 @@
   <!-- Theme Manager MUST load first -->
   <script src="/js/theme.js"></script>
 
+  <!-- Authentication Interceptor - Load early to catch all API calls -->
+  <script src="/js/modules/auth-interceptor.js"></script>
+
   <!-- Modern UI Stylesheet -->
   <link rel="stylesheet" href="/css/modern-ui.css">
 
   <!-- Alpine.js from CDN -->
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
-  
+
   <!-- WebSocket Client -->
   <script src="/js/api-config.js"></script>
   <script src="/js/websocket-client.js"></script>
-  
+
   <!-- Error Handler -->
   <script src="/js/modules/error-handler.js"></script>
-  
+
   <!-- API Client -->
   <script src="/js/modules/api-client.js"></script>
   

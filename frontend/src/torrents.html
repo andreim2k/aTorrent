@@ -16,19 +16,22 @@
   <!-- Theme Manager MUST load first -->
   <script src="/js/theme.js"></script>
 
+  <!-- Authentication Interceptor - Load early to catch all API calls -->
+  <script src="/js/modules/auth-interceptor.js"></script>
+
   <!-- Modern UI Stylesheet -->
   <link rel="stylesheet" href="/css/modern-ui.css">
 
   <!-- Alpine.js from CDN -->
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
-  
+
   <!-- WebSocket Client -->
   <script src="/js/api-config.js"></script>
   <script src="/js/websocket-client.js"></script>
-  
+
   <!-- Error Handler -->
   <script src="/js/modules/error-handler.js"></script>
-  
+
   <!-- API Client -->
   <script src="/js/modules/api-client.js"></script>
   
@@ -391,7 +394,7 @@
         </div>
         <div class="flex flex-wrap gap-2">
           <button id="main-add-btn" @click="showAddDialog = true" class="mui-btn mui-btn-contained whitespace-nowrap btn-icon-mobile" style="color: #000 !important; border: none !important; transition: all 0.2s ease !important;">
-            <span class="btn-text">+ Add Torrent(s)</span>
+            <span class="btn-text">Add Torrent(s)</span>
             <svg class="hidden sm:inline w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
             </svg>

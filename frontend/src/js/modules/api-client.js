@@ -20,7 +20,7 @@ class ApiClient {
 
   async request(endpoint, options = {}) {
     await this.initialize();
-    
+
     const url = `${this.baseUrl}${endpoint}`;
     const defaultOptions = {
       headers: {
@@ -34,6 +34,17 @@ class ApiClient {
         ...defaultOptions,
         ...options
       });
+
+      // Check for authentication failure
+      if (response.status === 401) {
+        console.warn('Authentication failed - redirecting to login');
+        // Clear any stored tokens
+        document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        document.cookie = 'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        // Redirect to login page
+        window.location.href = '/login.html';
+        throw new Error('Authentication required');
+      }
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
