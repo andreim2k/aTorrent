@@ -1361,3 +1361,189 @@ html[data-theme="dark"] .bg-error-main\/20 {
   background-color: rgba(255, 107, 122, 0.2) !important;
 }
 
+/* ==========================================
+   CUSTOM MODERN GOOGLE SIGN-IN BUTTON
+   Modern glassmorphism design with animations
+   ========================================== */
+
+.custom-google-btn {
+  position: relative;
+  width: 100%;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.12) 0%, rgba(102, 126, 234, 0.08) 100%);
+  backdrop-filter: blur(20px);
+  border: 2px solid rgba(102, 126, 234, 0.3);
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.1),
+              inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.custom-google-btn:hover {
+  transform: translateY(-3px);
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.18) 0%, rgba(102, 126, 234, 0.14) 100%);
+  border-color: rgba(102, 126, 234, 0.5);
+  box-shadow: 0 12px 48px rgba(102, 126, 234, 0.25),
+              inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+.custom-google-btn:active {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(102, 126, 234, 0.15),
+              inset 0 1px 1px rgba(255, 255, 255, 0.2);
+}
+
+.custom-google-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.custom-google-btn .btn-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 2;
+  position: relative;
+}
+
+.custom-google-btn .google-logo {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  animation: googleLogoFloat 0.6s ease-out;
+}
+
+.custom-google-btn .btn-text {
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+/* Shine effect on hover */
+.custom-google-btn .btn-shine {
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.custom-google-btn:hover .btn-shine {
+  opacity: 0.3;
+}
+
+/* Animation for logo on page load */
+@keyframes googleLogoFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ripple effect on click */
+@keyframes ripple {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 0.8;
+  }
+  100% {
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+  }
+}
+
+.custom-google-btn.ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  animation: ripple 0.6s ease-out;
+}
+
+/* Theme-aware colors for dark mode */
+@media (prefers-color-scheme: dark) {
+  .custom-google-btn {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(102, 126, 234, 0.1) 100%);
+    border-color: rgba(102, 126, 234, 0.35);
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15),
+                inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  }
+
+  .custom-google-btn:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.22) 0%, rgba(102, 126, 234, 0.18) 100%);
+    border-color: rgba(102, 126, 234, 0.6);
+    box-shadow: 0 12px 48px rgba(102, 126, 234, 0.3),
+                inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  }
+}
+
+html[data-theme="dark"] .custom-google-btn {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(102, 126, 234, 0.1) 100%);
+  border-color: rgba(102, 126, 234, 0.35);
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15),
+              inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+html[data-theme="dark"] .custom-google-btn:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.22) 0%, rgba(102, 126, 234, 0.18) 100%);
+  border-color: rgba(102, 126, 234, 0.6);
+  box-shadow: 0 12px 48px rgba(102, 126, 234, 0.3),
+              inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+
+/* Loading state */
+.custom-google-btn.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.custom-google-btn.loading .google-logo {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .custom-google-btn {
+    padding: 12px 20px;
+    font-size: 15px;
+    border-radius: 12px;
+  }
+
+  .custom-google-btn .google-logo {
+    width: 18px;
+    height: 18px;
+  }
+}
+
