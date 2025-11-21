@@ -35,13 +35,12 @@ def get_torrent_by_id(db: Session, torrent_id: str) -> Optional[Torrent]:
 
 
 def get_torrent_service() -> Optional[TorrentService]:
-    """Get the global torrent service instance"""
-    # This should be injected, but for now we'll access it from the global app state
+    """Get the global torrent service instance from app.state"""
     try:
-        from app.main import torrent_service
-
+        from app.main import app
+        torrent_service = getattr(app.state, 'torrent_service', None)
         return torrent_service
-    except ImportError:
+    except (ImportError, AttributeError):
         return None
 
 
@@ -64,33 +63,81 @@ async def get_torrent_content(
             raise HTTPException(status_code=503, detail="Torrent service not available")
 
         # Get the real torrent handle from libtorrent
-        if torrent.info_hash not in torrent_service.handles:
-            raise HTTPException(status_code=404, detail="Torrent not active in client")
-
-        handle = torrent_service.handles[torrent.info_hash]
-        if not handle.is_valid():
-            raise HTTPException(status_code=404, detail="Invalid torrent handle")
-
-        # Get REAL file information from libtorrent
-        torrent_info = handle.torrent_file()
+        handle = None
+        torrent_info = None
+        use_handle = False
+        
+        # Try to get handle from handles dictionary first
+        if torrent.info_hash in torrent_service.handles:
+            handle = torrent_service.handles[torrent.info_hash]
+        else:
+            # Try to find handle from session by iterating through all torrents
+            try:
+                handles = torrent_service.session.get_torrents()
+                for h in handles:
+                    if str(h.info_hash()) == torrent.info_hash:
+                        handle = h
+                        # Cache it for future use
+                        torrent_service.handles[torrent.info_hash] = handle
+                        break
+            except Exception as e:
+                # If we can't get handles, continue to fallback
+                pass
+        
+        # If we have a valid handle, use it
+        if handle and handle.is_valid():
+            torrent_info = handle.torrent_file()
+            use_handle = True
+        
+        # Fallback: Try to load torrent file from disk if handle not available
         if not torrent_info:
-            raise HTTPException(status_code=404, detail="Torrent info not available")
+            try:
+                # Try torrent_file_path from database first
+                if torrent.torrent_file_path and os.path.exists(torrent.torrent_file_path):
+                    torrent_info = lt.torrent_info(torrent.torrent_file_path)
+                else:
+                    # Try standard location: {info_hash}.torrent in downloads path
+                    torrent_file_path = os.path.join(
+                        torrent_service.downloads_path, 
+                        f"{torrent.info_hash}.torrent"
+                    )
+                    if os.path.exists(torrent_file_path):
+                        torrent_info = lt.torrent_info(torrent_file_path)
+            except Exception as e:
+                # If loading from file fails, continue to error
+                pass
+        
+        if not torrent_info:
+            raise HTTPException(
+                status_code=404, 
+                detail="Torrent not active in client and torrent file not found. The torrent may still be initializing. Please try again in a moment."
+            )
 
         files = []
         total_size = 0
 
-        # Get real file information from libtorrent
+        # Get file information from torrent_info
         file_storage = torrent_info.files()
-        status = handle.status()
+        
+        # Get status from handle if available, otherwise use defaults
+        if use_handle:
+            status = handle.status()
+        else:
+            # Create a mock status object for file-only mode
+            class MockStatus:
+                def __init__(self):
+                    self.total_done = torrent.downloaded or 0
+                    self.progress = torrent.progress or 0.0
+            status = MockStatus()
 
         for i in range(file_storage.num_files()):
             file_entry = file_storage.at(i)
             file_path = file_storage.file_path(i)
             file_size = file_storage.file_size(i)
 
-            # Get file progress (this is real data from libtorrent)
+            # Get file progress (this is real data from libtorrent if handle available)
             file_progress = 0.0
-            if status.total_done > 0:
+            if use_handle and status.total_done > 0:
                 # Note: Getting per-file progress requires file_progress() call
                 try:
                     file_progresses = handle.file_progress()
@@ -101,15 +148,22 @@ async def get_torrent_content(
                 except:
                     # Fallback to overall progress
                     file_progress = status.progress
+            else:
+                # Use overall progress from database if handle not available
+                file_progress = status.progress
 
-            # Get file priority (real data)
-            try:
-                priorities = handle.file_priorities()
-                priority = priorities[i] if i < len(priorities) else 1
-                priority_name = (
-                    "high" if priority >= 4 else "normal" if priority >= 1 else "skip"
-                )
-            except:
+            # Get file priority (real data if handle available)
+            if use_handle:
+                try:
+                    priorities = handle.file_priorities()
+                    priority = priorities[i] if i < len(priorities) else 1
+                    priority_name = (
+                        "high" if priority >= 4 else "normal" if priority >= 1 else "skip"
+                    )
+                except:
+                    priority_name = "normal"
+            else:
+                # Default to normal priority if handle not available
                 priority_name = "normal"
 
             # Determine file type based on extension

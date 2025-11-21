@@ -233,7 +233,7 @@
   <div x-data="dashboardApp()" x-init="init()" class="relative z-10">
     <!-- Header -->
     <header class="modern-nav sticky top-0">
-      <div class="max-w-7xl mx-auto container-responsive py-3 sm:py-4">
+      <div class="w-full px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
         <div class="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
           <h1 class="text-xl sm:text-2xl font-bold text-gradient glow-text">@Torrent</h1>
           <nav class="flex flex-wrap justify-center sm:justify-start gap-2">
@@ -548,9 +548,9 @@
 
     <!-- Torrent Details Modal -->
     <div x-show="showDetailsDialog" x-cloak class="fixed inset-0 bg-black/75 flex items-center justify-center z-50" @click.self="showDetailsDialog = false">
-      <div class="mui-card backdrop-blur rounded-xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
+      <div class="mui-card backdrop-blur rounded-xl w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden">
         <!-- Dialog Header -->
-        <div class="flex justify-between items-start p-6 border-b border-white/10">
+        <div class="flex justify-between items-start p-6 border-b border-white/10 flex-shrink-0">
           <div class="flex-1">
             <h3 class="text-xl font-bold mb-2" x-text="formatFileName(selectedTorrent?.name)"></h3>
             <div class="flex flex-wrap gap-4 text-sm text-text-secondary">
@@ -559,11 +559,11 @@
               <span>Status: <span class="text-white capitalize" x-text="selectedTorrent?.status"></span></span>
             </div>
           </div>
-          <button @click="showDetailsDialog = false" class="text-gray-400 hover:text-white text-2xl ml-4">&times;</button>
+          <button @click="showDetailsDialog = false" class="text-gray-400 hover:text-white text-2xl ml-4 flex-shrink-0">&times;</button>
         </div>
         
         <!-- Tab Navigation -->
-        <div class="px-6 pt-4">
+        <div class="px-6 pt-4 flex-shrink-0">
           <div class="flex border-b border-white/10">
             <button @click="activeTab = 'content'" 
                     :class="activeTab === 'content' ? 'border-primary-main text-primary-main' : 'border-transparent text-text-secondary hover:text-white'"
@@ -579,7 +579,7 @@
         </div>
         
         <!-- Tab Content -->
-        <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+        <div class="p-6 overflow-y-auto flex-1 min-h-0">
           <!-- Files & Content Tab -->
           <div x-show="activeTab === 'content'" x-transition>
             <div x-show="loadingContent" class="flex items-center justify-center py-8">
@@ -588,7 +588,9 @@
             </div>
             
             <div x-show="contentError" class="text-center py-8 text-error-main">
-              Failed to load torrent content
+              <p class="font-semibold mb-2">Failed to load torrent content</p>
+              <p class="text-sm text-text-secondary" x-text="typeof contentError === 'string' ? contentError : ''"></p>
+              <p class="text-xs text-text-secondary mt-2">The torrent may still be initializing. Please try again in a moment.</p>
             </div>
             
             <div x-show="torrentContent && !loadingContent && !contentError">
@@ -739,7 +741,7 @@
         </div>
         
         <!-- Dialog Footer -->
-        <div class="px-6 py-4 border-t border-white/10 flex justify-end gap-2">
+        <div class="px-6 py-4 border-t border-white/10 flex justify-end gap-2 flex-shrink-0">
           <button @click="showDetailsDialog = false" class="mui-btn mui-btn-outlined">Close</button>
         </div>
       </div>
@@ -1198,17 +1200,20 @@
           try {
             const token = getCookie('access_token');
             const apiBase = await ensureApiInitialized();
-            const response = await fetch(`${apiBase}/torrents/${torrentId}`, {
+            const response = await fetch(`${apiBase}/torrents/${torrentId}/content`, {
               headers: { 'Authorization': `Bearer ${token}` }
             });
             
             if (response.ok) {
               this.torrentContent = await response.json();
             } else {
-              this.contentError = true;
+              const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+              console.error('Failed to load torrent content:', errorData);
+              this.contentError = errorData.detail || 'Failed to load torrent content';
             }
           } catch (error) {
-            this.contentError = true;
+            console.error('Error fetching torrent content:', error);
+            this.contentError = error.message || 'Failed to load torrent content';
           } finally {
             this.loadingContent = false;
           }
