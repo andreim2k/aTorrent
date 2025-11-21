@@ -30,8 +30,11 @@ class Settings(BaseSettings):
     GOOGLE_REDIRECT_URI: str = Field(default="http://localhost:3000/auth/callback", description="Google OAuth redirect URI")
     ALLOWED_GOOGLE_DOMAINS: List[str] = Field(default_factory=list, description="Allowed Google email domains (empty = allow all)")
 
-    # Database
-    DATABASE_URL: str = Field(default="sqlite:///./aTorrent.db", description="Database connection URL")
+    # Database - Use absolute path in backend/data directory
+    DATABASE_URL: str = Field(
+        default="", 
+        description="Database connection URL (auto-configured if not set)"
+    )
 
     # CORS - Secure configuration
     ALLOWED_ORIGINS: List[str] = Field(
@@ -80,6 +83,28 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+
+    @validator('DATABASE_URL', pre=True, always=True)
+    def validate_database_url(cls, v):
+        """Ensure database URL uses absolute path"""
+        if v and v != "":
+            # If URL is provided, use it as-is
+            return v
+        
+        # Auto-configure database path in backend/data directory
+        # Get the backend directory (parent of app/core)
+        backend_dir = Path(__file__).parent.parent.parent
+        data_dir = backend_dir / 'data'
+        data_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Ensure directory is writable
+        if not os.access(data_dir, os.W_OK):
+            raise PermissionError(f"Database directory is not writable: {data_dir}")
+        
+        db_path = data_dir / 'aTorrent.db'
+        # Convert to absolute path and use forward slashes for SQLite URL
+        db_path_abs = db_path.resolve()
+        return f"sqlite:///{db_path_abs.as_posix()}"
 
     @validator('DOWNLOAD_PATH')
     def validate_download_path(cls, v):
