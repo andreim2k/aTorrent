@@ -104,6 +104,14 @@ class Settings(BaseSettings):
         db_path = data_dir / 'aTorrent.db'
         # Convert to absolute path and use forward slashes for SQLite URL
         db_path_abs = db_path.resolve()
+        
+        # Ensure database file has proper permissions if it exists
+        if db_path_abs.exists():
+            try:
+                os.chmod(db_path_abs, 0o664)
+            except Exception:
+                pass  # Ignore permission errors during config loading
+        
         return f"sqlite:///{db_path_abs.as_posix()}"
 
     @validator('DOWNLOAD_PATH')

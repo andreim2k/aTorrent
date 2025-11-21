@@ -600,6 +600,12 @@
                     async saveDownloadPath() {
                         if (!this.downloadPathDirty) return;
 
+                        // Validate path is not empty
+                        if (!this.localDownloadPath || this.localDownloadPath.trim() === "") {
+                            this.showAlert("error", "Download path cannot be empty");
+                            return;
+                        }
+
                         this.savingSettings = true;
                         const token = getCookie("access_token");
 
@@ -614,31 +620,40 @@
                                         "Content-Type": "application/json",
                                     },
                                     body: JSON.stringify({
-                                        ...this.settings,
-                                        default_download_path:
-                                            this.localDownloadPath,
+                                        default_download_path: this.localDownloadPath.trim(),
                                     }),
                                 },
                             );
 
                             if (response.ok) {
-                                this.settings.default_download_path =
-                                    this.localDownloadPath;
+                                const updatedSettings = await response.json();
+                                this.settings = updatedSettings;
+                                this.localDownloadPath = updatedSettings.default_download_path || "";
                                 this.downloadPathDirty = false;
                                 this.showAlert(
                                     "success",
-                                    "Settings saved successfully",
+                                    "Download path saved successfully",
                                 );
                             } else {
-                                const error = await response.json();
-                                this.showAlert(
-                                    "error",
-                                    error.detail || "Failed to save settings",
-                                );
+                                let errorMessage = "Failed to save settings";
+                                try {
+                                    const errorData = await response.json();
+                                    if (errorData.detail) {
+                                        if (typeof errorData.detail === "string") {
+                                            errorMessage = errorData.detail;
+                                        } else if (Array.isArray(errorData.detail)) {
+                                            errorMessage = errorData.detail.map(e => e.msg || e).join(", ");
+                                        }
+                                    }
+                                } catch (e) {
+                                    errorMessage = `Failed to save settings (${response.status})`;
+                                }
+                                console.error("Settings save error:", errorMessage);
+                                this.showAlert("error", errorMessage);
                             }
                         } catch (error) {
                             console.error("Failed to save settings:", error);
-                            this.showAlert("error", "Failed to save settings");
+                            this.showAlert("error", `Failed to save settings: ${error.message || "Network error"}`);
                         } finally {
                             this.savingSettings = false;
                         }
@@ -647,6 +662,12 @@
                     async saveMaxActiveDownloads() {
                         if (!this.maxActiveDownloadsDirty) return;
 
+                        const maxDownloads = parseInt(this.localMaxActiveDownloads);
+                        if (isNaN(maxDownloads) || maxDownloads < 1 || maxDownloads > 100) {
+                            this.showAlert("error", "Max active downloads must be between 1 and 100");
+                            return;
+                        }
+
                         this.savingSettings = true;
                         const token = getCookie("access_token");
 
@@ -661,31 +682,40 @@
                                         "Content-Type": "application/json",
                                     },
                                     body: JSON.stringify({
-                                        ...this.settings,
-                                        max_active_downloads:
-                                            parseInt(this.localMaxActiveDownloads),
+                                        max_active_downloads: maxDownloads,
                                     }),
                                 },
                             );
 
                             if (response.ok) {
-                                this.settings.max_active_downloads =
-                                    parseInt(this.localMaxActiveDownloads);
+                                const updatedSettings = await response.json();
+                                this.settings = updatedSettings;
+                                this.localMaxActiveDownloads = updatedSettings.max_active_downloads || 5;
                                 this.maxActiveDownloadsDirty = false;
                                 this.showAlert(
                                     "success",
                                     "Settings saved successfully",
                                 );
                             } else {
-                                const error = await response.json();
-                                this.showAlert(
-                                    "error",
-                                    error.detail || "Failed to save settings",
-                                );
+                                let errorMessage = "Failed to save settings";
+                                try {
+                                    const errorData = await response.json();
+                                    if (errorData.detail) {
+                                        if (typeof errorData.detail === "string") {
+                                            errorMessage = errorData.detail;
+                                        } else if (Array.isArray(errorData.detail)) {
+                                            errorMessage = errorData.detail.map(e => e.msg || e).join(", ");
+                                        }
+                                    }
+                                } catch (e) {
+                                    errorMessage = `Failed to save settings (${response.status})`;
+                                }
+                                console.error("Settings save error:", errorMessage);
+                                this.showAlert("error", errorMessage);
                             }
                         } catch (error) {
                             console.error("Failed to save settings:", error);
-                            this.showAlert("error", "Failed to save settings");
+                            this.showAlert("error", `Failed to save settings: ${error.message || "Network error"}`);
                         } finally {
                             this.savingSettings = false;
                         }
@@ -708,37 +738,40 @@
                                         "Content-Type": "application/json",
                                     },
                                     body: JSON.stringify({
-                                        ...this.settings,
-                                        tmdb_api_key: this.localTmdbApiKey,
+                                        tmdb_api_key: this.localTmdbApiKey || "",
                                     }),
                                 },
                             );
 
                             if (response.ok) {
-                                this.settings.tmdb_api_key =
-                                    this.localTmdbApiKey;
+                                const updatedSettings = await response.json();
+                                this.settings = updatedSettings;
+                                this.localTmdbApiKey = updatedSettings.tmdb_api_key || "";
                                 this.tmdbApiKeyDirty = false;
                                 this.showAlert(
                                     "success",
                                     "TMDB API key saved successfully",
                                 );
                             } else {
-                                const error = await response.json();
-                                this.showAlert(
-                                    "error",
-                                    error.detail ||
-                                        "Failed to save TMDB API key",
-                                );
+                                let errorMessage = "Failed to save TMDB API key";
+                                try {
+                                    const errorData = await response.json();
+                                    if (errorData.detail) {
+                                        if (typeof errorData.detail === "string") {
+                                            errorMessage = errorData.detail;
+                                        } else if (Array.isArray(errorData.detail)) {
+                                            errorMessage = errorData.detail.map(e => e.msg || e).join(", ");
+                                        }
+                                    }
+                                } catch (e) {
+                                    errorMessage = `Failed to save TMDB API key (${response.status})`;
+                                }
+                                console.error("TMDB API key save error:", errorMessage);
+                                this.showAlert("error", errorMessage);
                             }
                         } catch (error) {
-                            console.error(
-                                "Failed to save TMDB API key:",
-                                error,
-                            );
-                            this.showAlert(
-                                "error",
-                                "Failed to save TMDB API key",
-                            );
+                            console.error("Failed to save TMDB API key:", error);
+                            this.showAlert("error", `Failed to save TMDB API key: ${error.message || "Network error"}`);
                         } finally {
                             this.savingSettings = false;
                         }

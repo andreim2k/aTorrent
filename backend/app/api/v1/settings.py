@@ -1,6 +1,8 @@
 import os
+from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import OperationalError
 
 from app.api.deps import get_db, get_authenticated
 from app.core.config import settings
@@ -63,26 +65,90 @@ def update_settings(
     db: Session = Depends(get_db),
 ):
     """Update application settings"""
-    settings = db.query(AppSettings).first()
+    try:
+        settings = db.query(AppSettings).first()
 
-    if not settings:
+        if not settings:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Settings not found - application may not be initialized",
+            )
+
+        # Update fields directly
+        update_data = settings_update.dict(exclude_unset=True)
+
+        # Validate and update download path if provided
+        if "default_download_path" in update_data:
+            download_path = update_data["default_download_path"]
+            if download_path:
+                # Ensure path exists and is writable
+                from pathlib import Path
+                path_obj = Path(download_path)
+                try:
+                    # Create directory if it doesn't exist
+                    path_obj.mkdir(parents=True, exist_ok=True)
+                    # Check if directory is writable
+                    if not os.access(path_obj, os.W_OK):
+                        raise HTTPException(
+                            status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"Download path is not writable: {download_path}",
+                        )
+                except PermissionError:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Permission denied for download path: {download_path}",
+                    )
+                except Exception as e:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Invalid download path: {str(e)}",
+                    )
+
+        # Update fields
+        for field, value in update_data.items():
+            if (
+                hasattr(settings, field) and field != "app_password_hash"
+            ):  # Don't allow password changes here
+                setattr(settings, field, value)
+
+        try:
+            db.commit()
+            db.refresh(settings)
+        except OperationalError as e:
+            db.rollback()
+            # Check if it's a readonly database error
+            if "readonly" in str(e).lower() or "read-only" in str(e).lower():
+                # Try to fix database file permissions
+                db_path = Path(settings.DATABASE_URL.replace("sqlite:///", ""))
+                if db_path.exists():
+                    try:
+                        os.chmod(db_path, 0o664)
+                        # Retry the commit
+                        db.commit()
+                        db.refresh(settings)
+                    except Exception as perm_error:
+                        raise HTTPException(
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Database permission error. Please check file permissions for: {db_path}",
+                        )
+                else:
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail=f"Database file not found. Please ensure the application is properly initialized.",
+                    )
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Database error: {str(e)}",
+                )
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Settings not found - application may not be initialized",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update settings: {str(e)}",
         )
-
-    # Update fields directly
-    update_data = settings_update.dict(exclude_unset=True)
-
-    # Update fields
-    for field, value in update_data.items():
-        if (
-            hasattr(settings, field) and field != "app_password_hash"
-        ):  # Don't allow password changes here
-            setattr(settings, field, value)
-
-    db.commit()
-    db.refresh(settings)
 
     return AppSettingsResponse(
         theme=settings.theme,
