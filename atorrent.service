@@ -1,0 +1,15 @@
+[Unit]
+Description=aTorrent BitTorrent Client
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=__WORKING_DIR__
+ExecStart=/usr/bin/node dist/server/index.js
+Restart=on-failure
+RestartSec=5
+EnvironmentFile=__WORKING_DIR__/.env
+User=__USER__
+
+[Install]
+WantedBy=multi-user.target

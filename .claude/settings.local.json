@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(du:*)",
+      "Bash(npm install:*)",
+      "Bash(npm view:*)",
+      "Bash(npx vite build:*)",
+      "Bash(npx tsx:*)",
+      "Bash(npx tsc:*)",
+      "Bash(node -e:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(sqlite3:*)",
+      "Bash(node:*)",
+      "Bash(npm run build:*)",
+      "Bash(wc:*)",
+      "Bash(npm:*)",
+      "Bash(git init:*)",
+      "Bash(git branch:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
