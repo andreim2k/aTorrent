@@ -28,6 +28,7 @@ export const torrents = sqliteTable('torrents', {
   completedAt: integer('completed_at', { mode: 'timestamp' }),
   tmdbId: integer('tmdb_id'),
   mediaType: text('media_type', { enum: ['movie', 'tv'] }),
+  posterPath: text('poster_path'),
 }, (table) => [
   index('idx_torrents_status').on(table.status),
   index('idx_torrents_category_id').on(table.categoryId),

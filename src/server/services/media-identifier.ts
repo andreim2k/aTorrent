@@ -27,7 +27,7 @@ export async function autoIdentify(infoHash: string, torrentName: string) {
   }
 
   const tmdbId = best.id;
-  db.update(torrents).set({ tmdbId, mediaType: type })
+  db.update(torrents).set({ tmdbId, mediaType: type, posterPath: best.poster_path })
     .where(eq(torrents.infoHash, infoHash)).run();
   return { tmdbId, mediaType: type, title: best.title || best.name, posterPath: best.poster_path };
 }

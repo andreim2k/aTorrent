@@ -12,6 +12,7 @@ export interface Torrent {
   completedAt?: string;
   tmdbId?: number;
   mediaType?: 'movie' | 'tv';
+  posterPath?: string;
   downloadSpeed: number;
   uploadSpeed: number;
   progress: number;

@@ -64,10 +64,10 @@ export function TorrentCard({ torrent }: Props) {
         )}
 
         {/* Poster thumbnail */}
-        {torrent.tmdbId ? (
+        {torrent.posterPath ? (
           <div className="w-10 h-14 rounded overflow-hidden flex-shrink-0 bg-white/5">
             <img
-              src={`${TMDB_IMG}${(torrent as any).posterPath || ''}`}
+              src={`${TMDB_IMG}${torrent.posterPath}`}
               alt=""
               className="w-full h-full object-cover"
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}

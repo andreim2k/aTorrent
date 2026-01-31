@@ -46,4 +46,11 @@ export function runMigrations() {
       value TEXT NOT NULL
     );
   `);
+
+  // Add posterPath column if it doesn't exist
+  try {
+    sqlite.exec(`ALTER TABLE torrents ADD COLUMN poster_path TEXT;`);
+  } catch {
+    // Column already exists, ignore error
+  }
 }
