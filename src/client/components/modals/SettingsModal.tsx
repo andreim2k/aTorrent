@@ -387,15 +387,17 @@ function NumberInputBlock({ label, unit, value, onChange, color }: {
   return (
     <div className="glass rounded-lg p-3">
       <label className={`text-xs font-medium block mb-2 ${color}`}>{label}</label>
-      <div className="flex items-center gap-2">
+      <div className="flex items-stretch gap-2">
         <input
           type="number"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-1.5 text-sm
+          className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm
             font-mono focus:outline-none focus:border-accent-indigo/40 transition-all"
         />
-        <span className="text-xs text-white/30 font-mono">{unit}</span>
+        <div className="flex items-center px-2">
+          <span className="text-xs text-white/40 font-mono whitespace-nowrap">{unit}</span>
+        </div>
       </div>
     </div>
   );
