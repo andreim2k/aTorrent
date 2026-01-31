@@ -55,7 +55,7 @@ async function main() {
   setupWebSocket(app);
 
   // Serve built client in production
-  const clientDist = path.resolve(__dirname, '../../dist/client');
+  const clientDist = path.resolve(__dirname, '../client');
   await app.register(fastifyStatic, {
     root: clientDist,
     wildcard: false,

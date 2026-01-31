@@ -89,6 +89,9 @@ export function authRoutes(app: FastifyInstance) {
   // Change password
   app.post('/api/auth/change-password', { config: { rateLimit: { max: 5, timeWindow: '1 minute' } } }, async (req, reply) => {
     const token = req.cookies.token;
+    if (!token) {
+      return reply.status(401).send({ error: 'No token provided' });
+    }
     const payload = verifyToken(token);
     if (!payload) {
       return reply.status(401).send({ error: 'Invalid token' });
