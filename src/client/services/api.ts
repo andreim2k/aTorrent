@@ -66,6 +66,9 @@ export const api = {
 
   getTorrentTMDB: (hash: string) => request<any>(`/torrents/${hash}/tmdb`),
 
+  // System
+  getSystemInfo: () => request<any>('/system'),
+
   // Batch operations
   batchPauseTorrents: (hashes: string[]) =>
     request('/torrents/batch/pause', { method: 'POST', body: JSON.stringify({ hashes }) }),

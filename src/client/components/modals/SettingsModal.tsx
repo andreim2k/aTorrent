@@ -7,7 +7,7 @@ import { api } from '../../services/api.js';
 
 const SAVED_FEEDBACK_DURATION_MS = 2000;
 
-type SettingsTab = 'general' | 'downloads' | 'network' | 'media' | 'security';
+type SettingsTab = 'general' | 'downloads' | 'system' | 'media' | 'security';
 
 const tabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
   {
@@ -19,8 +19,8 @@ const tabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
     icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>,
   },
   {
-    id: 'network', label: 'Network',
-    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2" /><rect x="2" y="14" width="20" height="8" rx="2" ry="2" /><line x1="6" y1="6" x2="6.01" y2="6" /><line x1="6" y1="18" x2="6.01" y2="18" /></svg>,
+    id: 'system', label: 'System',
+    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></svg>,
   },
   {
     id: 'media', label: 'Media',
@@ -31,6 +31,37 @@ const tabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
     icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>,
   },
 ];
+
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
+}
+
+function ProgressBar({ percent, color }: { percent: number; color: string }) {
+  return (
+    <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+      <div
+        className={`h-full rounded-full transition-all duration-500 ${color}`}
+        style={{ width: `${Math.min(100, percent)}%` }}
+      />
+    </div>
+  );
+}
+
+function StatCard({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="glass rounded-lg p-3 space-y-2">
+      <div className="flex items-center gap-2 text-xs font-medium text-white/60">
+        {icon}
+        {title}
+      </div>
+      {children}
+    </div>
+  );
+}
 
 function GeneralTabContent({ showSpeedGraph, setShowSpeedGraph }: {
   showSpeedGraph: boolean;
@@ -64,19 +95,82 @@ function DownloadsTabContent({ downloadsDir, setDownloadsDir }: {
   );
 }
 
-function NetworkTabContent({ downloadLimit, setDownloadLimit, uploadLimit, setUploadLimit }: {
-  downloadLimit: string;
-  setDownloadLimit: (v: string) => void;
-  uploadLimit: string;
-  setUploadLimit: (v: string) => void;
-}) {
-  return (
-    <div className="space-y-6">
-      <SectionHeader title="Bandwidth Limits" desc="Set to 0 for unlimited" />
-      <div className="grid grid-cols-2 gap-4">
-        <NumberInputBlock label="Download" unit="KB/s" value={downloadLimit} onChange={setDownloadLimit} color="text-blue-400" />
-        <NumberInputBlock label="Upload" unit="KB/s" value={uploadLimit} onChange={setUploadLimit} color="text-purple-400" />
+function SystemTabContent() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['system-info'],
+    queryFn: api.getSystemInfo,
+    refetchInterval: 3000,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-48 text-white/30 text-sm">
+        Loading system info...
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-48 text-red-400/60 text-sm">
+        Failed to load system info
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
+  return (
+    <div className="space-y-3">
+      {/* CPU */}
+      <StatCard
+        title="CPU"
+        icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" /><rect x="9" y="9" width="6" height="6" /><path d="M15 2v2" /><path d="M15 20v2" /><path d="M2 15h2" /><path d="M2 9h2" /><path d="M20 15h2" /><path d="M20 9h2" /><path d="M9 2v2" /><path d="M9 20v2" /></svg>}
+      >
+        <div className="text-xs text-white/40">{data.cpu.model} &middot; {data.cpu.cores} cores</div>
+        <ProgressBar percent={data.cpu.loadPercent} color="bg-accent-indigo" />
+        <div className="text-xs text-white/50">{data.cpu.loadPercent}% load</div>
+      </StatCard>
+
+      {/* Memory */}
+      <StatCard
+        title="Memory"
+        icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 19v-8a6 6 0 0 1 12 0v8" /><rect x="2" y="19" width="20" height="2" rx="1" /></svg>}
+      >
+        <ProgressBar percent={data.memory.usePercent} color="bg-accent-purple" />
+        <div className="text-xs text-white/50">
+          {formatBytes(data.memory.used)} / {formatBytes(data.memory.total)} ({data.memory.usePercent}%)
+        </div>
+      </StatCard>
+
+      {/* Disk */}
+      {data.disk.map((fs: any, i: number) => (
+        <StatCard
+          key={i}
+          title={`Disk — ${fs.mount}`}
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /></svg>}
+        >
+          <ProgressBar percent={fs.usePercent} color="bg-blue-400" />
+          <div className="text-xs text-white/50">
+            {formatBytes(fs.used)} / {formatBytes(fs.size)} ({Math.round(fs.usePercent)}%) &middot; {formatBytes(fs.available)} free
+          </div>
+        </StatCard>
+      ))}
+
+      {/* Temperature */}
+      {data.temperature.main !== null && data.temperature.main !== -1 && (
+        <StatCard
+          title="Temperature"
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" /></svg>}
+        >
+          <div className="text-xs text-white/50">
+            CPU: {data.temperature.main}°C
+            {data.temperature.max !== null && data.temperature.max !== data.temperature.main && (
+              <span> &middot; Max: {data.temperature.max}°C</span>
+            )}
+          </div>
+        </StatCard>
+      )}
     </div>
   );
 }
@@ -191,16 +285,12 @@ export function SettingsModal() {
     enabled: showSettingsModal,
   });
 
-  const [downloadLimit, setDownloadLimit] = useState('0');
-  const [uploadLimit, setUploadLimit] = useState('0');
   const [downloadsDir, setDownloadsDir] = useState('');
   const [tmdbApiKey, setTmdbApiKey] = useState('');
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     if (serverSettings) {
-      setDownloadLimit(String(serverSettings.downloadLimit || 0));
-      setUploadLimit(String(serverSettings.uploadLimit || 0));
       setDownloadsDir(serverSettings.downloadsDir || '');
       setTmdbApiKey(serverSettings.tmdbApiKey || '');
     }
@@ -208,14 +298,11 @@ export function SettingsModal() {
 
   const save = async () => {
     await api.updateSettings({
-      downloadLimit: parseInt(downloadLimit) || 0,
-      uploadLimit: parseInt(uploadLimit) || 0,
       downloadsDir,
       tmdbApiKey,
     });
     qc.invalidateQueries({ queryKey: ['settings'] });
-    setSaved(true);
-    setTimeout(() => setSaved(false), SAVED_FEEDBACK_DURATION_MS);
+    setShowSettingsModal(false);
   };
 
   if (!showSettingsModal) return null;
@@ -290,14 +377,7 @@ export function SettingsModal() {
                   {activeTab === 'downloads' && (
                     <DownloadsTabContent downloadsDir={downloadsDir} setDownloadsDir={setDownloadsDir} />
                   )}
-                  {activeTab === 'network' && (
-                    <NetworkTabContent
-                      downloadLimit={downloadLimit}
-                      setDownloadLimit={setDownloadLimit}
-                      uploadLimit={uploadLimit}
-                      setUploadLimit={setUploadLimit}
-                    />
-                  )}
+                  {activeTab === 'system' && <SystemTabContent />}
                   {activeTab === 'media' && (
                     <MediaTabContent tmdbApiKey={tmdbApiKey} setTmdbApiKey={setTmdbApiKey} />
                   )}
@@ -377,28 +457,6 @@ function TextInput({ label, value, onChange, placeholder, mono, type }: {
           placeholder:text-white/15 focus:outline-none focus:border-accent-indigo/40 focus:bg-white/[0.06] transition-all
           ${mono ? 'font-mono text-xs' : ''}`}
       />
-    </div>
-  );
-}
-
-function NumberInputBlock({ label, unit, value, onChange, color }: {
-  label: string; unit: string; value: string; onChange: (v: string) => void; color: string;
-}) {
-  return (
-    <div className="glass rounded-lg p-3">
-      <label className={`text-xs font-medium block mb-2 ${color}`}>{label}</label>
-      <div className="flex items-stretch gap-2">
-        <input
-          type="number"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm
-            font-mono focus:outline-none focus:border-accent-indigo/40 transition-all"
-        />
-        <div className="flex items-center px-2">
-          <span className="text-xs text-white/40 font-mono whitespace-nowrap">{unit}</span>
-        </div>
-      </div>
     </div>
   );
 }
