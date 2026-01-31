@@ -100,7 +100,7 @@ export function TopBar() {
         <div className="w-px h-6 bg-white/[0.08] mx-1 max-md:hidden" />
 
         {/* User menu */}
-        <div className="max-md:hidden">
+        <div>
           <button
             ref={buttonRef}
             onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -109,10 +109,10 @@ export function TopBar() {
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-accent-indigo to-accent-purple flex items-center justify-center text-xs font-semibold uppercase">
               {username?.charAt(0) || '?'}
             </div>
-            <span className="text-sm text-white/60 group-hover:text-white/80 transition-colors hidden sm:block">
+            <span className="text-sm text-white/60 group-hover:text-white/80 transition-colors max-md:hidden">
               {username}
             </span>
-            <svg className="text-white/30" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <svg className="text-white/30 max-md:hidden" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <polyline points="6 9 12 15 18 9" />
             </svg>
           </button>
