@@ -22,9 +22,9 @@ export function FileBrowser({ hash }: Props) {
     <div className="space-y-1">
       {files.map((f: any, i: number) => (
         <div key={i} className="flex items-center gap-2 text-xs p-1.5 rounded hover:bg-white/[0.03]">
-          <span className="text-white/30">📄</span>
-          <span className="flex-1 truncate text-white/70">{f.name}</span>
-          <span className="text-white/30 font-mono flex-shrink-0">{formatBytes(f.length)}</span>
+          <span className="text-white/50">📄</span>
+          <span className="flex-1 truncate text-white/90">{f.name}</span>
+          <span className="text-white/50 font-mono flex-shrink-0">{formatBytes(f.length)}</span>
           <a
             href={`/api/files/stream/${hash}/${f.index}`}
             target="_blank"
