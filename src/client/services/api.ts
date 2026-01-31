@@ -1,3 +1,5 @@
+import { useAuthStore } from '../stores/authStore.js';
+
 const BASE = (import.meta.env.VITE_API_URL as string) || '/api';
 
 async function request<T>(url: string, opts?: RequestInit): Promise<T> {
@@ -11,6 +13,10 @@ async function request<T>(url: string, opts?: RequestInit): Promise<T> {
     headers,
   });
   if (!res.ok) {
+    if (res.status === 401) {
+      useAuthStore.getState().setStatus('login');
+      useAuthStore.getState().setUsername(null);
+    }
     const body = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(body.error || res.statusText);
   }
