@@ -7,11 +7,12 @@ import { eq, count as countFn } from 'drizzle-orm';
 export function authRoutes(app: FastifyInstance) {
   // Cookie configuration for cross-domain or same-origin support
   const crossDomain = !!process.env.CORS_ORIGIN;
+  const isHttps = process.env.NODE_ENV === 'production' && process.env.PROTOCOL === 'https';
   const cookieOpts = {
     path: '/',
     httpOnly: true,
     sameSite: crossDomain ? 'none' as const : 'strict' as const,
-    secure: crossDomain,
+    secure: isHttps, // Only secure over HTTPS
     maxAge: 7 * 86400,
   };
 
