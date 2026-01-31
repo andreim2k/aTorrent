@@ -8,7 +8,7 @@ interface Props {
 
 export function DropZone({ onFileDrop, className }: Props) {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    accept: { 'application/x-bittorrent': ['.torrent'] },
+    accept: { 'application/x-bittorrent': ['.torrent'], 'application/octet-stream': ['.torrent'] },
     multiple: true,
     onDrop: (files) => {
       if (files.length > 0) onFileDrop(files);
