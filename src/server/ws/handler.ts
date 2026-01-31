@@ -27,7 +27,7 @@ export function setupWebSocket(app: FastifyInstance) {
 
   const events: TorrentEventName[] = [
     'torrent:added', 'torrent:removed', 'torrent:progress',
-    'torrent:done', 'torrent:error', 'torrent:metadata',
+    'torrent:done', 'torrent:error', 'torrent:metadata', 'torrent:identified',
   ];
 
   for (const event of events) {

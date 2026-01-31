@@ -16,6 +16,7 @@ export interface TorrentEvents {
   'torrent:done': { infoHash: string };
   'torrent:error': { infoHash: string; message: string };
   'torrent:metadata': { infoHash: string; name: string; totalSize: number; files: { name: string; length: number }[] };
+  'torrent:identified': { infoHash: string; tmdbId: number; posterPath?: string };
 }
 
 export type TorrentEventName = keyof TorrentEvents;

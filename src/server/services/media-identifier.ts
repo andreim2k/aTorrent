@@ -4,6 +4,7 @@ import { searchTMDB } from './tmdb.js';
 import { db } from '../db/client.js';
 import { torrents } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
+import { torrentEvents } from '../engine/events.js';
 
 export async function autoIdentify(infoHash: string, torrentName: string) {
   const parsed = ptn(torrentName);
@@ -29,5 +30,6 @@ export async function autoIdentify(infoHash: string, torrentName: string) {
   const tmdbId = best.id;
   db.update(torrents).set({ tmdbId, mediaType: type, posterPath: best.poster_path })
     .where(eq(torrents.infoHash, infoHash)).run();
+  torrentEvents.emit('torrent:identified', { infoHash, tmdbId, posterPath: best.poster_path });
   return { tmdbId, mediaType: type, title: best.title || best.name, posterPath: best.poster_path };
 }

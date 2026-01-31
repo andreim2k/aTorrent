@@ -39,10 +39,20 @@ export function useTorrents() {
     );
   }, [qc]);
 
+  const handleIdentified = useCallback((data: any) => {
+    qc.setQueryData<Torrent[]>(['torrents'], (old) => {
+      if (!old) return old;
+      return old.map(t =>
+        t.infoHash === data.infoHash ? { ...t, tmdbId: data.tmdbId, posterPath: data.posterPath } : t
+      );
+    });
+  }, [qc]);
+
   useWebSocket('torrent:progress', handleProgress);
   useWebSocket('torrent:added', handleAdded);
   useWebSocket('torrent:removed', handleRemoved);
   useWebSocket('torrent:done', handleDone);
+  useWebSocket('torrent:identified', handleIdentified);
 
   return query;
 }
