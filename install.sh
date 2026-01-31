@@ -93,6 +93,11 @@ if [ "$SKIP_SYSTEM" -eq 0 ]; then
 fi
 echo ""
 echo "Next steps:"
-echo "  1. Edit .env if needed (TMDB_API_KEY, etc.)"
+echo "  1. Edit .env if needed (TMDB_API_KEY, CORS_ORIGIN, etc.)"
 echo "  2. Start: ./atorrent.sh start"
 echo "     Or:    sudo systemctl start atorrent"
+echo ""
+echo "Configuration notes:"
+echo "  - CORS_ORIGIN: Set if accessing from different hosts (comma-separated URLs)"
+echo "  - DOWNLOADS_DIR: Path where torrents will be saved"
+echo "  - TMDB_API_KEY: Optional API key for media metadata"
