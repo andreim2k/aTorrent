@@ -14,6 +14,7 @@ if (!jwtSecret) {
 export const config = {
   port: parseInt(process.env.PORT || '3001', 10),
   host: process.env.HOST || '0.0.0.0',
+  torrentPort: parseInt(process.env.TORRENT_PORT || '6881', 10),
   dataDir: path.resolve(root, 'data'),
   downloadsDir: path.resolve(root, process.env.DOWNLOADS_DIR || 'data/downloads'),
   dbPath: path.resolve(root, 'data/atorrent.db'),

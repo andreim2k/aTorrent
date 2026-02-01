@@ -51,7 +51,7 @@ export function initEngine() {
     fs.mkdirSync(config.downloadsDir, { recursive: true });
   }
 
-  client = new WebTorrent();
+  client = new WebTorrent({ torrentPort: config.torrentPort });
 
   client.on('error', (err) => {
     console.error('[WebTorrent] Engine error:', typeof err === 'string' ? err : err.message);
