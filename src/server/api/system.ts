@@ -29,9 +29,9 @@ export function systemRoutes(app: FastifyInstance) {
       },
       memory: {
         total: mem.total,
-        used: mem.used,
-        free: mem.free,
-        usePercent: Math.round((mem.used / mem.total) * 1000) / 10,
+        used: mem.active,
+        free: mem.available,
+        usePercent: Math.round(((mem.total - mem.available) / mem.total) * 1000) / 10,
       },
       temperature: {
         main: temp.main,
