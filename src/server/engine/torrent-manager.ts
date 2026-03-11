@@ -134,6 +134,7 @@ function addToEngine(source: string | Buffer, savePath: string) {
   }
 
   client.add(source as any, { path: savePath }, (torrent) => {
+    console.log(`[Torrent Added] ${torrent.name} (${torrent.infoHash})`);
     setupTorrentHandlers(torrent);
 
     db.update(torrents).set({
@@ -202,11 +203,13 @@ function setupTorrentHandlers(torrent: WebTorrent.Torrent) {
   });
 
   torrent.on('error', (err) => {
+    const errorMsg = typeof err === 'string' ? err : err.message;
+    console.error(`[Torrent Error] ${torrent.name || torrent.infoHash}: ${errorMsg}`);
     db.update(torrents).set({ status: 'error' })
       .where(eq(torrents.infoHash, torrent.infoHash)).run();
     torrentEvents.emit('torrent:error', {
       infoHash: torrent.infoHash,
-      message: typeof err === 'string' ? err : err.message,
+      message: errorMsg,
     });
   });
 
