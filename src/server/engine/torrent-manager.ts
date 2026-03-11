@@ -131,6 +131,9 @@ function addToEngine(source: string | Buffer, savePath: string) {
   if (typeof source === 'string') {
     const hash = parseInfoHash(source);
     if (hash && findTorrent(hash)) return;
+    console.log(`[addToEngine] Adding magnet link with hash: ${hash}`);
+  } else {
+    console.log(`[addToEngine] Adding .torrent file (${source.length} bytes)`);
   }
 
   client.add(source as any, { path: savePath }, (torrent) => {
