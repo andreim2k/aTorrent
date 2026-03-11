@@ -178,6 +178,10 @@ function addToEngineWithPersist(source: Buffer, savePath: string, torrentFile64:
 function setupTorrentHandlers(torrent: WebTorrent.Torrent) {
   torrentMap.set(torrent.infoHash, torrent);
 
+  torrent.on('ready', () => {
+    console.log(`[Torrent Ready] ${torrent.name} - Starting download (${torrent.numPeers} peers)`);
+  });
+
   torrent.on('metadata', () => {
     db.update(torrents).set({
       name: torrent.name,
@@ -214,6 +218,7 @@ function setupTorrentHandlers(torrent: WebTorrent.Torrent) {
   });
 
   let tickCount = 0;
+  let hasLoggedPeerIssue = false;
   const interval = setInterval(() => {
     if ((torrent as any).destroyed) {
       clearInterval(interval);
@@ -221,6 +226,13 @@ function setupTorrentHandlers(torrent: WebTorrent.Torrent) {
       torrentMap.delete(torrent.infoHash);
       return;
     }
+
+    // Log if no peers found after 10 seconds
+    if (torrent.numPeers === 0 && tickCount === 10 && !hasLoggedPeerIssue) {
+      console.warn(`[Torrent Warning] ${torrent.name}: No peers found after 10s (may be private tracker or no seeds)`);
+      hasLoggedPeerIssue = true;
+    }
+
     torrentEvents.emit('torrent:progress', {
       infoHash: torrent.infoHash,
       downloaded: torrent.downloaded,
