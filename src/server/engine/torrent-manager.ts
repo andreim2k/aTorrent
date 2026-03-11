@@ -62,6 +62,10 @@ export function initEngine() {
     console.error('[WebTorrent] Engine error:', typeof err === 'string' ? err : err.message);
   });
 
+  (client as any).on('warning', (err: any) => {
+    console.warn('[WebTorrent] Warning:', typeof err === 'string' ? err : err.message);
+  });
+
   // Restore persisted torrents — resume downloading and seeding, skip paused/error
   const saved = db.select().from(torrents).all();
   for (const t of saved) {
@@ -141,7 +145,9 @@ function addToEngine(source: string | Buffer, savePath: string) {
     console.log(`[addToEngine] Adding .torrent file (${source.length} bytes)`);
   }
 
+  console.log(`[addToEngine] Calling client.add() with path: ${savePath}`);
   client.add(source as any, { path: savePath }, (torrent) => {
+    console.log(`[addToEngine] Callback fired for torrent!`);
     console.log(`[Torrent Added] ${torrent.name} (${torrent.infoHash})`);
     if ((torrent as any).private) {
       console.log(`  [Private Torrent] Tracker-only mode enabled`);
