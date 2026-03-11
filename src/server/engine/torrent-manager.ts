@@ -135,6 +135,10 @@ function addToEngine(source: string | Buffer, savePath: string) {
 
   client.add(source as any, { path: savePath }, (torrent) => {
     console.log(`[Torrent Added] ${torrent.name} (${torrent.infoHash})`);
+    if ((torrent as any).private) {
+      console.log(`  [Private Torrent] Requires tracker authentication`);
+    }
+    console.log(`  Trackers: ${(torrent as any).announce?.length || 0} announce URLs`);
     setupTorrentHandlers(torrent);
 
     db.update(torrents).set({
