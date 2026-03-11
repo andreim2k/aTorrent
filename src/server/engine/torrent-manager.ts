@@ -138,7 +138,11 @@ function addToEngine(source: string | Buffer, savePath: string) {
     if ((torrent as any).private) {
       console.log(`  [Private Torrent] Requires tracker authentication`);
     }
-    console.log(`  Trackers: ${(torrent as any).announce?.length || 0} announce URLs`);
+    const announceList = (torrent as any).announce || [];
+    console.log(`  Trackers: ${announceList.length} announce URLs`);
+    announceList.forEach((url: string, idx: number) => {
+      console.log(`    [${idx}] ${url}`);
+    });
     setupTorrentHandlers(torrent);
 
     db.update(torrents).set({
