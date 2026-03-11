@@ -21,7 +21,13 @@
       "Bash(git add:*)",
       "Bash(systemctl is-enabled:*)",
       "Bash(systemctl status:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(*)",
+      "WebFetch(domain:github.com)",
+      "WebSearch",
+      "WebFetch(domain:webtorrent.io)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:www.bittorrent.org)"
     ]
   }
 }
