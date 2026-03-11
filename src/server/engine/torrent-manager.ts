@@ -13,6 +13,21 @@ let client: WebTorrent.Instance;
 const progressIntervals = new Map<string, NodeJS.Timeout>();
 const torrentMap = new Map<string, WebTorrent.Torrent>();
 
+/**
+ * Generate a qBittorrent-style peer ID to avoid tracker whitelist rejection.
+ * Format: -qB4650- followed by 12 random alphanumeric characters.
+ * This helps private trackers that block WebTorrent identify us as qBittorrent instead.
+ */
+function generateQBPeerId(): string {
+  const prefix = '-qB4650-';
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let suffix = '';
+  for (let i = 0; i < 12; i++) {
+    suffix += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return prefix + suffix;
+}
+
 export function getClient() {
   return client;
 }
@@ -51,7 +66,12 @@ export function initEngine() {
     fs.mkdirSync(config.downloadsDir, { recursive: true });
   }
 
-  client = new WebTorrent({ torrentPort: config.torrentPort } as any);
+  // Use qBittorrent-style peer ID to bypass private tracker whitelist blocks
+  const peerId = generateQBPeerId();
+  client = new WebTorrent({
+    torrentPort: config.torrentPort,
+    peerId: Buffer.from(peerId),
+  } as any);
 
   client.on('error', (err) => {
     console.error('[WebTorrent] Engine error:', typeof err === 'string' ? err : err.message);
