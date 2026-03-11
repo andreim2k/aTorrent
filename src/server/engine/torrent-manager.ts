@@ -51,37 +51,19 @@ export function initEngine() {
     fs.mkdirSync(config.downloadsDir, { recursive: true });
   }
 
-  client = new WebTorrent({
-    torrentPort: config.torrentPort,
-    dht: true,  // Keep DHT for public trackers
-    tracker: true,  // Ensure tracker support
-    webSeeds: true,
-  } as any);
+  client = new WebTorrent({ torrentPort: config.torrentPort } as any);
 
   client.on('error', (err) => {
     console.error('[WebTorrent] Engine error:', typeof err === 'string' ? err : err.message);
   });
 
-  (client as any).on('warning', (err: any) => {
-    console.warn('[WebTorrent] Warning:', typeof err === 'string' ? err : err.message);
-  });
-
   // Restore persisted torrents — resume downloading and seeding, skip paused/error
   const saved = db.select().from(torrents).all();
-  console.log(`[Restore] Found ${saved.length} torrents in database`);
   for (const t of saved) {
-    console.log(`[Restore] Processing ${t.name} (status: ${t.status})`);
-    if (t.status === 'paused' || t.status === 'error') {
-      console.log(`[Restore] Skipping paused/error torrent: ${t.name}`);
-      continue;
-    }
+    if (t.status === 'paused' || t.status === 'error') continue;
     const src = t.magnet || (t.torrentFile ? Buffer.from(t.torrentFile, 'base64') : null);
-    if (!src) {
-      console.log(`[Restore] No source found for ${t.name}`);
-      continue;
-    }
+    if (!src) continue;
     try {
-      console.log(`[Restore] Restoring ${t.name}`);
       addToEngine(src, t.savePath);
     } catch (e) {
       console.warn(`[Restore] Failed to restore ${t.infoHash}:`, e);
@@ -149,23 +131,10 @@ function addToEngine(source: string | Buffer, savePath: string) {
   if (typeof source === 'string') {
     const hash = parseInfoHash(source);
     if (hash && findTorrent(hash)) return;
-    console.log(`[addToEngine] Adding magnet link with hash: ${hash}`);
-  } else {
-    console.log(`[addToEngine] Adding .torrent file (${source.length} bytes)`);
   }
 
-  console.log(`[addToEngine] Calling client.add() with path: ${savePath}`);
   client.add(source as any, { path: savePath }, (torrent) => {
-    console.log(`[addToEngine] Callback fired for torrent!`);
     console.log(`[Torrent Added] ${torrent.name} (${torrent.infoHash})`);
-    if ((torrent as any).private) {
-      console.log(`  [Private Torrent] Tracker-only mode enabled`);
-    }
-    const announceList = (torrent as any).announce || [];
-    console.log(`  Trackers: ${announceList.length} announce URLs`);
-    announceList.forEach((url: string, idx: number) => {
-      console.log(`    [${idx}] ${url}`);
-    });
     setupTorrentHandlers(torrent);
 
     db.update(torrents).set({
@@ -209,13 +178,8 @@ function addToEngineWithPersist(source: Buffer, savePath: string, torrentFile64:
 function setupTorrentHandlers(torrent: WebTorrent.Torrent) {
   torrentMap.set(torrent.infoHash, torrent);
 
-  torrent.on('ready', () => {
-    console.log(`[Torrent Ready] ${torrent.name} - Starting download (${torrent.numPeers} peers)`);
-  });
-
-  // Log tracker announcements
-  (torrent as any).on('announce', () => {
-    console.log(`[Tracker Announce] ${torrent.name} - ${torrent.numPeers} peers found`);
+  torrent.on('warning', (err: any) => {
+    console.warn(`[Tracker Warning] ${torrent.name}: ${err.message || err}`);
   });
 
   torrent.on('metadata', () => {
