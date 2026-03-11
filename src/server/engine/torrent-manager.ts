@@ -51,7 +51,12 @@ export function initEngine() {
     fs.mkdirSync(config.downloadsDir, { recursive: true });
   }
 
-  client = new WebTorrent({ torrentPort: config.torrentPort } as any);
+  client = new WebTorrent({
+    torrentPort: config.torrentPort,
+    dht: true,  // Keep DHT for public trackers
+    tracker: true,  // Ensure tracker support
+    webSeeds: true,
+  } as any);
 
   client.on('error', (err) => {
     console.error('[WebTorrent] Engine error:', typeof err === 'string' ? err : err.message);
@@ -139,7 +144,7 @@ function addToEngine(source: string | Buffer, savePath: string) {
   client.add(source as any, { path: savePath }, (torrent) => {
     console.log(`[Torrent Added] ${torrent.name} (${torrent.infoHash})`);
     if ((torrent as any).private) {
-      console.log(`  [Private Torrent] Requires tracker authentication`);
+      console.log(`  [Private Torrent] Tracker-only mode enabled`);
     }
     const announceList = (torrent as any).announce || [];
     console.log(`  Trackers: ${announceList.length} announce URLs`);
@@ -191,6 +196,11 @@ function setupTorrentHandlers(torrent: WebTorrent.Torrent) {
 
   torrent.on('ready', () => {
     console.log(`[Torrent Ready] ${torrent.name} - Starting download (${torrent.numPeers} peers)`);
+  });
+
+  // Log tracker announcements
+  (torrent as any).on('announce', () => {
+    console.log(`[Tracker Announce] ${torrent.name} - ${torrent.numPeers} peers found`);
   });
 
   torrent.on('metadata', () => {
