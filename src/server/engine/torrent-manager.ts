@@ -141,8 +141,9 @@ function addToEngine(source: string | Buffer, savePath: string) {
     console.log(`[addToEngine] Adding .torrent file (${source.length} bytes)`);
   }
 
-  client.add(source as any, { path: savePath }, (torrent) => {
-    console.log(`[Torrent Added] ${torrent.name} (${torrent.infoHash})`);
+  try {
+    client.add(source as any, { path: savePath }, (torrent) => {
+      console.log(`[Torrent Added] ${torrent.name} (${torrent.infoHash})`);
     if ((torrent as any).private) {
       console.log(`  [Private Torrent] Tracker-only mode enabled`);
     }
@@ -168,7 +169,10 @@ function addToEngine(source: string | Buffer, savePath: string) {
 
     // Auto-identify once we have the real torrent name
     autoIdentify(torrent.infoHash, torrent.name).catch(err => console.warn('[AutoIdentify] Failed:', err.message || err));
-  });
+    });
+  } catch (err) {
+    console.error(`[addToEngine Error] Failed to add torrent:`, err instanceof Error ? err.message : err);
+  }
 }
 
 function addToEngineWithPersist(source: Buffer, savePath: string, torrentFile64: string) {
