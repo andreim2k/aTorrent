@@ -68,11 +68,20 @@ export function initEngine() {
 
   // Restore persisted torrents — resume downloading and seeding, skip paused/error
   const saved = db.select().from(torrents).all();
+  console.log(`[Restore] Found ${saved.length} torrents in database`);
   for (const t of saved) {
-    if (t.status === 'paused' || t.status === 'error') continue;
+    console.log(`[Restore] Processing ${t.name} (status: ${t.status})`);
+    if (t.status === 'paused' || t.status === 'error') {
+      console.log(`[Restore] Skipping paused/error torrent: ${t.name}`);
+      continue;
+    }
     const src = t.magnet || (t.torrentFile ? Buffer.from(t.torrentFile, 'base64') : null);
-    if (!src) continue;
+    if (!src) {
+      console.log(`[Restore] No source found for ${t.name}`);
+      continue;
+    }
     try {
+      console.log(`[Restore] Restoring ${t.name}`);
       addToEngine(src, t.savePath);
     } catch (e) {
       console.warn(`[Restore] Failed to restore ${t.infoHash}:`, e);
