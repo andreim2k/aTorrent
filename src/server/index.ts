@@ -58,7 +58,7 @@ async function main() {
   const clientDist = path.resolve(__dirname, '../client');
   await app.register(fastifyStatic, {
     root: clientDist,
-    wildcard: false,
+    wildcard: true,
   });
 
   // SPA fallback
