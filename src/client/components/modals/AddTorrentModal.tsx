@@ -28,11 +28,21 @@ export function AddTorrentModal() {
   };
 
   const handleFileDrop = async (files: File[]) => {
+    if (files.length === 0) return;
     setLoading(true);
     setError('');
     try {
-      await Promise.all(files.map(file => api.addTorrentFile(file)));
-      setShowAddModal(false);
+      const data = await api.addTorrentFiles(files);
+      // Server returns either the classic single result or { ok, results } when multiple files were in one request.
+      const hadError = Array.isArray((data as any)?.results)
+        ? (data as any).results.some((r: any) => r?.error)
+        : (data as any)?.error;
+      if (hadError) {
+        setError(typeof hadError === 'string' ? hadError : 'One or more torrents failed to add');
+        // keep modal open so failures are visible / user can retry
+      } else {
+        setShowAddModal(false);
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -74,7 +84,7 @@ export function AddTorrentModal() {
         </div>
 
         {/* File upload */}
-        <DropZone onFileDrop={handleFileDrop} />
+        <DropZone onFileDrop={handleFileDrop} disabled={loading} />
 
         {error && (
           <p className="text-xs text-red-400">{error}</p>

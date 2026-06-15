@@ -30,17 +30,38 @@ export function torrentRoutes(app: FastifyInstance) {
   app.post('/api/torrents', async (req, reply) => {
     const contentType = req.headers['content-type'] || '';
 
-    let source: string | Buffer;
     let savePath = config.downloadsDir;
 
+    const addedResults: any[] = [];
+
     if (contentType.includes('multipart')) {
-      const file = await req.file();
-      if (!file) return reply.status(400).send({ error: 'No file uploaded' });
-      source = Buffer.from(await file.toBuffer());
+      // Drain every file part in this multipart request (supports both
+      // "one file per POST" from the current client and a future single-POST
+      // multi-file FormData). This ensures drag-and-drop of many .torrent
+      // files is never limited to only the first one.
+      let file;
+      while ((file = await req.file())) {
+        const buf = Buffer.from(await file.toBuffer());
+        try {
+          const res = addTorrent(buf, savePath);
+          autoIdentify(res.infoHash, res.name).catch(err =>
+            console.warn('[AutoIdentify] Failed:', err.message || err)
+          );
+          addedResults.push(res);
+        } catch (err: any) {
+          addedResults.push({ error: err.message });
+        }
+      }
+      if (addedResults.length === 0) {
+        return reply.status(400).send({ error: 'No file uploaded' });
+      }
+      // For backward compat with single-file callers, return the single result
+      // shape when exactly one file arrived in this request.
+      return addedResults.length === 1 ? addedResults[0] : { ok: true, results: addedResults };
     } else {
       const body = req.body as any;
       if (!body?.magnet) return reply.status(400).send({ error: 'magnet required' });
-      source = body.magnet;
+      const source: string | Buffer = body.magnet;
       if (body.savePath) {
         const resolved = path.resolve(body.savePath);
         const downloadsRoot = path.resolve(config.downloadsDir);
@@ -49,17 +70,17 @@ export function torrentRoutes(app: FastifyInstance) {
         }
         savePath = resolved;
       }
-    }
 
-    try {
-      const result = addTorrent(source, savePath);
+      try {
+        const result = addTorrent(source, savePath);
 
-      // Auto-identify in background
-      autoIdentify(result.infoHash, result.name).catch(err => console.warn('[AutoIdentify] Failed:', err.message || err));
+        // Auto-identify in background
+        autoIdentify(result.infoHash, result.name).catch(err => console.warn('[AutoIdentify] Failed:', err.message || err));
 
-      return result;
-    } catch (err: any) {
-      return reply.status(500).send({ error: err.message });
+        return result;
+      } catch (err: any) {
+        return reply.status(500).send({ error: err.message });
+      }
     }
   });
 

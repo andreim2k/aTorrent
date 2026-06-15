@@ -45,7 +45,24 @@ export const api = {
   addTorrentFile: (file: File) => {
     const form = new FormData();
     form.append('file', file);
-    return fetch(BASE + '/torrents', { method: 'POST', body: form, credentials: 'include' }).then(r => r.json());
+    return fetch(BASE + '/torrents', { method: 'POST', body: form, credentials: 'include' }).then(async (r) => {
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        throw new Error(body.error || r.statusText || 'Upload failed');
+      }
+      return r.json();
+    });
+  },
+  addTorrentFiles: (files: File[]) => {
+    const form = new FormData();
+    for (const f of files) form.append('file', f);
+    return fetch(BASE + '/torrents', { method: 'POST', body: form, credentials: 'include' }).then(async (r) => {
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        throw new Error(body.error || r.statusText || 'Upload failed');
+      }
+      return r.json();
+    });
   },
   updateTorrent: (hash: string, data: any) =>
     request(`/torrents/${hash}`, { method: 'PATCH', body: JSON.stringify(data) }),
