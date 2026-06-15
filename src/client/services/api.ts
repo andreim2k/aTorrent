@@ -55,13 +55,21 @@ export const api = {
   },
   addTorrentFiles: (files: File[]) => {
     const form = new FormData();
-    for (const f of files) form.append('file', f);
+    console.log(`[API] addTorrentFiles called with ${files.length} files`);
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      console.log(`[API] Appending file #${i + 1}: ${f.name} (${f.size} bytes)`);
+      form.append('file', f);
+    }
+    console.log(`[API] Sending POST /torrents with ${files.length} file(s)`);
     return fetch(BASE + '/torrents', { method: 'POST', body: form, credentials: 'include' }).then(async (r) => {
       if (!r.ok) {
         const body = await r.json().catch(() => ({}));
         throw new Error(body.error || r.statusText || 'Upload failed');
       }
-      return r.json();
+      const response = r.json();
+      console.log(`[API] Response:`, response);
+      return response;
     });
   },
   updateTorrent: (hash: string, data: any) =>

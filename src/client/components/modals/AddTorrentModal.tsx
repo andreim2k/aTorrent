@@ -29,10 +29,12 @@ export function AddTorrentModal() {
 
   const handleFileDrop = async (files: File[]) => {
     if (files.length === 0) return;
+    console.log(`[AddTorrentModal] handleFileDrop: received ${files.length} file(s)`, files.map(f => ({ name: f.name, size: f.size })));
     setLoading(true);
     setError('');
     try {
       const data = await api.addTorrentFiles(files);
+      console.log(`[AddTorrentModal] Response from server:`, data);
       // Server returns either the classic single result or { ok, results } when multiple files were in one request.
       const hadError = Array.isArray((data as any)?.results)
         ? (data as any).results.some((r: any) => r?.error)
@@ -44,6 +46,7 @@ export function AddTorrentModal() {
         setShowAddModal(false);
       }
     } catch (err: any) {
+      console.error(`[AddTorrentModal] Error:`, err);
       setError(err.message);
     } finally {
       setLoading(false);
