@@ -35,12 +35,11 @@ export function torrentRoutes(app: FastifyInstance) {
     const addedResults: any[] = [];
 
     if (contentType.includes('multipart')) {
-      // Drain every file part in this multipart request (supports both
-      // "one file per POST" from the current client and a future single-POST
-      // multi-file FormData). This ensures drag-and-drop of many .torrent
-      // files is never limited to only the first one.
-      let file;
-      while ((file = await req.file())) {
+      // Use req.files() to get ALL files (req.file() only returns the first one)
+      let fileIndex = 0;
+      for await (const file of req.files()) {
+        fileIndex++;
+        console.log(`[Multipart Upload] file #${fileIndex}: filename=${file.filename}, mimetype=${file.mimetype}, encoding=${file.encoding}`);
         const buf = Buffer.from(await file.toBuffer());
         try {
           const res = addTorrent(buf, savePath);
@@ -52,6 +51,7 @@ export function torrentRoutes(app: FastifyInstance) {
           addedResults.push({ error: err.message });
         }
       }
+      console.log(`[Multipart Upload] total files drained from this request: ${fileIndex}, addedResults.length=${addedResults.length}`);
       if (addedResults.length === 0) {
         return reply.status(400).send({ error: 'No file uploaded' });
       }

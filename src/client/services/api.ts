@@ -67,7 +67,7 @@ export const api = {
         const body = await r.json().catch(() => ({}));
         throw new Error(body.error || r.statusText || 'Upload failed');
       }
-      const response = r.json();
+      const response = await r.json();
       console.log(`[API] Response:`, response);
       return response;
     });
