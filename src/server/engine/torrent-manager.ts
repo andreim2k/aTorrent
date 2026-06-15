@@ -71,6 +71,9 @@ export function initEngine() {
   client = new WebTorrent({
     torrentPort: config.torrentPort,
     peerId: Buffer.from(peerId),
+    dht: false,
+    tracker: true,
+    webSeeds: true,
   } as any);
 
   client.on('error', (err) => {
