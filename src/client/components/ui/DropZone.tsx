@@ -9,7 +9,10 @@ interface Props {
 
 export function DropZone({ onFileDrop, className, disabled = false }: Props) {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    accept: { 'application/x-bittorrent': ['.torrent'], 'application/octet-stream': ['.torrent'] },
+    accept: {
+      'application/x-bittorrent': ['.torrent'],
+      'application/octet-stream': ['.torrent'],
+    },
     multiple: true,
     disabled,
     validator: (file) =>
@@ -18,14 +21,18 @@ export function DropZone({ onFileDrop, className, disabled = false }: Props) {
         : { code: 'file-invalid-type', message: 'Only .torrent files are allowed' },
     onDrop: (acceptedFiles, fileRejections) => {
       if (fileRejections.length > 0) {
-        // Non-.torrent files are rejected; .torrent files should now always be accepted
-        // via the validator regardless of what MIME the OS reports on drag.
         console.debug(
           '[DropZone] Rejected files:',
           fileRejections.map((r) => r.file.name)
         );
       }
-      if (acceptedFiles.length > 0) onFileDrop(acceptedFiles);
+      // Robustness: always include any .torrent by extension, even if rejected by built-in accept/validator
+      // (some OS drags report MIME that bypasses the accept map + ext check).
+      const rescued = fileRejections
+        .filter(r => r.file.name.toLowerCase().endsWith('.torrent'))
+        .map(r => r.file);
+      const allTorrents = [...acceptedFiles, ...rescued];
+      if (allTorrents.length > 0) onFileDrop(allTorrents);
     },
   });
 
