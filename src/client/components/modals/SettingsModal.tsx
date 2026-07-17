@@ -323,7 +323,7 @@ export function SettingsModal() {
         exit={{ opacity: 0 }}
       >
         <motion.div
-          className="glass rounded-2xl w-full max-w-2xl overflow-hidden"
+          className="settings-terminal-modal glass rounded-2xl w-full max-w-2xl overflow-hidden"
           initial={{ scale: 0.95, y: 20 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.95, y: 20 }}

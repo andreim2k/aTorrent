@@ -1,13 +1,23 @@
+import { useEffect, useState } from 'react';
 import { useTorrents } from '../../hooks/useTorrents.js';
 
 export function StatusBar() {
   const { data: torrents } = useTorrents();
-  const count = torrents?.length || 0;
+  const [time, setTime] = useState(() => new Date());
+  useEffect(() => {
+    const timer = window.setInterval(() => setTime(new Date()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   return (
-    <footer className="h-8 glass border-t border-white/[0.06] flex items-center px-4 text-xs text-white/30 font-mono gap-6">
-      <span>{count} torrent{count !== 1 ? 's' : ''}</span>
-      <span>aTorrent v0.1.0</span>
+    <footer className="terminal-statusbar">
+      <span className="status-mode">NORMAL</span>
+      <span><b>↳</b> {torrents?.length || 0} JOBS</span>
+      <span><b>◆</b> WS:CONNECTED</span>
+      <span className="status-spacer" />
+      <span>UTF-8</span>
+      <span>v0.1.0</span>
+      <span>{time.toLocaleTimeString([], { hour12: false })}</span>
     </footer>
   );
 }

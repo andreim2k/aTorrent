@@ -4,90 +4,53 @@ import { useTorrents } from '../../hooks/useTorrents.js';
 import { formatSpeed } from '../../lib/formatters.js';
 import type { FilterStatus, Torrent } from '../../types/index.js';
 
-const navItems: { label: string; status: FilterStatus; icon: string }[] = [
-  { label: 'Dashboard', status: 'all', icon: '◈' },
-  { label: 'Downloading', status: 'downloading', icon: '↓' },
-  { label: 'Seeding', status: 'seeding', icon: '↑' },
-  { label: 'Completed', status: 'completed', icon: '✓' },
-  { label: 'Paused', status: 'paused', icon: '‖' },
-  { label: 'Errors', status: 'error', icon: '!' },
+const navItems: { label: string; command: string; status: FilterStatus; icon: string }[] = [
+  { label: 'All transfers', command: 'ls -la', status: 'all', icon: '00' },
+  { label: 'Downloading', command: 'watch dl', status: 'downloading', icon: '↓' },
+  { label: 'Seeding', command: 'watch ul', status: 'seeding', icon: '↑' },
+  { label: 'Completed', command: 'find done', status: 'completed', icon: '✓' },
+  { label: 'Paused', command: 'jobs -s', status: 'paused', icon: 'Ⅱ' },
+  { label: 'Errors', command: 'tail err', status: 'error', icon: '!' },
 ];
 
 export function Sidebar() {
   const { filterStatus, setFilterStatus, sidebarCollapsed } = useUIStore();
   const { data: torrents } = useTorrents();
-
-  const totalDown = (torrents || []).reduce((s: number, t: Torrent) => s + (t.downloadSpeed || 0), 0);
-  const totalUp = (torrents || []).reduce((s: number, t: Torrent) => s + (t.uploadSpeed || 0), 0);
+  const list = torrents || [];
+  const totalDown = list.reduce((sum: number, torrent: Torrent) => sum + (torrent.downloadSpeed || 0), 0);
+  const totalUp = list.reduce((sum: number, torrent: Torrent) => sum + (torrent.uploadSpeed || 0), 0);
 
   const countForStatus = (status: FilterStatus) => {
-    if (!torrents) return 0;
-    if (status === 'all') return torrents.length;
-    if (status === 'completed') return torrents.filter((t: Torrent) => t.status === 'seeding' || t.progress >= 1).length;
-    return torrents.filter((t: Torrent) => t.status === status).length;
+    if (status === 'all') return list.length;
+    if (status === 'completed') return list.filter((torrent: Torrent) => torrent.status === 'seeding' || torrent.progress >= 1).length;
+    return list.filter((torrent: Torrent) => torrent.status === status).length;
   };
 
   return (
-    <aside className={cn(
-      'glass h-full flex flex-col border-r border-white/[0.06] transition-all duration-300',
-      sidebarCollapsed ? 'w-16' : 'w-60'
-    )}>
-      {/* Logo */}
-      <div className="p-4 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-indigo to-accent-pink flex items-center justify-center font-bold text-sm">
-          a
-        </div>
-        {!sidebarCollapsed && <span className="font-semibold text-lg gradient-text">aTorrent</span>}
+    <aside className={cn('terminal-sidebar', sidebarCollapsed && 'is-collapsed')}>
+      <div className="brand-block">
+        <div className="brand-glyph">a</div>
+        {!sidebarCollapsed && <div><strong>aTORRENT</strong><small>operator console</small></div>}
       </div>
-
-      {/* Nav */}
-      <nav className="flex-1 px-2 py-2 space-y-0.5">
-        {navItems.map(item => {
-          const count = countForStatus(item.status);
+      {!sidebarCollapsed && <div className="session-label"><span>SESSION</span><b>ACTIVE</b></div>}
+      <nav className="terminal-nav">
+        {!sidebarCollapsed && <p className="nav-heading">~/transfers</p>}
+        {navItems.map((item) => {
           const active = filterStatus === item.status;
           return (
-            <button
-              key={item.status}
-              onClick={() => setFilterStatus(item.status)}
-              className={cn(
-                'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-150',
-                active ? 'glass-active text-white' : 'text-white/50 hover:text-white/80 hover:bg-white/[0.03]'
-              )}
-            >
-              <span className="w-5 text-center font-mono">{item.icon}</span>
-              {!sidebarCollapsed && (
-                <>
-                  <span className="flex-1 text-left">{item.label}</span>
-                  {count > 0 && (
-                    <span className="text-xs text-white/30 font-mono">{count}</span>
-                  )}
-                </>
-              )}
+            <button key={item.status} onClick={() => setFilterStatus(item.status)} className={active ? 'active' : ''} title={item.label}>
+              <span className="nav-icon">{item.icon}</span>
+              {!sidebarCollapsed && <><span className="nav-copy"><b>{item.label}</b><small>$ {item.command}</small></span><span className="nav-count">{String(countForStatus(item.status)).padStart(2, '0')}</span></>}
             </button>
           );
         })}
       </nav>
-
-      {/* Speeds */}
-      <div className="p-4 border-t border-white/[0.06]">
-        {!sidebarCollapsed ? (
-          <div className="space-y-1 text-xs font-mono">
-            <div className="flex justify-between text-blue-400">
-              <span>↓ DL</span>
-              <span>{formatSpeed(totalDown)}</span>
-            </div>
-            <div className="flex justify-between text-purple-400">
-              <span>↑ UL</span>
-              <span>{formatSpeed(totalUp)}</span>
-            </div>
-          </div>
-        ) : (
-          <div className="text-xs font-mono text-center space-y-1">
-            <div className="text-blue-400">↓</div>
-            <div className="text-purple-400">↑</div>
-          </div>
-        )}
+      <div className="sidebar-traffic">
+        {!sidebarCollapsed && <p className="nav-heading">NETWORK I/O</p>}
+        <div><span>↓</span>{!sidebarCollapsed && <small>DOWNLINK</small>}<b>{formatSpeed(totalDown)}</b></div>
+        <div><span>↑</span>{!sidebarCollapsed && <small>UPLINK</small>}<b>{formatSpeed(totalUp)}</b></div>
       </div>
+      {!sidebarCollapsed && <div className="sidebar-foot"><span>daemon</span><b>● online</b></div>}
     </aside>
   );
 }

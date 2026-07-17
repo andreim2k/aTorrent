@@ -249,7 +249,7 @@ export function TorrentDetail() {
     <AnimatePresence>
       {selectedTorrent && torrent && (
         <motion.div
-          className="w-96 max-md:fixed max-md:inset-0 max-md:w-full max-md:z-40 glass border-l border-white/[0.06] max-md:border-l-0 flex flex-col h-full overflow-hidden"
+          className="torrent-detail-panel w-96 max-md:fixed max-md:inset-0 max-md:w-full max-md:z-40 glass border-l border-white/[0.06] max-md:border-l-0 flex flex-col sticky top-0 max-h-[calc(100vh-7.5rem)] max-md:max-h-none overflow-hidden"
           initial={{ x: '100%' }}
           animate={{ x: 0 }}
           exit={{ x: '100%' }}

@@ -48,7 +48,7 @@ class WebSocketClient {
   on(event: string, fn: Listener) {
     if (!this.listeners.has(event)) this.listeners.set(event, new Set());
     this.listeners.get(event)!.add(fn);
-    return () => this.listeners.get(event)?.delete(fn);
+    return () => { this.listeners.get(event)?.delete(fn); };
   }
 
   disconnect() {

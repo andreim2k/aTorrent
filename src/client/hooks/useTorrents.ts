@@ -7,9 +7,9 @@ import type { Torrent } from '../types/index.js';
 export function useTorrents() {
   const qc = useQueryClient();
 
-  const query = useQuery({
+  const query = useQuery<Torrent[]>({
     queryKey: ['torrents'],
-    queryFn: api.getTorrents,
+    queryFn: () => api.getTorrents(),
     staleTime: Infinity,
   });
 
