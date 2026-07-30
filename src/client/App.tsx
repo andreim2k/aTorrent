@@ -62,12 +62,14 @@ export function App() {
   const { status } = useAuth();
   const theme = usePreferencesStore((state) => state.theme);
   const fontScale = usePreferencesStore((state) => state.fontScale);
+  const fxEnabled = usePreferencesStore((state) => state.fxEnabled);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.fx = fxEnabled ? 'on' : 'off';
     document.documentElement.style.colorScheme = theme === 'github-light' ? 'light' : 'dark';
     document.documentElement.style.setProperty('--font-scale', String(fontScale));
-  }, [theme, fontScale]);
+  }, [theme, fontScale, fxEnabled]);
 
   return (
     <AnimatePresence mode="wait">

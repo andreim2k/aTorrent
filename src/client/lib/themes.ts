@@ -1,4 +1,5 @@
 export const themes = [
+  { id: 'holo', name: 'Holo', code: 'HO', colors: ['#030711', '#38e6ff', '#a9f2ff'] },
   { id: 'phosphor', name: 'Phosphor', code: 'P1', colors: ['#07140d', '#66ff99', '#b7ffce'] },
   { id: 'vt100', name: 'VT100', code: 'V1', colors: ['#071008', '#45f56f', '#9dffae'] },
   { id: 'terminal', name: 'Terminal', code: 'T1', colors: ['#101210', '#d7e0d2', '#9aff68'] },
@@ -20,4 +21,4 @@ export const themes = [
 
 export type ThemeId = (typeof themes)[number]['id'];
 
-export const defaultTheme: ThemeId = 'phosphor';
+export const defaultTheme: ThemeId = 'holo';

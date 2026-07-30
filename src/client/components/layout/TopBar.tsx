@@ -6,7 +6,7 @@ import { ThemeSwitcher } from '../ui/ThemeSwitcher.js';
 
 export function TopBar() {
   const { searchQuery, setSearchQuery, setShowAddModal, setShowSettingsModal, toggleSidebar, selectionMode, setSelectionMode } = useUIStore();
-  const { fontScale, increaseFontScale, decreaseFontScale, resetFontScale } = usePreferencesStore();
+  const { fontScale, increaseFontScale, decreaseFontScale, resetFontScale, fxEnabled, toggleFx } = usePreferencesStore();
   const { username, logout } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -21,6 +21,7 @@ export function TopBar() {
       </label>
       <div className="topbar-actions">
         <button className={`icon-command selection-command ${selectionMode ? 'active' : ''}`} onClick={() => setSelectionMode(!selectionMode)} title="Selection mode" aria-label="Selection mode"><span>☷</span></button>
+        <button className={`icon-command fx-command ${fxEnabled ? 'active' : ''}`} onClick={toggleFx} title={`Cinematic FX ${fxEnabled ? 'on' : 'off'}`} aria-label="Toggle cinematic effects" aria-pressed={fxEnabled}><span className="fx-bars" aria-hidden="true"><i /><i /><i /><i /></span></button>
         <button className="primary-command" onClick={() => setShowAddModal(true)} aria-label="Open torrent prompt" title="Open torrent prompt"><span className="tui-add-icon">{'>'}_</span><b>OPEN TORRENT</b><kbd>N</kbd></button>
         <button className="icon-command settings-command" onClick={() => setShowSettingsModal(true)} aria-label="Open settings" title="Open settings"><span>[S]</span></button>
         <div className="font-controls" aria-label="Font size controls">

@@ -10,11 +10,13 @@ interface PreferencesState {
   showSpeedGraph: boolean;
   theme: ThemeId;
   fontScale: number;
+  fxEnabled: boolean;
   setShowSpeedGraph: (value: boolean) => void;
   setTheme: (theme: ThemeId) => void;
   increaseFontScale: () => void;
   decreaseFontScale: () => void;
   resetFontScale: () => void;
+  toggleFx: () => void;
 }
 
 const clampScale = (value: number) => Math.min(MAX_FONT_SCALE, Math.max(MIN_FONT_SCALE, Number(value.toFixed(2))));
@@ -25,11 +27,13 @@ export const usePreferencesStore = create<PreferencesState>()(
       showSpeedGraph: true,
       theme: defaultTheme,
       fontScale: 1,
+      fxEnabled: true,
       setShowSpeedGraph: (showSpeedGraph) => set({ showSpeedGraph }),
       setTheme: (theme) => set({ theme }),
       increaseFontScale: () => set((state) => ({ fontScale: clampScale(state.fontScale + FONT_SCALE_STEP) })),
       decreaseFontScale: () => set((state) => ({ fontScale: clampScale(state.fontScale - FONT_SCALE_STEP) })),
       resetFontScale: () => set({ fontScale: 1 }),
+      toggleFx: () => set((state) => ({ fxEnabled: !state.fxEnabled })),
     }),
     { name: 'atorrent-prefs' }
   )
