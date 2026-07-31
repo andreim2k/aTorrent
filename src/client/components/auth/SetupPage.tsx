@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth.js';
+import { AmbientField } from '../layout/AmbientField.js';
 
 export function SetupPage() {
   const { setup } = useAuth();
@@ -10,8 +11,8 @@ export function SetupPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setError('');
 
     if (!username.trim()) {
@@ -38,81 +39,62 @@ export function SetupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-base flex items-center justify-center p-4">
+    <div className="holo-auth">
+      <AmbientField />
       <motion.div
-        className="w-full max-w-sm"
-        initial={{ opacity: 0, y: 20 }}
+        className="holo-auth__card"
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
+        transition={{ duration: 0.4, ease: [0.22, 0.61, 0.36, 1] }}
       >
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-indigo to-accent-pink flex items-center justify-center font-bold text-2xl mx-auto mb-4">
-            a
-          </div>
-          <h1 className="text-2xl font-semibold gradient-text">aTorrent</h1>
-          <p className="text-white/40 text-sm mt-2">Create your admin account to get started</p>
+        <div style={{ textAlign: 'center', marginBottom: 26 }}>
+          <div className="holo-auth__mark">a</div>
+          <h1 style={{ fontSize: '1.125rem', letterSpacing: '.04em' }}>Initialise Console</h1>
+          <p className="holo-label" style={{ marginTop: 6 }}>Create the operator account</p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="glass rounded-2xl p-6 space-y-4">
-          <div>
-            <label className="text-xs text-white/40 block mb-1.5">Username</label>
+        <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 16 }}>
+          <label className="holo-field">
+            <span className="holo-field__label holo-label">Operator</span>
             <input
               type="text"
+              className="holo-input"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(event) => setUsername(event.target.value)}
               autoFocus
               autoComplete="username"
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm
-                placeholder:text-white/20 focus:outline-none focus:border-accent-indigo/40 transition-colors"
               placeholder="admin"
             />
-          </div>
+          </label>
 
-          <div>
-            <label className="text-xs text-white/40 block mb-1.5">Password</label>
+          <label className="holo-field">
+            <span className="holo-field__label holo-label">Passphrase</span>
             <input
               type="password"
+              className="holo-input"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(event) => setPassword(event.target.value)}
               autoComplete="new-password"
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm
-                placeholder:text-white/20 focus:outline-none focus:border-accent-indigo/40 transition-colors"
-              placeholder="Min 6 characters"
+              placeholder="min 6 characters"
             />
-          </div>
+          </label>
 
-          <div>
-            <label className="text-xs text-white/40 block mb-1.5">Confirm Password</label>
+          <label className="holo-field">
+            <span className="holo-field__label holo-label">Confirm passphrase</span>
             <input
               type="password"
+              className="holo-input"
               value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
+              onChange={(event) => setConfirm(event.target.value)}
               autoComplete="new-password"
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm
-                placeholder:text-white/20 focus:outline-none focus:border-accent-indigo/40 transition-colors"
-              placeholder="Repeat password"
+              placeholder="repeat passphrase"
             />
-          </div>
+          </label>
 
-          {error && (
-            <motion.p
-              className="text-xs text-red-400 bg-red-500/10 rounded-lg px-3 py-2"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-            >
-              {error}
-            </motion.p>
-          )}
+          {error && <p className="holo-note holo-note--error">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2.5 rounded-lg bg-gradient-to-r from-accent-indigo to-accent-purple
-              text-sm font-medium disabled:opacity-40 hover:opacity-90 transition-opacity"
-          >
-            {loading ? 'Creating account...' : 'Create Account'}
+          <button type="submit" className="holo-btn holo-btn--primary" disabled={loading} style={{ height: 40 }}>
+            {loading ? 'Initialising…' : 'Create Account'}
           </button>
         </form>
       </motion.div>

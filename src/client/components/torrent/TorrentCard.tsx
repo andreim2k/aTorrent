@@ -10,31 +10,100 @@ interface Props { torrent: Torrent; index: number; }
 export function TorrentCard({ torrent, index }: Props) {
   const { selectedTorrent, setSelectedTorrent, selectionMode, selectedTorrents, toggleTorrentSelection, setDeleteConfirmHashes } = useUIStore();
   const updateTorrent = useUpdateTorrent();
-  const isSelected = selectedTorrent === torrent.infoHash;
+
+  const isOpen = selectedTorrent === torrent.infoHash;
   const isChecked = selectedTorrents.has(torrent.infoHash);
   const isRunning = torrent.status === 'downloading' || torrent.status === 'seeding';
 
-  const toggle = (event: React.MouseEvent) => {
+  const togglePlayback = (event: React.MouseEvent) => {
     event.stopPropagation();
     updateTorrent.mutate({ hash: torrent.infoHash, data: { status: isRunning ? 'paused' : 'downloading' } });
   };
 
+  const onOpen = () => {
+    if (selectionMode) toggleTorrentSelection(torrent.infoHash);
+    else setSelectedTorrent(isOpen ? null : torrent.infoHash);
+  };
+
   return (
-    <article className={`torrent-row ${isSelected ? 'selected' : ''} ${isChecked ? 'checked' : ''}`} onClick={() => selectionMode ? toggleTorrentSelection(torrent.infoHash) : setSelectedTorrent(isSelected ? null : torrent.infoHash)}>
-      <div className="torrent-ident">
-        {selectionMode ? <input type="checkbox" checked={isChecked} onChange={() => toggleTorrentSelection(torrent.infoHash)} onClick={(event) => event.stopPropagation()} /> : <span className="job-index">{String(index).padStart(2, '0')}</span>}
-        <span className={`job-led status-${torrent.status}`} />
-        <div><h3>{torrent.name}</h3><p><span>{formatBytes(torrent.totalSize)}</span><i>•</i><span>{torrent.numPeers} peers</span><i>•</i><code>{torrent.infoHash.slice(0, 8)}</code></p></div>
+    <article
+      className={`holo-row ${isOpen ? 'is-open' : ''} ${isChecked ? 'is-checked' : ''}`}
+      onClick={onOpen}
+      onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onOpen(); } }}
+      tabIndex={0}
+      role="button"
+      aria-pressed={isOpen}
+    >
+      <div className="holo-row__ident">
+        {selectionMode ? (
+          <input
+            type="checkbox"
+            className="holo-check"
+            checked={isChecked}
+            onChange={() => toggleTorrentSelection(torrent.infoHash)}
+            onClick={(event) => event.stopPropagation()}
+            aria-label={`Select ${torrent.name}`}
+          />
+        ) : (
+          <span className="holo-row__index">{String(index).padStart(2, '0')}</span>
+        )}
+        <span className={`holo-led is-${torrent.status}`} aria-hidden="true" />
+        <div style={{ minWidth: 0 }}>
+          <h3 className="holo-row__name" title={torrent.name}>{torrent.name}</h3>
+          <p className="holo-row__sub holo-label">
+            <span>{formatBytes(torrent.totalSize)}</span>
+            <span className="sep">·</span>
+            <span>{torrent.numPeers} peers</span>
+          </p>
+        </div>
       </div>
-      <div className="torrent-progress"><div><b>{formatPercent(torrent.progress)}</b><span>{formatBytes(torrent.downloaded)} / {formatBytes(torrent.totalSize)}</span></div><GradientProgress progress={torrent.progress} /></div>
-      <div className="torrent-rate">
-        {torrent.status === 'downloading' ? <><span className="rate-down">↓ {formatSpeed(torrent.downloadSpeed)}</span><span className="rate-up">↑ {formatSpeed(torrent.uploadSpeed)}</span><small>ETA {formatETA(torrent.timeRemaining || Infinity)}</small></> : <><span className="rate-up">↑ {formatSpeed(torrent.uploadSpeed)}</span><small>{torrent.status === 'seeding' ? 'UNLIMITED' : 'NO TRAFFIC'}</small></>}
+
+      <div className="holo-row__progress">
+        <div className="top">
+          <span className="holo-row__pct">{formatPercent(torrent.progress)}</span>
+          <span className="holo-label">
+            {formatBytes(torrent.downloaded)} / {formatBytes(torrent.totalSize)}
+          </span>
+        </div>
+        <GradientProgress progress={torrent.progress} />
       </div>
+
+      <div className="holo-rate">
+        {torrent.status === 'downloading' ? (
+          <>
+            <span className="down">↓ {formatSpeed(torrent.downloadSpeed)}</span>
+            <span className="up">↑ {formatSpeed(torrent.uploadSpeed)}</span>
+            <span className="eta">ETA {formatETA(torrent.timeRemaining || Infinity)}</span>
+          </>
+        ) : (
+          <>
+            <span className="up">↑ {formatSpeed(torrent.uploadSpeed)}</span>
+            <span className="eta">{torrent.status === 'seeding' ? 'seeding' : 'idle'}</span>
+          </>
+        )}
+      </div>
+
       <GlowBadge status={torrent.status} />
-      <div className="torrent-actions">
-        {(isRunning || torrent.status === 'paused') && <button onClick={toggle} title={isRunning ? 'Pause' : 'Resume'}>{isRunning ? 'Ⅱ' : '▶'}</button>}
-        <button className="danger" onClick={(event) => { event.stopPropagation(); setDeleteConfirmHashes([torrent.infoHash]); }} title="Remove">×</button>
-        <span>›</span>
+
+      <div className="holo-row__actions">
+        {(isRunning || torrent.status === 'paused') && (
+          <button
+            className="holo-mini-btn"
+            onClick={togglePlayback}
+            title={isRunning ? 'Pause' : 'Resume'}
+            aria-label={isRunning ? 'Pause transfer' : 'Resume transfer'}
+          >
+            {isRunning ? '‖' : '▶'}
+          </button>
+        )}
+        <button
+          className="holo-mini-btn is-danger"
+          onClick={(event) => { event.stopPropagation(); setDeleteConfirmHashes([torrent.infoHash]); }}
+          title="Remove"
+          aria-label="Remove transfer"
+        >
+          ×
+        </button>
       </div>
     </article>
   );

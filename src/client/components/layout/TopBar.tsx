@@ -1,42 +1,116 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useUIStore } from '../../stores/uiStore.js';
-import { usePreferencesStore } from '../../stores/preferencesStore.js';
+import { usePreferencesStore, FONT_SCALE_BOUNDS } from '../../stores/preferencesStore.js';
 import { useAuth } from '../../hooks/useAuth.js';
-import { ThemeSwitcher } from '../ui/ThemeSwitcher.js';
 
 export function TopBar() {
-  const { searchQuery, setSearchQuery, setShowAddModal, setShowSettingsModal, toggleSidebar, selectionMode, setSelectionMode } = useUIStore();
+  const {
+    searchQuery, setSearchQuery, setShowAddModal, setShowSettingsModal,
+    toggleSidebar, selectionMode, setSelectionMode,
+  } = useUIStore();
   const { fontScale, increaseFontScale, decreaseFontScale, resetFontScale, fxEnabled, toggleFx } = usePreferencesStore();
   const { username, logout } = useAuth();
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const userRef = useRef<HTMLDivElement>(null);
+
+  // Dismiss the user menu on outside click / Escape.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDown = (event: MouseEvent) => {
+      if (!userRef.current?.contains(event.target as Node)) setMenuOpen(false);
+    };
+    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') setMenuOpen(false); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [menuOpen]);
 
   return (
-    <header className="terminal-topbar">
-      <button className="icon-command menu-trigger" onClick={toggleSidebar} title="Toggle navigation" aria-label="Toggle navigation"><span>≡</span></button>
-      <div className="topbar-context"><span>ROOT</span><b>/</b><span>HOME</span><b>/</b><strong>TRANSFERS</strong><i className="cursor-block" /></div>
-      <label className="command-search">
-        <span>⌕</span>
-        <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="grep transfers..." aria-label="Search transfers" />
-        <kbd>⌘ K</kbd>
+    <header className="holo-topbar">
+      <button className="holo-icon-btn" onClick={toggleSidebar} title="Toggle navigation" aria-label="Toggle navigation">
+        ☰
+      </button>
+
+      <div className="holo-crumb holo-label">
+        <span>Console</span>
+        <span className="holo-crumb__sep">/</span>
+        <span className="holo-crumb__here">Transfers</span>
+      </div>
+
+      <label className="holo-search">
+        <span className="holo-search__icon">⌕</span>
+        <input
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder="Filter transfers…"
+          aria-label="Filter transfers"
+        />
       </label>
-      <div className="topbar-actions">
-        <button className={`icon-command selection-command ${selectionMode ? 'active' : ''}`} onClick={() => setSelectionMode(!selectionMode)} title="Selection mode" aria-label="Selection mode"><span>☷</span></button>
-        <button className={`icon-command fx-command ${fxEnabled ? 'active' : ''}`} onClick={toggleFx} title={`Cinematic FX ${fxEnabled ? 'on' : 'off'}`} aria-label="Toggle cinematic effects" aria-pressed={fxEnabled}><span className="fx-bars" aria-hidden="true"><i /><i /><i /><i /></span></button>
-        <button className="primary-command" onClick={() => setShowAddModal(true)} aria-label="Open torrent prompt" title="Open torrent prompt"><span className="tui-add-icon">{'>'}_</span><b>OPEN TORRENT</b><kbd>N</kbd></button>
-        <button className="icon-command settings-command" onClick={() => setShowSettingsModal(true)} aria-label="Open settings" title="Open settings"><span>[S]</span></button>
-        <div className="font-controls" aria-label="Font size controls">
-          <button onClick={decreaseFontScale} disabled={fontScale <= 0.85} title="Smaller text" aria-label="Smaller text">−</button>
-          <button className="font-scale" onClick={resetFontScale} title="Reset text size" aria-label={`Reset text size, currently ${Math.round(fontScale * 100)} percent`}>{Math.round(fontScale * 100)}</button>
-          <button onClick={increaseFontScale} disabled={fontScale >= 1.3} title="Larger text" aria-label="Larger text">+</button>
+
+      <div className="holo-actions">
+        <button
+          className={`holo-icon-btn ${selectionMode ? 'is-active' : ''}`}
+          onClick={() => setSelectionMode(!selectionMode)}
+          title="Selection mode"
+          aria-label="Selection mode"
+          aria-pressed={selectionMode}
+        >
+          ☰
+        </button>
+
+        {/* FX — ambient motion toggle. Icon animates into a live equaliser when engaged. */}
+        <button
+          className={`holo-icon-btn ${fxEnabled ? 'is-active' : ''}`}
+          onClick={toggleFx}
+          title={`Cinematic FX ${fxEnabled ? 'on' : 'off'}`}
+          aria-label="Toggle cinematic effects"
+          aria-pressed={fxEnabled}
+        >
+          <span className="holo-fx-bars" aria-hidden="true"><i /><i /><i /><i /></span>
+        </button>
+
+        <div className="holo-seg" aria-label="Text size">
+          <button onClick={decreaseFontScale} disabled={fontScale <= FONT_SCALE_BOUNDS.min} title="Smaller text" aria-label="Smaller text">−</button>
+          <button
+            className="holo-seg__val"
+            onClick={resetFontScale}
+            title="Reset text size"
+            aria-label={`Reset text size, currently ${Math.round(fontScale * 100)} percent`}
+          >
+            {Math.round(fontScale * 100)}
+          </button>
+          <button onClick={increaseFontScale} disabled={fontScale >= FONT_SCALE_BOUNDS.max} title="Larger text" aria-label="Larger text">+</button>
         </div>
-        <ThemeSwitcher />
-        <div className="user-command">
-          <button onClick={() => setUserMenuOpen(!userMenuOpen)} aria-label="User menu"><span className="user-status" /><b>{username || 'root'}</b><span className="user-caret">▾</span></button>
-          {userMenuOpen && (
-            <div className="user-menu">
-              <p><span>USER</span><b>{username}</b></p>
-              <button onClick={() => { setShowSettingsModal(true); setUserMenuOpen(false); }}><span>›</span> preferences</button>
-              <button className="danger" onClick={() => { logout(); setUserMenuOpen(false); }}><span>›</span> terminate session</button>
+
+        <button className="holo-icon-btn" onClick={() => setShowSettingsModal(true)} title="Settings" aria-label="Settings">
+          ⚙
+        </button>
+
+        <button className="holo-btn holo-btn--primary" onClick={() => setShowAddModal(true)} title="Add torrent">
+          <span aria-hidden="true">+</span>
+          <span className="label">Add Torrent</span>
+        </button>
+
+        <div className="holo-user" ref={userRef}>
+          <button className="holo-user__btn" onClick={() => setMenuOpen(!menuOpen)} aria-label="Account menu" aria-expanded={menuOpen}>
+            <span className="holo-user__dot" />
+            <span>{username || 'operator'}</span>
+          </button>
+          {menuOpen && (
+            <div className="holo-menu">
+              <div className="holo-menu__head">
+                <span className="holo-label">Operator</span>
+                <strong style={{ fontSize: '.75rem' }}>{username}</strong>
+              </div>
+              <button className="holo-menu__item" onClick={() => { setShowSettingsModal(true); setMenuOpen(false); }}>
+                Preferences
+              </button>
+              <button className="holo-menu__item is-danger" onClick={() => { logout(); setMenuOpen(false); }}>
+                End session
+              </button>
             </div>
           )}
         </div>

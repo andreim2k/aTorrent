@@ -19,195 +19,98 @@ const MAX_VISIBLE_CAST = 20;
 const MAX_VISIBLE_GENRES = 3;
 
 type Tab = 'overview' | 'files' | 'peers' | 'trackers';
+const TABS: Tab[] = ['overview', 'files', 'peers', 'trackers'];
 
-function TmdbHero({ tmdb, tmdbTitle, tmdbYear, hasTmdbId }: {
-  tmdb: TMDBDetails | undefined;
-  tmdbTitle: string | undefined;
-  tmdbYear: string | undefined;
-  hasTmdbId: boolean;
-}) {
-  if (tmdb?.backdrop_path) {
-    return (
-      <div className="h-40 max-md:h-48 relative overflow-hidden flex-shrink-0">
-        <img
-          src={`${TMDB_IMG}/w780${tmdb.backdrop_path}`}
-          alt=""
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-base" />
-        <div className="absolute bottom-3 left-4 right-4 flex items-end gap-3">
-          {tmdb.poster_path && (
-            <img
-              src={`${TMDB_IMG}/w154${tmdb.poster_path}`}
-              alt=""
-              className="w-16 h-24 rounded-lg object-cover shadow-lg flex-shrink-0"
-            />
+function Hero({ tmdb, title, year }: { tmdb: TMDBDetails | undefined; title?: string; year?: string }) {
+  if (!tmdb?.backdrop_path) return null;
+
+  return (
+    <div className="holo-detail__hero">
+      <img className="backdrop" src={`${TMDB_IMG}/w780${tmdb.backdrop_path}`} alt="" />
+      <div className="holo-detail__hero-body">
+        {tmdb.poster_path && (
+          <img className="holo-detail__poster" src={`${TMDB_IMG}/w154${tmdb.poster_path}`} alt="" />
+        )}
+        <div style={{ minWidth: 0 }}>
+          {title && (
+            <h3 style={{ fontSize: '.875rem', lineHeight: 1.3 }}>
+              {title} {year && <span style={{ color: 'var(--text-3)', fontWeight: 400 }}>({year})</span>}
+            </h3>
           )}
-          <div className="min-w-0">
-            {tmdbTitle && (
-              <h2 className="text-sm font-bold leading-tight text-white drop-shadow-lg">
-                {tmdbTitle} {tmdbYear && <span className="text-white/60">({tmdbYear})</span>}
-              </h2>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginTop: 7 }}>
+            {tmdb.vote_average > 0 && (
+              <span className="holo-num" style={{ color: 'var(--warn)', fontSize: '.6875rem' }}>
+                ★ {tmdb.vote_average.toFixed(1)}
+              </span>
             )}
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
-              {tmdb.vote_average > 0 && (
-                <span className="text-xs font-medium text-yellow-400">
-                  ★ {tmdb.vote_average.toFixed(1)}
-                </span>
-              )}
-              {tmdb.runtime && (
-                <span className="text-xs text-white/50">{tmdb.runtime}m</span>
-              )}
-              {tmdb.genres?.slice(0, MAX_VISIBLE_GENRES).map(g => (
-                <span key={g.id} className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/10 text-white/60">
-                  {g.name}
-                </span>
-              ))}
-            </div>
+            {tmdb.runtime && <span className="holo-label">{tmdb.runtime}m</span>}
+            {tmdb.genres?.slice(0, MAX_VISIBLE_GENRES).map((genre) => (
+              <span key={genre.id} className="holo-chip">{genre.name}</span>
+            ))}
           </div>
         </div>
       </div>
-    );
-  }
-
-  if (hasTmdbId) {
-    return (
-      <div className="h-32 relative overflow-hidden flex-shrink-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-base" />
-      </div>
-    );
-  }
-
-  return null;
-}
-
-function DetailHeader({ torrent, onClose }: {
-  torrent: any;
-  onClose: () => void;
-}) {
-  return (
-    <div className="p-4 border-b border-white/[0.06]">
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <h2 className="text-sm font-semibold leading-tight">{torrent.name}</h2>
-        <button
-          onClick={onClose}
-          className="text-white/40 hover:text-white/80 text-lg leading-none flex-shrink-0"
-        >
-          &times;
-        </button>
-      </div>
-      <GlowBadge status={torrent.status} />
-      <GradientProgress progress={torrent.progress} className="mt-3" />
-      <div className="mt-2 text-xs text-white/40 font-mono">
-        {formatPercent(torrent.progress)} — {formatBytes(torrent.downloaded)} / {formatBytes(torrent.totalSize)}
-      </div>
     </div>
   );
 }
 
-function DetailActions({ torrent, onDelete }: {
-  torrent: any;
-  onDelete: () => void;
-}) {
-  const updateTorrent = useUpdateTorrent();
-
+function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div className="px-4 py-2 flex gap-2 border-b border-white/[0.06]">
-      {torrent.status === 'downloading' || torrent.status === 'seeding' ? (
-        <button
-          onClick={() => updateTorrent.mutate({ hash: torrent.infoHash, data: { status: 'paused' } })}
-          className="px-3 py-1 rounded-lg bg-white/[0.06] text-xs hover:bg-white/[0.1] transition-colors"
-        >
-          Pause
-        </button>
-      ) : torrent.status === 'paused' ? (
-        <button
-          onClick={() => updateTorrent.mutate({ hash: torrent.infoHash, data: { status: 'downloading' } })}
-          className="px-3 py-1 rounded-lg bg-white/[0.06] text-xs hover:bg-white/[0.1] transition-colors"
-        >
-          Resume
-        </button>
-      ) : null}
-      <button
-        onClick={onDelete}
-        className="px-3 py-1 rounded-lg bg-red-500/10 text-red-400 text-xs hover:bg-red-500/20 transition-colors"
-      >
-        Remove
-      </button>
-    </div>
-  );
-}
-
-function DetailTabs({ tab, setTab }: { tab: Tab; setTab: (t: Tab) => void }) {
-  const tabs: Tab[] = ['overview', 'files', 'peers', 'trackers'];
-
-  return (
-    <div className="flex border-b border-white/[0.06]">
-      {tabs.map(t => (
-        <button
-          key={t}
-          onClick={() => setTab(t)}
-          className={`flex-1 py-2 text-xs font-medium transition-colors ${
-            tab === t ? 'text-white border-b border-accent-indigo' : 'text-white/40 hover:text-white/60'
-          }`}
-        >
-          {t.charAt(0).toUpperCase() + t.slice(1)}
-        </button>
-      ))}
+    <div className="holo-dl__row">
+      <dt>{label}</dt>
+      <dd className={mono ? 'mono' : undefined}>{value}</dd>
     </div>
   );
 }
 
 function OverviewTab({ torrent, tmdb }: { torrent: any; tmdb: TMDBDetails | undefined }) {
   return (
-    <div className="space-y-4">
+    <>
       {tmdb?.overview && (
-        <div>
-          <h4 className="text-xs font-medium text-white/60 mb-1">Synopsis</h4>
-          <p className="text-xs text-white/50 leading-relaxed">{tmdb.overview}</p>
+        <div className="holo-section">
+          <p className="holo-section__title holo-label">Synopsis</p>
+          <p style={{ color: 'var(--text-2)', fontSize: '.75rem', lineHeight: 1.65 }}>{tmdb.overview}</p>
         </div>
       )}
 
       {tmdb?.credits?.cast && tmdb.credits.cast.length > 0 && (
-        <div>
-          <h4 className="text-xs font-medium text-white/60 mb-2">Cast</h4>
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-            {tmdb.credits.cast.slice(0, MAX_VISIBLE_CAST).map(member => (
-              <div key={member.id} className="flex-shrink-0 w-14 text-center">
+        <div className="holo-section">
+          <p className="holo-section__title holo-label">Cast</p>
+          <div className="holo-cast">
+            {tmdb.credits.cast.slice(0, MAX_VISIBLE_CAST).map((member) => (
+              <div key={member.id} className="holo-cast__item">
                 {member.profile_path ? (
-                  <img
-                    src={`${TMDB_IMG}/w185${member.profile_path}`}
-                    alt={member.name}
-                    className="w-14 h-14 rounded-full object-cover bg-white/5"
-                  />
+                  <img className="holo-cast__face" src={`${TMDB_IMG}/w185${member.profile_path}`} alt={member.name} />
                 ) : (
-                  <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center text-white/20 text-sm">
-                    ?
-                  </div>
+                  <div className="holo-cast__face" style={{ display: 'grid', placeItems: 'center', color: 'var(--text-4)' }}>?</div>
                 )}
-                <p className="text-[10px] text-white/70 mt-1 truncate">{member.name}</p>
-                <p className="text-[9px] text-white/30 truncate">{member.character}</p>
+                <p style={{ fontSize: '.625rem', marginTop: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {member.name}
+                </p>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      <div className="space-y-3 text-xs">
-        <Row label="Status" value={torrent.status} />
-        <Row label="Download Speed" value={formatSpeed(torrent.downloadSpeed)} />
-        <Row label="Upload Speed" value={formatSpeed(torrent.uploadSpeed)} />
-        <Row label="Peers" value={String(torrent.numPeers)} />
-        <Row label="ETA" value={formatETA(torrent.timeRemaining || Infinity)} />
-        <Row label="Downloaded" value={formatBytes(torrent.downloaded)} />
-        <Row label="Uploaded" value={formatBytes(torrent.uploaded)} />
-        <Row label="Total Size" value={formatBytes(torrent.totalSize)} />
-        <Row label="Added" value={formatDate(torrent.addedAt)} />
-        {torrent.completedAt && <Row label="Completed" value={formatDate(torrent.completedAt)} />}
-        <Row label="Info Hash" value={torrent.infoHash} mono />
-        <Row label="Save Path" value={torrent.savePath} mono />
+      <div className="holo-section">
+        <p className="holo-section__title holo-label">Telemetry</p>
+        <dl className="holo-dl">
+          <Row label="Status" value={torrent.status} />
+          <Row label="Downlink" value={formatSpeed(torrent.downloadSpeed)} />
+          <Row label="Uplink" value={formatSpeed(torrent.uploadSpeed)} />
+          <Row label="Peers" value={String(torrent.numPeers)} />
+          <Row label="ETA" value={formatETA(torrent.timeRemaining || Infinity)} />
+          <Row label="Downloaded" value={formatBytes(torrent.downloaded)} />
+          <Row label="Uploaded" value={formatBytes(torrent.uploaded)} />
+          <Row label="Total size" value={formatBytes(torrent.totalSize)} />
+          <Row label="Added" value={formatDate(torrent.addedAt)} />
+          {torrent.completedAt && <Row label="Completed" value={formatDate(torrent.completedAt)} />}
+          <Row label="Info hash" value={torrent.infoHash} mono />
+          <Row label="Save path" value={torrent.savePath} mono />
+        </dl>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -215,6 +118,7 @@ export function TorrentDetail() {
   const { selectedTorrent, setSelectedTorrent, setDeleteConfirmHashes } = useUIStore();
   const [tab, setTab] = useState<Tab>('overview');
   const touchStartY = useRef<number | null>(null);
+  const updateTorrent = useUpdateTorrent();
 
   const { data: torrent } = useQuery({
     queryKey: ['torrent', selectedTorrent],
@@ -230,57 +134,95 @@ export function TorrentDetail() {
     staleTime: TMDB_STALE_TIME_MS,
   });
 
-  const tmdbTitle = tmdb?.title || tmdb?.name;
-  const tmdbYear = tmdb?.release_date?.slice(0, 4) || tmdb?.first_air_date?.slice(0, 4);
+  const title = tmdb?.title || tmdb?.name;
+  const year = tmdb?.release_date?.slice(0, 4) || tmdb?.first_air_date?.slice(0, 4);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartY.current = e.touches[0].clientY;
+  const handleTouchStart = (event: React.TouchEvent) => {
+    touchStartY.current = event.touches[0].clientY;
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
+  const handleTouchEnd = (event: React.TouchEvent) => {
     if (touchStartY.current !== null) {
-      const diff = e.changedTouches[0].clientY - touchStartY.current;
+      const diff = event.changedTouches[0].clientY - touchStartY.current;
       if (diff > SWIPE_DISMISS_THRESHOLD_PX) setSelectedTorrent(null);
       touchStartY.current = null;
     }
   };
 
+  const isRunning = torrent?.status === 'downloading' || torrent?.status === 'seeding';
+
   return (
     <AnimatePresence>
       {selectedTorrent && torrent && (
-        <motion.div
-          className="torrent-detail-panel w-96 max-md:fixed max-md:inset-0 max-md:w-full max-md:z-40 glass border-l border-white/[0.06] max-md:border-l-0 flex flex-col sticky top-0 max-h-[calc(100vh-7.5rem)] max-md:max-h-none overflow-hidden"
-          initial={{ x: '100%' }}
-          animate={{ x: 0 }}
-          exit={{ x: '100%' }}
-          transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+        <motion.aside
+          className="holo-detail"
+          initial={{ opacity: 0, x: 24 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 24 }}
+          transition={{ type: 'spring', damping: 30, stiffness: 320 }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
-          <TmdbHero tmdb={tmdb} tmdbTitle={tmdbTitle} tmdbYear={tmdbYear} hasTmdbId={!!torrent.tmdbId} />
-          <DetailHeader torrent={torrent} onClose={() => setSelectedTorrent(null)} />
-          <DetailActions torrent={torrent} onDelete={() => setDeleteConfirmHashes([torrent.infoHash])} />
-          <DetailTabs tab={tab} setTab={setTab} />
+          <Hero tmdb={tmdb} title={title} year={year} />
 
-          <div className="flex-1 overflow-auto p-4">
+          <div className="holo-detail__head">
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
+              <h2 className="holo-detail__title">{torrent.name}</h2>
+              <button className="holo-icon-btn" onClick={() => setSelectedTorrent(null)} aria-label="Close details">×</button>
+            </div>
+
+            <GlowBadge status={torrent.status} />
+
+            <div style={{ marginTop: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                <span className="holo-row__pct">{formatPercent(torrent.progress)}</span>
+                <span className="holo-label">
+                  {formatBytes(torrent.downloaded)} / {formatBytes(torrent.totalSize)}
+                </span>
+              </div>
+              <GradientProgress progress={torrent.progress} />
+            </div>
+          </div>
+
+          <div className="holo-detail__acts">
+            {(isRunning || torrent.status === 'paused') && (
+              <button
+                className="holo-btn"
+                onClick={() => updateTorrent.mutate({
+                  hash: torrent.infoHash,
+                  data: { status: isRunning ? 'paused' : 'downloading' },
+                })}
+              >
+                {isRunning ? 'Pause' : 'Resume'}
+              </button>
+            )}
+            <button className="holo-btn holo-btn--danger" onClick={() => setDeleteConfirmHashes([torrent.infoHash])}>
+              Remove
+            </button>
+          </div>
+
+          <div className="holo-tabs" role="tablist">
+            {TABS.map((item) => (
+              <button
+                key={item}
+                role="tab"
+                aria-selected={tab === item}
+                className={`holo-tab ${tab === item ? 'is-active' : ''}`}
+                onClick={() => setTab(item)}
+              >
+                {item.charAt(0).toUpperCase() + item.slice(1)}
+              </button>
+            ))}
+          </div>
+
+          <div className="holo-detail__body">
             {tab === 'overview' && <OverviewTab torrent={torrent} tmdb={tmdb} />}
             {tab === 'files' && <FileBrowser hash={torrent.infoHash} />}
             {tab === 'peers' && <PeerList hash={torrent.infoHash} />}
-            {tab === 'trackers' && (
-              <div className="text-xs text-white/40">Tracker info shown when available</div>
-            )}
+            {tab === 'trackers' && <p className="holo-label">Tracker data appears when reported</p>}
           </div>
-        </motion.div>
+        </motion.aside>
       )}
     </AnimatePresence>
-  );
-}
-
-function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
-  return (
-    <div className="flex justify-between gap-4">
-      <span className="text-white/40">{label}</span>
-      <span className={`text-right truncate ${mono ? 'font-mono text-white/60' : 'text-white/80'}`}>{value}</span>
-    </div>
   );
 }

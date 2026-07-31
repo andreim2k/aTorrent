@@ -12,6 +12,11 @@ export function AddTorrentModal() {
   const [error, setError] = useState('');
   const addTorrent = useAddTorrent();
 
+  const close = () => {
+    setError('');
+    setShowAddModal(false);
+  };
+
   const handleMagnetSubmit = async () => {
     if (!magnet.trim()) return;
     setLoading(true);
@@ -29,24 +34,20 @@ export function AddTorrentModal() {
 
   const handleFileDrop = async (files: File[]) => {
     if (files.length === 0) return;
-    console.log(`[AddTorrentModal] handleFileDrop: received ${files.length} file(s)`, files.map(f => ({ name: f.name, size: f.size })));
     setLoading(true);
     setError('');
     try {
       const data = await api.addTorrentFiles(files);
-      console.log(`[AddTorrentModal] Response from server:`, data);
-      // Server returns either the classic single result or { ok, results } when multiple files were in one request.
+      // Server returns either a single result or { ok, results } for multi-file uploads.
       const hadError = Array.isArray((data as any)?.results)
         ? (data as any).results.some((r: any) => r?.error)
         : (data as any)?.error;
       if (hadError) {
         setError(typeof hadError === 'string' ? hadError : 'One or more torrents failed to add');
-        // keep modal open so failures are visible / user can retry
       } else {
         setShowAddModal(false);
       }
     } catch (err: any) {
-      console.error(`[AddTorrentModal] Error:`, err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -54,45 +55,34 @@ export function AddTorrentModal() {
   };
 
   return (
-    <GlassModal open={showAddModal} onClose={() => setShowAddModal(false)} title="Add Torrent">
-      <div className="space-y-4">
-        {/* Magnet link */}
-        <div>
-          <label className="text-xs text-white/40 mb-1 block">Magnet Link</label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={magnet}
-              onChange={(e) => setMagnet(e.target.value)}
-              placeholder="magnet:?xt=urn:btih:..."
-              className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm
-                placeholder:text-white/20 focus:outline-none focus:border-accent-indigo/40 transition-colors font-mono"
-              onKeyDown={(e) => e.key === 'Enter' && handleMagnetSubmit()}
-            />
-            <button
-              onClick={handleMagnetSubmit}
-              disabled={loading || !magnet.trim()}
-              className="px-4 py-2 rounded-lg bg-gradient-to-r from-accent-indigo to-accent-purple
-                text-sm font-medium disabled:opacity-40 hover:opacity-90 transition-opacity"
-            >
-              {loading ? '...' : 'Add'}
-            </button>
-          </div>
+    <GlassModal open={showAddModal} onClose={close} index="ADD" title="Add Transfer">
+      <div className="holo-field" style={{ marginBottom: 20 }}>
+        <span className="holo-field__label holo-label">Magnet link</span>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <input
+            type="text"
+            value={magnet}
+            onChange={(event) => setMagnet(event.target.value)}
+            onKeyDown={(event) => event.key === 'Enter' && handleMagnetSubmit()}
+            placeholder="magnet:?xt=urn:btih:…"
+            className="holo-input holo-input--mono"
+            aria-label="Magnet link"
+          />
+          <button
+            className="holo-btn holo-btn--primary"
+            onClick={handleMagnetSubmit}
+            disabled={loading || !magnet.trim()}
+          >
+            {loading ? '…' : 'Add'}
+          </button>
         </div>
-
-        <div className="flex items-center gap-3 text-xs text-white/20">
-          <div className="flex-1 h-px bg-white/[0.08]" />
-          <span>or</span>
-          <div className="flex-1 h-px bg-white/[0.08]" />
-        </div>
-
-        {/* File upload */}
-        <DropZone onFileDrop={handleFileDrop} disabled={loading} />
-
-        {error && (
-          <p className="text-xs text-red-400">{error}</p>
-        )}
       </div>
+
+      <div className="holo-or holo-label" style={{ marginBottom: 20 }}>or</div>
+
+      <DropZone onFileDrop={handleFileDrop} disabled={loading} />
+
+      {error && <p className="holo-note holo-note--error" style={{ marginTop: 16 }}>{error}</p>}
     </GlassModal>
   );
 }

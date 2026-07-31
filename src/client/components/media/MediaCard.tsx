@@ -11,31 +11,38 @@ interface Props {
 export function MediaCard({ media, onSelect, selected }: Props) {
   return (
     <button
+      type="button"
       onClick={() => onSelect?.(media)}
-      className={`flex gap-3 p-2 rounded-lg text-left transition-all w-full ${
-        selected ? 'glass-active' : 'hover:bg-white/[0.03]'
-      }`}
+      className={`holo-file ${selected ? 'is-checked' : ''}`}
+      style={{ width: '100%', gap: 12, alignItems: 'flex-start', padding: 10, margin: 0 }}
+      aria-pressed={selected}
     >
       {media.posterPath ? (
         <img
           src={`${TMDB_IMG}/w92${media.posterPath}`}
-          alt={media.title}
-          className="w-12 h-18 rounded object-cover flex-shrink-0"
+          alt=""
+          style={{ width: 44, height: 64, flexShrink: 0, objectFit: 'cover', borderRadius: 'var(--r)' }}
         />
       ) : (
-        <div className="w-12 h-18 rounded bg-white/5 flex items-center justify-center text-white/20 flex-shrink-0">
+        <span
+          className="holo-empty__mark"
+          style={{ width: 44, height: 64, flexShrink: 0, fontSize: '.875rem' }}
+          aria-hidden="true"
+        >
           ◇
-        </div>
+        </span>
       )}
-      <div className="min-w-0">
-        <p className="text-sm font-medium truncate">{media.title}</p>
-        <p className="text-xs text-white/40">
-          {media.year} · {media.mediaType === 'tv' ? 'TV Series' : 'Movie'}
-        </p>
+      <span style={{ minWidth: 0, textAlign: 'left' }}>
+        <span className="holo-row__name" style={{ display: 'block' }}>{media.title}</span>
+        <span className="holo-label" style={{ display: 'block', marginTop: 4 }}>
+          {media.year} · {media.mediaType === 'tv' ? 'TV series' : 'Movie'}
+        </span>
         {media.voteAverage !== undefined && (
-          <p className="text-xs text-amber-400 mt-0.5">★ {media.voteAverage.toFixed(1)}</p>
+          <span className="holo-num" style={{ display: 'block', marginTop: 4, fontSize: '.6875rem', color: 'var(--warn)' }}>
+            ★ {media.voteAverage.toFixed(1)}
+          </span>
         )}
-      </div>
+      </span>
     </button>
   );
 }

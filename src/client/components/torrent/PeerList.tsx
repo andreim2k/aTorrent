@@ -2,13 +2,16 @@ interface Props {
   hash: string;
 }
 
-export function PeerList({ hash }: Props) {
-  // Peer info comes from the torrent:progress WS events;
-  // detailed peer list would require an additional API endpoint
+// Peer counts arrive on the torrent:progress WS stream; a detailed peer table
+// would need a dedicated endpoint.
+export function PeerList(_props: Props) {
   return (
-    <div className="text-xs text-white/40">
-      <p>Peer details are updated in real-time via the torrent status.</p>
-      <p className="mt-2">Check the Overview tab for peer count.</p>
+    <div className="holo-note holo-note--info">
+      <span style={{ color: 'var(--cy)' }} aria-hidden="true">◈</span>
+      <span>
+        Peer mesh is tracked live on the telemetry channel. Current peer count is shown
+        under Overview.
+      </span>
     </div>
   );
 }

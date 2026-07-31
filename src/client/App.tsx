@@ -11,25 +11,36 @@ import { SettingsModal } from './components/modals/SettingsModal.js';
 import { DeleteConfirmModal } from './components/modals/DeleteConfirmModal.js';
 import { SetupPage } from './components/auth/SetupPage.js';
 import { LoginPage } from './components/auth/LoginPage.js';
+import { AmbientField } from './components/layout/AmbientField.js';
 import { useUIStore } from './stores/uiStore.js';
 import { usePreferencesStore } from './stores/preferencesStore.js';
 import { useAuth } from './hooks/useAuth.js';
 import { wsClient } from './services/ws.js';
 
-function LoadingScreen() {
+function BootScreen() {
+  const lines = [
+    { key: 'SYS', text: 'mounting transfer engine' },
+    { key: 'NET', text: 'opening telemetry channel' },
+    { key: 'UI', text: 'initialising command console', active: true },
+  ];
+
   return (
-    <div className="terminal-root min-h-screen flex items-center justify-center">
-      <motion.div className="boot-sequence" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        <div className="boot-mark">a</div>
-        <p><span>SYS</span> mounting torrent engine...</p>
-        <p><span>NET</span> opening websocket channel...</p>
-        <p className="boot-active"><span>UI</span> loading operator console <b>_</b></p>
+    <div className="holo-auth">
+      <AmbientField />
+      <motion.div className="holo-boot" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="holo-auth__mark">a</div>
+        {lines.map((line) => (
+          <p key={line.key} className={`holo-boot__line ${line.active ? 'is-active' : ''}`}>
+            <span className="holo-boot__key">{line.key}</span>
+            <span>{line.text}…</span>
+          </p>
+        ))}
       </motion.div>
     </div>
   );
 }
 
-function Dashboard() {
+function Console() {
   const selectedTorrent = useUIStore((state) => state.selectedTorrent);
   const showSpeedGraph = usePreferencesStore((state) => state.showSpeedGraph);
 
@@ -41,8 +52,8 @@ function Dashboard() {
   return (
     <>
       <Shell>
-        <div className="workspace-grid">
-          <div className="workspace-main">
+        <div className="holo-grid">
+          <div className="holo-column">
             <StatsCards />
             {showSpeedGraph && <SpeedGraph />}
             <TorrentList />
@@ -58,25 +69,31 @@ function Dashboard() {
   );
 }
 
+const fade = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+};
+
 export function App() {
   const { status } = useAuth();
-  const theme = usePreferencesStore((state) => state.theme);
   const fontScale = usePreferencesStore((state) => state.fontScale);
   const fxEnabled = usePreferencesStore((state) => state.fxEnabled);
 
+  // The console is a single design system — only motion and type scale are user-tunable.
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
     document.documentElement.dataset.fx = fxEnabled ? 'on' : 'off';
-    document.documentElement.style.colorScheme = theme === 'github-light' ? 'light' : 'dark';
     document.documentElement.style.setProperty('--font-scale', String(fontScale));
-  }, [theme, fontScale, fxEnabled]);
+  }, [fontScale, fxEnabled]);
 
   return (
     <AnimatePresence mode="wait">
-      {status === 'loading' && <motion.div key="loading" exit={{ opacity: 0 }}><LoadingScreen /></motion.div>}
-      {status === 'setup' && <motion.div key="setup" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><SetupPage /></motion.div>}
-      {status === 'login' && <motion.div key="login" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><LoginPage /></motion.div>}
-      {status === 'authenticated' && <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-screen"><Dashboard /></motion.div>}
+      {status === 'loading' && <motion.div key="boot" {...fade}><BootScreen /></motion.div>}
+      {status === 'setup' && <motion.div key="setup" {...fade}><SetupPage /></motion.div>}
+      {status === 'login' && <motion.div key="login" {...fade}><LoginPage /></motion.div>}
+      {status === 'authenticated' && (
+        <motion.div key="console" {...fade} style={{ height: '100%' }}><Console /></motion.div>
+      )}
     </AnimatePresence>
   );
 }
