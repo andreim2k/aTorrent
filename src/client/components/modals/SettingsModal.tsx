@@ -9,7 +9,7 @@ import { formatBytes } from '../../lib/formatters.js';
 
 const SYSTEM_POLL_INTERVAL_MS = 3000;
 
-type SettingsTab = 'general' | 'downloads' | 'system' | 'media' | 'security';
+type SettingsTab = 'general' | 'downloads' | 'system' | 'media';
 
 const tabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
   {
@@ -27,10 +27,6 @@ const tabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
   {
     id: 'media', label: 'Media',
     icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" /><line x1="7" y1="2" x2="7" y2="22" /><line x1="17" y1="2" x2="17" y2="22" /><line x1="2" y1="12" x2="22" y2="12" /></svg>,
-  },
-  {
-    id: 'security', label: 'Security',
-    icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>,
   },
 ];
 
@@ -156,67 +152,6 @@ function SystemTab() {
   );
 }
 
-function SecurityTab() {
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const handleChangePassword = async () => {
-    setError('');
-    setSuccess(false);
-    if (!currentPassword) { setError('Current password is required'); return; }
-    if (newPassword.length < 8) { setError('New password must be at least 8 characters'); return; }
-    if (newPassword !== confirmPassword) { setError('New passwords do not match'); return; }
-
-    setLoading(true);
-    try {
-      await api.changePassword(currentPassword, newPassword);
-      setSuccess(true);
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      setTimeout(() => setSuccess(false), 2000);
-    } catch (err: any) {
-      setError(err.message || 'Failed to change password');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <>
-      <SectionHeader title="Change passphrase" desc="Update the operator credentials" />
-      <div style={{ display: 'grid', gap: 16 }}>
-        <TextInput label="Current passphrase" value={currentPassword} onChange={setCurrentPassword} type="password" />
-        <TextInput label="New passphrase" value={newPassword} onChange={setNewPassword} type="password" />
-        <TextInput label="Confirm new passphrase" value={confirmPassword} onChange={setConfirmPassword} type="password" />
-
-        <AnimatePresence>
-          {error && (
-            <motion.p className="holo-note holo-note--error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              {error}
-            </motion.p>
-          )}
-          {success && (
-            <motion.p className="holo-note holo-note--ok" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              Passphrase updated
-            </motion.p>
-          )}
-        </AnimatePresence>
-
-        <div>
-          <button className="holo-btn holo-btn--primary" onClick={handleChangePassword} disabled={loading}>
-            {loading ? 'Updating…' : 'Update passphrase'}
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
-
 export function SettingsModal() {
   const { showSettingsModal, setShowSettingsModal } = useUIStore();
   const { showSpeedGraph, setShowSpeedGraph, fxEnabled, toggleFx } = usePreferencesStore();
@@ -339,8 +274,6 @@ export function SettingsModal() {
                   </div>
                 </>
               )}
-
-              {activeTab === 'security' && <SecurityTab />}
             </motion.div>
           </AnimatePresence>
         </div>

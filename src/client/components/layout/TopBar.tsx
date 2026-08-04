@@ -1,7 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
 import { useUIStore } from '../../stores/uiStore.js';
 import { usePreferencesStore, FONT_SCALE_BOUNDS } from '../../stores/preferencesStore.js';
-import { useAuth } from '../../hooks/useAuth.js';
 
 export function TopBar() {
   const {
@@ -9,24 +7,6 @@ export function TopBar() {
     toggleSidebar, selectionMode, setSelectionMode,
   } = useUIStore();
   const { fontScale, increaseFontScale, decreaseFontScale, resetFontScale, fxEnabled, toggleFx } = usePreferencesStore();
-  const { username, logout } = useAuth();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const userRef = useRef<HTMLDivElement>(null);
-
-  // Dismiss the user menu on outside click / Escape.
-  useEffect(() => {
-    if (!menuOpen) return;
-    const onDown = (event: MouseEvent) => {
-      if (!userRef.current?.contains(event.target as Node)) setMenuOpen(false);
-    };
-    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') setMenuOpen(false); };
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDown);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [menuOpen]);
 
   return (
     <header className="holo-topbar">
@@ -51,14 +31,18 @@ export function TopBar() {
       </label>
 
       <div className="holo-actions">
+        {/* Distinct from the rail toggle: a ticked box, not a second ☰. */}
         <button
           className={`holo-icon-btn ${selectionMode ? 'is-active' : ''}`}
           onClick={() => setSelectionMode(!selectionMode)}
-          title="Selection mode"
+          title={selectionMode ? 'Leave selection mode' : 'Select transfers'}
           aria-label="Selection mode"
           aria-pressed={selectionMode}
         >
-          ☰
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h10.5" />
+            <polyline points="8.5 11.5 12 15 21.5 4.5" />
+          </svg>
         </button>
 
         {/* FX — ambient motion toggle. Icon animates into a live equaliser when engaged. */}
@@ -93,27 +77,6 @@ export function TopBar() {
           <span aria-hidden="true">+</span>
           <span className="label">Add Torrent</span>
         </button>
-
-        <div className="holo-user" ref={userRef}>
-          <button className="holo-user__btn" onClick={() => setMenuOpen(!menuOpen)} aria-label="Account menu" aria-expanded={menuOpen}>
-            <span className="holo-user__dot" />
-            <span>{username || 'operator'}</span>
-          </button>
-          {menuOpen && (
-            <div className="holo-menu">
-              <div className="holo-menu__head">
-                <span className="holo-label">Operator</span>
-                <strong style={{ fontSize: '.75rem' }}>{username}</strong>
-              </div>
-              <button className="holo-menu__item" onClick={() => { setShowSettingsModal(true); setMenuOpen(false); }}>
-                Preferences
-              </button>
-              <button className="holo-menu__item is-danger" onClick={() => { logout(); setMenuOpen(false); }}>
-                End session
-              </button>
-            </div>
-          )}
-        </div>
       </div>
     </header>
   );

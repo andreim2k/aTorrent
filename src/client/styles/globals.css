@@ -7,7 +7,7 @@
    ----------------------------------------------------------------------------
    Single design language. No theme switching, no override layers.
    Structure:  tokens → base → ambient field → layout → chrome → surfaces →
-               data display → controls → overlays → auth → motion → responsive
+               data display → controls → overlays → motion → responsive
    ========================================================================== */
 
 /* ---------------------------------------------------------------- 1. TOKENS */
@@ -498,63 +498,6 @@
   border-radius: 2px;
 }
 
-/* User cluster */
-.holo-user { position: relative; }
-.holo-user__btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 34px;
-  padding: 0 10px;
-  border: 1px solid transparent;
-  border-radius: var(--r);
-  color: var(--text-2);
-  font-size: .75rem;
-  transition: background var(--fast), border-color var(--fast), color var(--fast);
-}
-.holo-user__btn:hover { background: rgba(56, 230, 255, .06); border-color: var(--edge); color: var(--text); }
-.holo-user__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--flux);
-  box-shadow: 0 0 8px var(--flux);
-}
-.holo-menu {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 8px);
-  z-index: 100;
-  width: 216px;
-  padding: 6px;
-  background: var(--menu-fill);
-  backdrop-filter: blur(calc(24px * var(--blur-k)));
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  box-shadow: 0 24px 70px -20px rgba(0, 0, 0, .8), 0 0 30px var(--glow-soft);
-}
-.holo-menu__head {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 10px 10px;
-  margin-bottom: 4px;
-  border-bottom: 1px solid var(--edge);
-}
-.holo-menu__item {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 9px 10px;
-  border-radius: var(--r);
-  color: var(--text-2);
-  font-size: .75rem;
-  text-align: left;
-  transition: background var(--fast), color var(--fast);
-}
-.holo-menu__item:hover { background: rgba(56, 230, 255, .07); color: var(--text); }
-.holo-menu__item.is-danger:hover { background: rgba(255, 107, 143, .1); color: var(--crit); }
-
 /* --------------------------------------------------------------- 7. PANELS */
 /* The core surface: a floating pane of glass with a lit top edge */
 .holo-panel {
@@ -725,6 +668,8 @@
 }
 
 .holo-cols { padding: 9px 16px; border-bottom: 1px solid var(--edge); }
+/* Header lead cell — carries the select-all box, aligned to the row checkboxes */
+.holo-cols__lead { display: flex; align-items: center; gap: 12px; min-width: 0; }
 
 .holo-queue > * + * .holo-row { border-top: 1px solid var(--edge); }
 
@@ -931,6 +876,21 @@
 }
 .holo-mini-btn:hover { color: var(--cy); border-color: var(--line-bright); background: rgba(56, 230, 255, .08); }
 .holo-mini-btn.is-danger:hover { color: var(--crit); border-color: rgba(255, 107, 143, .5); background: rgba(255, 107, 143, .1); }
+/* Labelled variant — the square sizing is for glyphs, text needs to breathe */
+.holo-mini-btn--text {
+  width: auto;
+  min-width: 26px;
+  padding: 0 10px;
+  font-family: var(--mono);
+  font-size: .625rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.holo-mini-btn.is-active {
+  color: var(--cy);
+  border-color: var(--line-bright);
+  background: var(--glow-soft);
+}
 
 /* Segmented font-scale control */
 .holo-seg { display: flex; height: 34px; border: 1px solid var(--edge); border-radius: var(--r); overflow: hidden; }
@@ -1023,8 +983,73 @@
 }
 .holo-toggle__track.is-on .holo-toggle__knob { transform: translateX(18px); background: #02121c; }
 
-/* Checkbox */
-.holo-check { width: 15px; height: 15px; flex: 0 0 15px; accent-color: var(--cy); cursor: pointer; }
+/* Checkbox — a targeting reticle, not a browser tick.
+   Fully custom: the native control carries OS chrome that no amount of
+   accent-color will bring into the console's language. */
+.holo-check {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  margin: 0;
+  border: 1px solid var(--line-bright);
+  border-radius: 2px;
+  background: rgba(56, 230, 255, .05);
+  cursor: pointer;
+  transition: border-color var(--fast), background var(--fast), box-shadow var(--fast);
+}
+.holo-check:hover { border-color: var(--cy); background: rgba(56, 230, 255, .12); }
+
+/* Corner brackets echo the modal framing — the mark reads as a sight, not a box */
+.holo-check::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border: 1px solid transparent;
+  transition: border-color var(--fast);
+}
+
+/* Checked: a drawn tick, scaled in from nothing */
+.holo-check::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid var(--void);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scale(0);
+  transform-origin: center;
+  transition: transform var(--fast) var(--ease);
+}
+.holo-check:checked {
+  background: var(--cy);
+  border-color: var(--cy);
+  box-shadow: 0 0 10px var(--glow);
+}
+.holo-check:checked::after { transform: rotate(45deg) scale(1); }
+
+/* Indeterminate: a dash, for a partly-armed queue */
+.holo-check:indeterminate {
+  background: rgba(56, 230, 255, .18);
+  border-color: var(--cy);
+}
+.holo-check:indeterminate::before {
+  border: 0;
+  inset: auto;
+  left: 3px;
+  right: 3px;
+  top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  background: var(--cy);
+  box-shadow: 0 0 6px var(--glow);
+}
+
+.holo-check:focus-visible { outline: 1px solid var(--cy); outline-offset: 2px; }
 
 /* Drop zone */
 .holo-drop {
@@ -1194,6 +1219,15 @@
   box-shadow: 0 30px 70px -20px rgba(0, 0, 0, .85), 0 0 32px var(--glow-soft);
 }
 .holo-dock__count { font-family: var(--mono); font-size: .6875rem; color: var(--cy); padding-right: 6px; }
+/* Divides selection controls from the destructive-capable actions */
+.holo-dock__sep { width: 1px; align-self: stretch; margin: 0 2px; background: var(--edge); }
+/* Count badge inside an action button — mono so the digits never shift the label */
+.holo-btn__n {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  opacity: .75;
+}
 
 /* -------------------------------------------------------- 14. DETAIL PANEL */
 .holo-detail {
@@ -1351,59 +1385,7 @@
 .holo-stat__head { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; color: var(--text-2); font-size: .75rem; font-weight: 500; }
 .holo-stat__head svg { color: var(--cy); }
 
-/* ---------------------------------------------------------------- 15. AUTH */
-.holo-auth {
-  position: relative;
-  min-height: 100dvh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-.holo-auth__card {
-  width: 100%;
-  max-width: 380px;
-  padding: 30px;
-  background: linear-gradient(158deg, var(--deck-a), var(--deck-b));
-  backdrop-filter: blur(calc(24px * var(--blur-k))) saturate(1.2);
-  border: 1px solid var(--edge);
-  border-radius: var(--r-lg);
-  box-shadow: 0 40px 100px -40px rgba(0, 0, 0, .9), 0 0 50px var(--glow-soft);
-}
-.holo-auth__mark {
-  width: 54px;
-  height: 54px;
-  margin: 0 auto 18px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--line-bright);
-  border-radius: var(--r-lg);
-  background: radial-gradient(circle at 50% 25%, rgba(56, 230, 255, .25), transparent 70%);
-  color: var(--cy);
-  font-family: var(--mono);
-  font-size: 1.5rem;
-  font-weight: 700;
-  box-shadow: inset 0 0 22px var(--glow-soft), 0 0 26px var(--glow-soft);
-}
-
-/* Boot sequence */
-.holo-boot {
-  width: min(400px, calc(100vw - 40px));
-  padding: 26px;
-  background: linear-gradient(158deg, var(--deck-a), var(--deck-b));
-  backdrop-filter: blur(calc(20px * var(--blur-k)));
-  border: 1px solid var(--edge);
-  border-radius: var(--r-lg);
-  box-shadow: 0 0 60px var(--glow-soft);
-  font-family: var(--mono);
-  font-size: .75rem;
-  color: var(--text-3);
-}
-.holo-boot__line { display: flex; gap: 12px; padding: 5px 0; }
-.holo-boot__key { width: 34px; color: var(--cy); flex-shrink: 0; }
-.holo-boot__line.is-active { color: var(--text); }
-
-/* --------------------------------------------------------------- 16. FX */
+/* --------------------------------------------------------------- 15. FX */
 /* Static HOLO is complete on its own; FX adds ambient motion only. */
 .holo-fx-bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 13px; }
 .holo-fx-bars i {
@@ -1486,7 +1468,7 @@
 @keyframes holo-eq { 0%, 100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
 @keyframes holo-sweep { 0% { background-position: -60% 0; } 100% { background-position: 160% 0; } }
 
-/* --------------------------------------------------------- 17. RESPONSIVE */
+/* --------------------------------------------------------- 16. RESPONSIVE */
 .holo-rail-scrim { display: none; }
 
 @media (max-width: 1180px) {
@@ -1556,8 +1538,20 @@
   .holo-settings__nav { width: 100%; display: flex; gap: 4px; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--edge); }
   .holo-settings__tab { width: auto; flex: 0 0 auto; white-space: nowrap; margin: 0; }
   .holo-settings__body { padding: 16px; }
-  .holo-dock { left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); transform: none; justify-content: space-around; }
+  /* The dock carries five controls; on a phone they wrap rather than overflow.
+     The column header that normally holds select-all is hidden at this width,
+     so the dock's own Select all is the only way to arm the whole queue. */
+  .holo-dock {
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    transform: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
   .holo-dock__count { display: none; }
+  .holo-dock__sep { display: none; }
   .holo-statusbar { gap: 12px; padding-bottom: env(safe-area-inset-bottom); height: calc(var(--status) + env(safe-area-inset-bottom)); flex-basis: calc(var(--status) + env(safe-area-inset-bottom)); }
   .holo-statusbar .opt { display: none; }
   input, textarea, select { font-size: 16px !important; }

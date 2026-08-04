@@ -4,7 +4,7 @@ import { useUIStore } from '../../stores/uiStore.js';
 import { useDeleteTorrent, useBatchDelete } from '../../hooks/useTorrents.js';
 
 export function DeleteConfirmModal() {
-  const { deleteConfirmHashes, clearDeleteConfirm, setSelectedTorrent, deselectAllTorrents } = useUIStore();
+  const { deleteConfirmHashes, clearDeleteConfirm, setSelectedTorrent, exitSelectionMode } = useUIStore();
   const [deleteFiles, setDeleteFiles] = useState(true);
   const open = deleteConfirmHashes.length > 0;
   const isBulk = deleteConfirmHashes.length > 1;
@@ -20,7 +20,7 @@ export function DeleteConfirmModal() {
   const handleDelete = () => {
     if (isBulk) {
       batchDelete.mutate({ hashes: deleteConfirmHashes, deleteFiles });
-      deselectAllTorrents();
+      exitSelectionMode();
     } else {
       deleteTorrent.mutate({ hash: deleteConfirmHashes[0], deleteFiles });
       setSelectedTorrent(null);

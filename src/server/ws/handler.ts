@@ -1,25 +1,12 @@
 import { FastifyInstance } from 'fastify';
 import { WebSocket } from 'ws';
 import { torrentEvents, TorrentEventName } from '../engine/events.js';
-import { verifyToken } from '../services/auth.js';
-import { parse as parseCookie } from 'cookie';
 
 const clients = new Set<WebSocket>();
 
+/** Telemetry is open — any client that can reach /ws receives the event stream. */
 export function setupWebSocket(app: FastifyInstance) {
-  app.get('/ws', { websocket: true }, (socket, req) => {
-    const cookieHeader = req.headers.cookie;
-    if (!cookieHeader) {
-      socket.close(4001, 'Unauthorized');
-      return;
-    }
-    const cookies = parseCookie(cookieHeader);
-    const token = cookies.token;
-    if (!token || !verifyToken(token)) {
-      socket.close(4001, 'Unauthorized');
-      return;
-    }
-
+  app.get('/ws', { websocket: true }, (socket) => {
     clients.add(socket);
     socket.on('close', () => clients.delete(socket));
     socket.on('error', () => clients.delete(socket));

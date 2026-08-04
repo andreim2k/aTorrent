@@ -1,6 +1,5 @@
 import 'dotenv/config';
 import Fastify from 'fastify';
-import fastifyCookie from '@fastify/cookie';
 import fastifyCors from '@fastify/cors';
 import fastifyMultipart from '@fastify/multipart';
 import fastifyWebsocket from '@fastify/websocket';
@@ -29,9 +28,7 @@ async function main() {
 
   const app = Fastify({ logger: true });
 
-  await app.register(fastifyCookie);
   await app.register(fastifyCors, {
-    credentials: true,
     origin: (origin, cb) => {
       const allowed = process.env.CORS_ORIGIN;
       if (!allowed) {

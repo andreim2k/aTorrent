@@ -13,7 +13,7 @@ const navItems: { label: string; status: FilterStatus; glyph: string }[] = [
 ];
 
 export function Sidebar() {
-  const { filterStatus, setFilterStatus, sidebarCollapsed } = useUIStore();
+  const { filterStatus, setFilterStatus, sidebarCollapsed, dismissRailIfOverlay } = useUIStore();
   const { data: torrents } = useTorrents();
   const list = torrents || [];
   const totalDown = list.reduce((sum: number, t: Torrent) => sum + (t.downloadSpeed || 0), 0);
@@ -46,7 +46,7 @@ export function Sidebar() {
             <button
               key={item.status}
               type="button"
-              onClick={() => setFilterStatus(item.status)}
+              onClick={() => { setFilterStatus(item.status); dismissRailIfOverlay(); }}
               className={`holo-nav__item ${active ? 'is-active' : ''}`}
               title={item.label}
               aria-current={active ? 'page' : undefined}

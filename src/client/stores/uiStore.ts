@@ -1,6 +1,16 @@
 import { create } from 'zustand';
 import type { FilterStatus } from '../types/index.js';
 
+/** Matches the width at which the rail stops being a column and becomes an
+ *  overlay drawer (see the 900px block in globals.css). Below it the rail must
+ *  start closed, or first paint is the menu covering the transfer queue. */
+const RAIL_OVERLAY_QUERY = '(max-width: 900px)';
+
+function railStartsCollapsed(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia(RAIL_OVERLAY_QUERY).matches;
+}
+
 interface UIState {
   selectedTorrent: string | null;
   showAddModal: boolean;
@@ -20,7 +30,10 @@ interface UIState {
   selectionMode: boolean;
   toggleTorrentSelection: (hash: string) => void;
   selectAllTorrents: (hashes: string[]) => void;
-  deselectAllTorrents: () => void;
+  /** Empty the selection but stay in selection mode. */
+  clearSelection: () => void;
+  /** Empty the selection and leave selection mode. */
+  exitSelectionMode: () => void;
   setSelectionMode: (on: boolean) => void;
 
   setSelectedTorrent: (hash: string | null) => void;
@@ -30,6 +43,8 @@ interface UIState {
   setFilterCategory: (id: number | null) => void;
   setSearchQuery: (q: string) => void;
   toggleSidebar: () => void;
+  /** Close the rail only where it overlays content; a no-op on desktop. */
+  dismissRailIfOverlay: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -39,7 +54,7 @@ export const useUIStore = create<UIState>((set) => ({
   filterStatus: 'all',
   filterCategory: null,
   searchQuery: '',
-  sidebarCollapsed: false,
+  sidebarCollapsed: railStartsCollapsed(),
 
   // Delete confirmation
   deleteConfirmHashes: [],
@@ -57,8 +72,9 @@ export const useUIStore = create<UIState>((set) => ({
       return { selectedTorrents: next };
     }),
   selectAllTorrents: (hashes) => set({ selectedTorrents: new Set(hashes) }),
-  deselectAllTorrents: () => set({ selectedTorrents: new Set(), selectionMode: false }),
-  setSelectionMode: (on) => set({ selectionMode: on, selectedTorrents: on ? new Set() : new Set() }),
+  clearSelection: () => set({ selectedTorrents: new Set() }),
+  exitSelectionMode: () => set({ selectedTorrents: new Set(), selectionMode: false }),
+  setSelectionMode: (on) => set({ selectionMode: on, selectedTorrents: new Set() }),
 
   setSelectedTorrent: (hash) => set({ selectedTorrent: hash }),
   setShowAddModal: (show) => set({ showAddModal: show }),
@@ -67,4 +83,7 @@ export const useUIStore = create<UIState>((set) => ({
   setFilterCategory: (id) => set({ filterCategory: id }),
   setSearchQuery: (q) => set({ searchQuery: q }),
   toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
+  dismissRailIfOverlay: () => {
+    if (railStartsCollapsed()) set({ sidebarCollapsed: true });
+  },
 }));

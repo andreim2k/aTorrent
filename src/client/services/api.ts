@@ -1,5 +1,3 @@
-import { useAuthStore } from '../stores/authStore.js';
-
 const BASE = (import.meta.env.VITE_API_URL as string) || '/api';
 
 async function request<T>(url: string, opts?: RequestInit): Promise<T> {
@@ -7,16 +5,8 @@ async function request<T>(url: string, opts?: RequestInit): Promise<T> {
   if (opts?.body) {
     headers['Content-Type'] = 'application/json';
   }
-  const res = await fetch(BASE + url, {
-    ...opts,
-    credentials: 'include',
-    headers,
-  });
+  const res = await fetch(BASE + url, { ...opts, headers });
   if (!res.ok) {
-    if (res.status === 401) {
-      useAuthStore.getState().setStatus('login');
-      useAuthStore.getState().setUsername(null);
-    }
     const body = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(body.error || res.statusText);
   }
@@ -24,16 +14,6 @@ async function request<T>(url: string, opts?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  // Auth
-  authStatus: () => request<{ setupRequired: boolean; authenticated: boolean; username: string | null }>('/auth/status'),
-  setup: (username: string, password: string) =>
-    request('/auth/setup', { method: 'POST', body: JSON.stringify({ username, password }) }),
-  login: (username: string, password: string) =>
-    request('/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) }),
-  logout: () => request('/auth/logout', { method: 'POST' }),
-  changePassword: (currentPassword: string, newPassword: string) =>
-    request('/auth/change-password', { method: 'POST', body: JSON.stringify({ currentPassword, newPassword }) }),
-
   // Torrents
   getTorrents: (params?: { status?: string; category?: string }) => {
     const qs = new URLSearchParams(params as any).toString();
