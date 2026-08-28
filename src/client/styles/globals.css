@@ -436,8 +436,11 @@
 .holo-io__val { font-family: var(--mono); font-size: .75rem; font-variant-numeric: tabular-nums; color: var(--text); }
 .holo-io--down .holo-io__arrow { color: var(--cy); }
 .holo-io--up .holo-io__arrow { color: var(--ion); }
-.holo-rail-dock.is-min .holo-io__row { grid-template-columns: 1fr; justify-items: center; gap: 2px; }
-.holo-rail-dock.is-min .holo-io__val { font-size: .625rem; }
+.holo-rail-dock.is-min .holo-io { padding: 10px 4px; gap: 14px; }
+.holo-rail-dock.is-min .holo-io__row { grid-template-columns: 1fr; justify-items: center; gap: 3px; }
+.holo-rail-dock.is-min .holo-io__val { font-size: .6875rem; }
+.holo-io__val--stack { display: grid; justify-items: center; line-height: 1.25; max-width: 100%; overflow: hidden; }
+.holo-io__unit { font-size: .5625rem; letter-spacing: .04em; color: var(--text-3); }
 
 /* ------------------------------------------------------------ 6. TOP BAR */
 .holo-topbar {

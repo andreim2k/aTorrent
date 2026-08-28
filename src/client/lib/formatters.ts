@@ -7,7 +7,17 @@ export function formatBytes(bytes: number, decimals = 1): string {
 }
 
 export function formatSpeed(bytesPerSec: number): string {
-  return formatBytes(bytesPerSec) + '/s';
+  if (bytesPerSec < 1) return '0 B/s';
+  const k = 1000;
+  const units = ['B/s', 'KB/s', 'MB/s', 'GB/s', 'TB/s'];
+  let i = Math.min(Math.floor(Math.log(bytesPerSec) / Math.log(k)), units.length - 1);
+  let val = bytesPerSec / Math.pow(k, i);
+  // rounding can push 999.96 to "1000.0" — bump to the next unit instead
+  if (Math.round(val * 10) >= 10000 && i < units.length - 1) {
+    i++;
+    val = bytesPerSec / Math.pow(k, i);
+  }
+  return parseFloat(val.toFixed(1)) + ' ' + units[i];
 }
 
 export function formatETA(ms: number): string {

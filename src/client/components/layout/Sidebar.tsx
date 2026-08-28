@@ -65,17 +65,28 @@ export function Sidebar() {
 
       <div className="holo-io">
         {!sidebarCollapsed && <span className="holo-label">Network I/O</span>}
-        <div className="holo-io__row holo-io--down">
+        <div className="holo-io__row holo-io--down" title={`Downlink ${formatSpeed(totalDown)}`}>
           <span className="holo-io__arrow">↓</span>
           {!sidebarCollapsed && <span className="holo-label">Downlink</span>}
-          <span className="holo-io__val">{formatSpeed(totalDown)}</span>
+          <IOValue speed={totalDown} stacked={sidebarCollapsed} />
         </div>
-        <div className="holo-io__row holo-io--up">
+        <div className="holo-io__row holo-io--up" title={`Uplink ${formatSpeed(totalUp)}`}>
           <span className="holo-io__arrow">↑</span>
           {!sidebarCollapsed && <span className="holo-label">Uplink</span>}
-          <span className="holo-io__val">{formatSpeed(totalUp)}</span>
+          <IOValue speed={totalUp} stacked={sidebarCollapsed} />
         </div>
       </div>
     </aside>
+  );
+}
+
+function IOValue({ speed, stacked }: { speed: number; stacked: boolean }) {
+  if (!stacked) return <span className="holo-io__val">{formatSpeed(speed)}</span>;
+  const [num, ...unit] = formatSpeed(speed).split(' ');
+  return (
+    <span className="holo-io__val holo-io__val--stack">
+      <span>{num}</span>
+      <span className="holo-io__unit">{unit.join(' ')}</span>
+    </span>
   );
 }
