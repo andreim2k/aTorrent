@@ -61,6 +61,20 @@ function parseDN(magnet: string): string {
   return match ? decodeURIComponent(match[1]) : 'Unknown';
 }
 
+/**
+ * With neither trackers nor DHT there is no peer-discovery mechanism at all:
+ * torrents report "downloading" but stay at 0 peers indefinitely. Refuse to
+ * start rather than run in a state that looks healthy but cannot progress.
+ */
+function assertPeerDiscovery(opts: { tracker: boolean; dht: boolean }) {
+  if (!opts.tracker && !opts.dht) {
+    throw new Error(
+      '[Engine] Peer discovery is fully disabled (tracker: false, dht: false) — no torrent can ever find peers. ' +
+      'If dist/server was edited by hand, discard it and run `npm run build`.'
+    );
+  }
+}
+
 export function initEngine() {
   if (!fs.existsSync(config.downloadsDir)) {
     fs.mkdirSync(config.downloadsDir, { recursive: true });
@@ -68,13 +82,15 @@ export function initEngine() {
 
   // Use qBittorrent-style peer ID to bypass private tracker whitelist blocks
   const peerId = generateQBPeerId();
-  client = new WebTorrent({
+  const engineOptions = {
     torrentPort: config.torrentPort,
     peerId: Buffer.from(peerId),
     dht: false,
     tracker: true,
     webSeeds: true,
-  } as any);
+  };
+  assertPeerDiscovery(engineOptions);
+  client = new WebTorrent(engineOptions as any);
 
   client.on('error', (err) => {
     console.error('[WebTorrent] Engine error:', typeof err === 'string' ? err : err.message);
