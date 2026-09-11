@@ -698,7 +698,6 @@
 .holo-row.is-checked { background: rgba(56, 230, 255, .07); }
 
 .holo-row__ident { display: flex; align-items: center; gap: 12px; min-width: 0; }
-.holo-row__index { font-family: var(--mono); font-size: .625rem; color: var(--text-4); width: 18px; flex: 0 0 18px; }
 
 /* Status LED — the row's state at a glance */
 .holo-led {
@@ -879,16 +878,6 @@
 }
 .holo-mini-btn:hover { color: var(--cy); border-color: var(--line-bright); background: rgba(56, 230, 255, .08); }
 .holo-mini-btn.is-danger:hover { color: var(--crit); border-color: rgba(255, 107, 143, .5); background: rgba(255, 107, 143, .1); }
-/* Labelled variant — the square sizing is for glyphs, text needs to breathe */
-.holo-mini-btn--text {
-  width: auto;
-  min-width: 26px;
-  padding: 0 10px;
-  font-family: var(--mono);
-  font-size: .625rem;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-}
 .holo-mini-btn.is-active {
   color: var(--cy);
   border-color: var(--line-bright);

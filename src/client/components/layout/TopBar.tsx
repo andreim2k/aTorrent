@@ -1,12 +1,20 @@
 import { useUIStore } from '../../stores/uiStore.js';
 import { usePreferencesStore, FONT_SCALE_BOUNDS } from '../../stores/preferencesStore.js';
+import { useFilteredTorrents } from '../../hooks/useFilteredTorrents.js';
+import type { Torrent } from '../../types/index.js';
 
 export function TopBar() {
   const {
     searchQuery, setSearchQuery, setShowAddModal, setShowSettingsModal,
-    toggleSidebar, selectionMode, setSelectionMode,
+    toggleSidebar, selectedTorrents, selectAllTorrents, clearSelection,
   } = useUIStore();
   const { fontScale, increaseFontScale, decreaseFontScale, resetFontScale, fxEnabled, toggleFx } = usePreferencesStore();
+  const { torrents: visible } = useFilteredTorrents();
+
+  // Checkboxes are always on screen now, so this is a shortcut, not a mode:
+  // arm every visible transfer, or clear whatever is currently selected.
+  const visibleHashes = visible.map((t: Torrent) => t.infoHash);
+  const allSelected = visibleHashes.length > 0 && visibleHashes.every((h) => selectedTorrents.has(h));
 
   return (
     <header className="holo-topbar">
@@ -33,11 +41,12 @@ export function TopBar() {
       <div className="holo-actions">
         {/* Distinct from the rail toggle: a ticked box, not a second ☰. */}
         <button
-          className={`holo-icon-btn ${selectionMode ? 'is-active' : ''}`}
-          onClick={() => setSelectionMode(!selectionMode)}
-          title={selectionMode ? 'Leave selection mode' : 'Select transfers'}
-          aria-label="Selection mode"
-          aria-pressed={selectionMode}
+          className={`holo-icon-btn ${selectedTorrents.size > 0 ? 'is-active' : ''}`}
+          onClick={() => (allSelected ? clearSelection() : selectAllTorrents(visibleHashes))}
+          disabled={visibleHashes.length === 0 && selectedTorrents.size === 0}
+          title={allSelected ? 'Deselect all visible transfers' : 'Select all visible transfers'}
+          aria-label="Select all visible transfers"
+          aria-pressed={selectedTorrents.size > 0}
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h10.5" />

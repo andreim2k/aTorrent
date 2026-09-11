@@ -25,16 +25,16 @@ interface UIState {
   setDeleteConfirmHashes: (hashes: string[]) => void;
   clearDeleteConfirm: () => void;
 
-  // Bulk selection
+  // Bulk selection — checkboxes are always on screen, so there is no separate
+  // "selection mode" to enter; the bulk dock simply appears once the set is non-empty.
   selectedTorrents: Set<string>;
-  selectionMode: boolean;
+  /** Anchor for shift-click range selection; the last hash explicitly toggled or ranged to. */
+  lastSelectedHash: string | null;
   toggleTorrentSelection: (hash: string) => void;
+  /** Extend the selection from the last anchor to `hash` across `visibleHashes` (shift-click). */
+  selectRange: (visibleHashes: string[], hash: string) => void;
   selectAllTorrents: (hashes: string[]) => void;
-  /** Empty the selection but stay in selection mode. */
   clearSelection: () => void;
-  /** Empty the selection and leave selection mode. */
-  exitSelectionMode: () => void;
-  setSelectionMode: (on: boolean) => void;
 
   setSelectedTorrent: (hash: string | null) => void;
   setShowAddModal: (show: boolean) => void;
@@ -63,18 +63,30 @@ export const useUIStore = create<UIState>((set) => ({
 
   // Bulk selection
   selectedTorrents: new Set<string>(),
-  selectionMode: false,
+  lastSelectedHash: null,
   toggleTorrentSelection: (hash) =>
     set((s) => {
       const next = new Set(s.selectedTorrents);
       if (next.has(hash)) next.delete(hash);
       else next.add(hash);
-      return { selectedTorrents: next };
+      return { selectedTorrents: next, lastSelectedHash: hash };
     }),
-  selectAllTorrents: (hashes) => set({ selectedTorrents: new Set(hashes) }),
-  clearSelection: () => set({ selectedTorrents: new Set() }),
-  exitSelectionMode: () => set({ selectedTorrents: new Set(), selectionMode: false }),
-  setSelectionMode: (on) => set({ selectionMode: on, selectedTorrents: new Set() }),
+  selectRange: (visibleHashes, hash) =>
+    set((s) => {
+      const next = new Set(s.selectedTorrents);
+      const anchor = s.lastSelectedHash;
+      const from = anchor ? visibleHashes.indexOf(anchor) : -1;
+      const to = visibleHashes.indexOf(hash);
+      if (from === -1 || to === -1) {
+        next.add(hash);
+      } else {
+        const [lo, hi] = from < to ? [from, to] : [to, from];
+        for (let i = lo; i <= hi; i++) next.add(visibleHashes[i]);
+      }
+      return { selectedTorrents: next, lastSelectedHash: hash };
+    }),
+  selectAllTorrents: (hashes) => set({ selectedTorrents: new Set(hashes), lastSelectedHash: null }),
+  clearSelection: () => set({ selectedTorrents: new Set(), lastSelectedHash: null }),
 
   setSelectedTorrent: (hash) => set({ selectedTorrent: hash }),
   setShowAddModal: (show) => set({ showAddModal: show }),

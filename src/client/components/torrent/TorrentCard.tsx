@@ -5,10 +5,10 @@ import { useUIStore } from '../../stores/uiStore.js';
 import { useUpdateTorrent } from '../../hooks/useTorrents.js';
 import type { Torrent } from '../../types/index.js';
 
-interface Props { torrent: Torrent; index: number; }
+interface Props { torrent: Torrent; onSelect: (hash: string, shiftKey: boolean) => void; }
 
-export function TorrentCard({ torrent, index }: Props) {
-  const { selectedTorrent, setSelectedTorrent, selectionMode, selectedTorrents, toggleTorrentSelection, setDeleteConfirmHashes } = useUIStore();
+export function TorrentCard({ torrent, onSelect }: Props) {
+  const { selectedTorrent, setSelectedTorrent, selectedTorrents, setDeleteConfirmHashes } = useUIStore();
   const updateTorrent = useUpdateTorrent();
 
   const isOpen = selectedTorrent === torrent.infoHash;
@@ -20,33 +20,39 @@ export function TorrentCard({ torrent, index }: Props) {
     updateTorrent.mutate({ hash: torrent.infoHash, data: { status: isRunning ? 'paused' : 'downloading' } });
   };
 
-  const onOpen = () => {
-    if (selectionMode) toggleTorrentSelection(torrent.infoHash);
-    else setSelectedTorrent(isOpen ? null : torrent.infoHash);
+  // Shift-click anywhere on the row extends the selection range instead of
+  // opening the detail panel — the checkbox itself always does, plain click or not.
+  const onOpen = (event: React.MouseEvent) => {
+    if (event.shiftKey) { onSelect(torrent.infoHash, true); return; }
+    setSelectedTorrent(isOpen ? null : torrent.infoHash);
+  };
+
+  // Fully controlled: handle the click directly rather than onChange, so a
+  // shift-click can be routed to range selection instead of a native toggle.
+  const onCheckboxClick = (event: React.MouseEvent<HTMLInputElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    onSelect(torrent.infoHash, event.shiftKey);
   };
 
   return (
     <article
       className={`holo-row ${isOpen ? 'is-open' : ''} ${isChecked ? 'is-checked' : ''}`}
       onClick={onOpen}
-      onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onOpen(); } }}
+      onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedTorrent(isOpen ? null : torrent.infoHash); } }}
       tabIndex={0}
       role="button"
       aria-pressed={isOpen}
     >
       <div className="holo-row__ident">
-        {selectionMode ? (
-          <input
-            type="checkbox"
-            className="holo-check"
-            checked={isChecked}
-            onChange={() => toggleTorrentSelection(torrent.infoHash)}
-            onClick={(event) => event.stopPropagation()}
-            aria-label={`Select ${torrent.name}`}
-          />
-        ) : (
-          <span className="holo-row__index">{String(index).padStart(2, '0')}</span>
-        )}
+        <input
+          type="checkbox"
+          className="holo-check"
+          checked={isChecked}
+          onClick={onCheckboxClick}
+          onChange={() => {}}
+          aria-label={`Select ${torrent.name}`}
+        />
         <span className={`holo-led is-${torrent.status}`} aria-hidden="true" />
         <div style={{ minWidth: 0 }}>
           <h3 className="holo-row__name" title={torrent.name}>{torrent.name}</h3>

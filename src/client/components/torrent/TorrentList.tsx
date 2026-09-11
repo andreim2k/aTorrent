@@ -8,13 +8,20 @@ import type { Torrent } from '../../types/index.js';
 export function TorrentList() {
   const { torrents: filtered, isLoading } = useFilteredTorrents();
   const {
-    filterStatus, searchQuery, selectionMode, setSelectionMode,
-    selectedTorrents, selectAllTorrents, clearSelection,
+    filterStatus, searchQuery,
+    selectedTorrents, selectAllTorrents, clearSelection, toggleTorrentSelection, selectRange,
   } = useUIStore();
 
   const visibleHashes = filtered.map((t: Torrent) => t.infoHash);
   const selectedVisible = visibleHashes.filter((h) => selectedTorrents.has(h)).length;
   const allSelected = visibleHashes.length > 0 && selectedVisible === visibleHashes.length;
+
+  // Shared by every row's checkbox and shift-click: plain click toggles one
+  // transfer, shift-click extends the range from the last anchor.
+  const handleSelect = (hash: string, shiftKey: boolean) => {
+    if (shiftKey) selectRange(visibleHashes, hash);
+    else toggleTorrentSelection(hash);
+  };
 
   // Partial selection is a third state the checkbox element only exposes via JS.
   const headCheck = useRef<HTMLInputElement>(null);
@@ -35,28 +42,19 @@ export function TorrentList() {
           <span className="holo-label">
             {filterStatus} · {String(filtered.length).padStart(2, '0')} items
           </span>
-          <button
-            className={`holo-mini-btn holo-mini-btn--text ${selectionMode ? 'is-active' : ''}`}
-            onClick={() => setSelectionMode(!selectionMode)}
-            aria-pressed={selectionMode}
-          >
-            {selectionMode ? 'Done' : 'Select'}
-          </button>
         </div>
       </div>
 
       <div className="holo-cols holo-label">
         <span className="holo-cols__lead">
-          {selectionMode && (
-            <input
-              ref={headCheck}
-              type="checkbox"
-              className="holo-check"
-              checked={allSelected}
-              onChange={() => (allSelected ? clearSelection() : selectAllTorrents(visibleHashes))}
-              aria-label={allSelected ? 'Deselect all visible transfers' : 'Select all visible transfers'}
-            />
-          )}
+          <input
+            ref={headCheck}
+            type="checkbox"
+            className="holo-check"
+            checked={allSelected}
+            onChange={() => (allSelected ? clearSelection() : selectAllTorrents(visibleHashes))}
+            aria-label={allSelected ? 'Deselect all visible transfers' : 'Select all visible transfers'}
+          />
           <span>Payload</span>
         </span>
         <span>Progress</span>
@@ -83,7 +81,7 @@ export function TorrentList() {
         )}
 
         <AnimatePresence mode="popLayout">
-          {filtered.map((torrent: Torrent, index: number) => (
+          {filtered.map((torrent: Torrent) => (
             <motion.div
               key={torrent.infoHash}
               layout
@@ -92,7 +90,7 @@ export function TorrentList() {
               exit={{ opacity: 0, x: -12 }}
               transition={{ duration: 0.2, ease: [0.22, 0.61, 0.36, 1] }}
             >
-              <TorrentCard torrent={torrent} index={index + 1} />
+              <TorrentCard torrent={torrent} onSelect={handleSelect} />
             </motion.div>
           ))}
         </AnimatePresence>
