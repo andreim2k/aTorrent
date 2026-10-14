@@ -7,8 +7,10 @@ import { eq } from 'drizzle-orm';
 import fs from 'fs';
 import path from 'path';
 import { autoIdentify } from '../services/media-identifier.js';
+import { renewNatMappingsOnce } from './nat-renewal.js';
 
 let client: WebTorrent.Instance;
+let natRenewTimer: NodeJS.Timeout | null = null;
 
 const progressIntervals = new Map<string, NodeJS.Timeout>();
 const torrentMap = new Map<string, WebTorrent.Torrent>();
@@ -73,6 +75,8 @@ export function initEngine() {
     peerId: Buffer.from(peerId),
   } as any);
 
+  natRenewTimer = renewNatMappingsOnce(client);
+
   client.on('error', (err) => {
     console.error('[WebTorrent] Engine error:', typeof err === 'string' ? err : err.message);
   });
@@ -102,6 +106,7 @@ export function initEngine() {
         }).where(eq(torrents.infoHash, infoHash)).run();
       } catch {}
     }
+    if (natRenewTimer) clearInterval(natRenewTimer);
     client.destroy();
     process.exit(0);
   };
