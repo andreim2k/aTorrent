@@ -310,7 +310,7 @@ export function SettingsModal() {
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+        className="fixed inset-0 bg-black/65 backdrop-blur-md z-40"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -323,15 +323,16 @@ export function SettingsModal() {
         exit={{ opacity: 0 }}
       >
         <motion.div
-          className="glass rounded-2xl w-full max-w-2xl overflow-hidden"
-          initial={{ scale: 0.95, y: 20 }}
-          animate={{ scale: 1, y: 0 }}
-          exit={{ scale: 0.95, y: 20 }}
+          className="glass bg-base-50/85 shadow-float rounded-2xl w-full max-w-2xl overflow-hidden"
+          initial={{ scale: 0.94, y: 24, opacity: 0 }}
+          animate={{ scale: 1, y: 0, opacity: 1 }}
+          exit={{ scale: 0.96, y: 12, opacity: 0 }}
+          transition={{ type: 'spring', damping: 26, stiffness: 340 }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
-            <h2 className="text-lg font-semibold">Settings</h2>
+            <h2 className="text-[17px] font-semibold tracking-tight">Settings</h2>
             <button
               onClick={() => setShowSettingsModal(false)}
               className="w-8 h-8 flex items-center justify-center rounded-lg text-white/40 hover:text-white/80 hover:bg-white/[0.06] transition-all"

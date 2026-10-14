@@ -1,28 +1,27 @@
 import { cn } from '../../lib/cn.js';
-
-const statusColors: Record<string, { bg: string; text: string; glow: string }> = {
-  downloading: { bg: 'bg-blue-500/20', text: 'text-blue-400', glow: 'glow-blue' },
-  seeding: { bg: 'bg-green-500/20', text: 'text-green-400', glow: 'glow-green' },
-  paused: { bg: 'bg-amber-500/20', text: 'text-amber-400', glow: 'glow-amber' },
-  error: { bg: 'bg-red-500/20', text: 'text-red-400', glow: 'glow-red' },
-  queued: { bg: 'bg-white/10', text: 'text-white/60', glow: '' },
-  checking: { bg: 'bg-purple-500/20', text: 'text-purple-400', glow: '' },
-};
+import { getStatus } from '../../lib/status.js';
 
 interface Props {
   status: string;
   className?: string;
 }
 
+/** Status pill: a colored dot (pulsing while downloading) plus a label. */
 export function GlowBadge({ status, className }: Props) {
-  const colors = statusColors[status] || statusColors.queued;
+  const meta = getStatus(status);
+  const live = status === 'downloading';
   return (
-    <span className={cn(
-      'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-      colors.bg, colors.text, colors.glow,
-      className
-    )}>
-      {status}
+    <span
+      className={cn(
+        'inline-flex items-center gap-1.5 pl-1.5 pr-2 py-0.5 rounded-full text-[11px] font-medium ring-1 ring-inset',
+        meta.bg, meta.text, meta.ring, className
+      )}
+    >
+      <span className="relative flex w-1.5 h-1.5">
+        {live && <span className="absolute inset-0 rounded-full animate-ping-slow" style={{ background: meta.color }} />}
+        <span className="relative w-1.5 h-1.5 rounded-full" style={{ background: meta.color, boxShadow: `0 0 8px ${meta.color}` }} />
+      </span>
+      {meta.label}
     </span>
   );
 }

@@ -1,51 +1,46 @@
-import { useState, useCallback } from 'react';
-import { useWebSocket } from './useWebSocket.js';
-import { useTorrents } from './useTorrents.js';
+import { useEffect } from 'react';
+import { create } from 'zustand';
+import { useQueryClient } from '@tanstack/react-query';
+import type { Torrent } from '../types/index.js';
 
-interface SpeedPoint {
-  time: number;
-  download: number;
-  upload: number;
+export interface SpeedPoint {
+  t: number;
+  dl: number;
+  ul: number;
 }
 
-const MAX_POINTS = 60;
-const DEDUP_THRESHOLD_MS = 500;
+const MAX_POINTS = 90;
+const SAMPLE_MS = 1000;
 
-export function useSpeedHistory() {
-  const [history, setHistory] = useState<SpeedPoint[]>([]);
-  const { data: torrents } = useTorrents();
+const blank = (): SpeedPoint[] =>
+  Array.from({ length: MAX_POINTS }, (_, i) => ({ t: Date.now() - (MAX_POINTS - i) * SAMPLE_MS, dl: 0, ul: 0 }));
 
-  const handleProgress = useCallback((data: any) => {
-    setHistory(prev => {
-      const existing = prev.find(p => Math.abs(p.time - Date.now()) < DEDUP_THRESHOLD_MS);
-      if (existing) {
-        return prev.map(p =>
-          p === existing
-            ? { ...p, download: p.download + data.downloadSpeed, upload: p.upload + data.uploadSpeed }
-            : p
-        );
+interface SpeedState {
+  points: SpeedPoint[];
+  push: (p: SpeedPoint) => void;
+}
+
+export const useSpeedStore = create<SpeedState>((set) => ({
+  points: blank(),
+  push: (p) => set((s) => ({ points: [...s.points.slice(-(MAX_POINTS - 1)), p] })),
+}));
+
+/** Samples aggregate speeds once a second. Mount exactly once, near the app root. */
+export function useSpeedSampler() {
+  const qc = useQueryClient();
+  const push = useSpeedStore((s) => s.push);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      const list = qc.getQueryData<Torrent[]>(['torrents']) ?? [];
+      let dl = 0;
+      let ul = 0;
+      for (const t of list) {
+        dl += t.downloadSpeed || 0;
+        ul += t.uploadSpeed || 0;
       }
-      const next = [...prev, { time: Date.now(), download: data.downloadSpeed, upload: data.uploadSpeed }];
-      return next.slice(-MAX_POINTS);
-    });
-  }, []);
-
-  const handleRemoved = useCallback(() => {
-    // Push a zero point so the graph drops to zero; if no torrents left, clear entirely
-    setHistory(prev => {
-      if (!prev.length) return prev;
-      const zero = { time: Date.now(), download: 0, upload: 0 };
-      return [...prev, zero].slice(-MAX_POINTS);
-    });
-  }, []);
-
-  useWebSocket('torrent:progress', handleProgress);
-  useWebSocket('torrent:removed', handleRemoved);
-
-  // If no torrents exist, return empty to hide the graph
-  if (!torrents || torrents.length === 0) {
-    return [];
-  }
-
-  return history;
+      push({ t: Date.now(), dl, ul });
+    }, SAMPLE_MS);
+    return () => clearInterval(id);
+  }, [qc, push]);
 }

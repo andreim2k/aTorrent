@@ -2,6 +2,10 @@ import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { api } from '../services/api.js';
 import { useWebSocket } from './useWebSocket.js';
+import { useUIStore } from '../stores/uiStore.js';
+import { usePreferencesStore } from '../stores/preferencesStore.js';
+import { toast } from '../stores/toastStore.js';
+import { parseRelease } from '../lib/release.js';
 import type { Torrent } from '../types/index.js';
 
 export function useTorrents() {
@@ -9,7 +13,7 @@ export function useTorrents() {
 
   const query = useQuery({
     queryKey: ['torrents'],
-    queryFn: api.getTorrents,
+    queryFn: () => api.getTorrents(),
     staleTime: Infinity,
   });
 
@@ -34,6 +38,8 @@ export function useTorrents() {
   }, [qc]);
 
   const handleDone = useCallback((data: any) => {
+    const name = qc.getQueryData<Torrent[]>(['torrents'])?.find(t => t.infoHash === data.infoHash)?.name;
+    if (name) toast.success('Download complete', parseRelease(name).title);
     qc.setQueryData<Torrent[]>(['torrents'], (old) =>
       old?.map(t => t.infoHash === data.infoHash ? { ...t, status: 'seeding' as const } : t)
     );
@@ -61,7 +67,11 @@ export function useAddTorrent() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (magnet: string) => api.addTorrentMagnet(magnet),
-    onSuccess: () => qc.refetchQueries({ queryKey: ['torrents'] }),
+    onSuccess: () => {
+      toast.success('Torrent added', 'Fetching metadata…');
+      qc.refetchQueries({ queryKey: ['torrents'] });
+    },
+    onError: (e: Error) => toast.error('Could not add torrent', e.message),
   });
 }
 
@@ -81,8 +91,12 @@ export function useDeleteTorrent() {
       if (context?.previous) {
         qc.setQueryData(['torrents'], context.previous);
       }
+      toast.error('Could not delete torrent');
     },
-    onSuccess: () => qc.refetchQueries({ queryKey: ['torrents'] }),
+    onSuccess: () => {
+      toast.info('Torrent removed');
+      qc.refetchQueries({ queryKey: ['torrents'] });
+    },
   });
 }
 
@@ -91,7 +105,12 @@ export function useUpdateTorrent() {
   return useMutation({
     mutationFn: ({ hash, data }: { hash: string; data: any }) =>
       api.updateTorrent(hash, data),
-    onSuccess: () => qc.refetchQueries({ queryKey: ['torrents'] }),
+    onSuccess: (_r, { data }) => {
+      if (data?.status === 'paused') toast.info('Paused');
+      else if (data?.status === 'downloading') toast.info('Resumed');
+      qc.refetchQueries({ queryKey: ['torrents'] });
+    },
+    onError: (e: Error) => toast.error('Update failed', e.message),
   });
 }
 
@@ -99,7 +118,11 @@ export function useBatchPause() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (hashes: string[]) => api.batchPauseTorrents(hashes),
-    onSuccess: () => qc.refetchQueries({ queryKey: ['torrents'] }),
+    onSuccess: (_r, hashes) => {
+      toast.info(`Paused ${hashes.length} torrent${hashes.length === 1 ? '' : 's'}`);
+      qc.refetchQueries({ queryKey: ['torrents'] });
+    },
+    onError: (e: Error) => toast.error('Pause failed', e.message),
   });
 }
 
@@ -107,7 +130,11 @@ export function useBatchResume() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (hashes: string[]) => api.batchResumeTorrents(hashes),
-    onSuccess: () => qc.refetchQueries({ queryKey: ['torrents'] }),
+    onSuccess: (_r, hashes) => {
+      toast.info(`Resumed ${hashes.length} torrent${hashes.length === 1 ? '' : 's'}`);
+      qc.refetchQueries({ queryKey: ['torrents'] });
+    },
+    onError: (e: Error) => toast.error('Resume failed', e.message),
   });
 }
 
@@ -128,7 +155,52 @@ export function useBatchDelete() {
       if (context?.previous) {
         qc.setQueryData(['torrents'], context.previous);
       }
+      toast.error('Could not delete torrents');
     },
-    onSuccess: () => qc.refetchQueries({ queryKey: ['torrents'] }),
+    onSuccess: (_r, { hashes }) => {
+      toast.info(`Removed ${hashes.length} torrent${hashes.length === 1 ? '' : 's'}`);
+      qc.refetchQueries({ queryKey: ['torrents'] });
+    },
+  });
+}
+
+/** Torrents matching the current status filter and search query. */
+export function useVisibleTorrents() {
+  const { data: torrents, isLoading } = useTorrents();
+  const filterStatus = useUIStore((s) => s.filterStatus);
+  const searchQuery = useUIStore((s) => s.searchQuery);
+  const sortKey = usePreferencesStore((s) => s.sortKey);
+  const sortDir = usePreferencesStore((s) => s.sortDir);
+
+  let filtered = torrents || [];
+  if (filterStatus === 'completed') {
+    filtered = filtered.filter((t) => t.status === 'seeding' || t.progress >= 1);
+  } else if (filterStatus !== 'all') {
+    filtered = filtered.filter((t) => t.status === filterStatus);
+  }
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter((t) => t.name.toLowerCase().includes(q));
+  }
+
+  const dir = sortDir === 'asc' ? 1 : -1;
+  const sorted = [...filtered].sort((a, b) => {
+    switch (sortKey) {
+      case 'name': return dir * a.name.localeCompare(b.name, undefined, { numeric: true });
+      case 'progress': return dir * (a.progress - b.progress);
+      case 'size': return dir * (a.totalSize - b.totalSize);
+      case 'speed': return dir * ((a.downloadSpeed + a.uploadSpeed) - (b.downloadSpeed + b.uploadSpeed));
+      default: return dir * (new Date(a.addedAt).getTime() - new Date(b.addedAt).getTime());
+    }
+  });
+  return { torrents: sorted, isLoading };
+}
+
+export function useSystemInfo() {
+  return useQuery({
+    queryKey: ['system'],
+    queryFn: () => api.getSystemInfo(),
+    refetchInterval: 15000,
+    retry: false,
   });
 }

@@ -1,92 +1,144 @@
+import { motion } from 'framer-motion';
 import { cn } from '../../lib/cn.js';
 import { useUIStore } from '../../stores/uiStore.js';
-import { useTorrents } from '../../hooks/useTorrents.js';
-import { formatSpeed } from '../../lib/formatters.js';
+import { useTorrents, useSystemInfo } from '../../hooks/useTorrents.js';
+import { formatBytes } from '../../lib/formatters.js';
+import { Logo } from '../ui/Logo.js';
+import { Icon, type IconName } from '../ui/Icon.js';
 import type { FilterStatus, Torrent } from '../../types/index.js';
 
-const navItems: { label: string; status: FilterStatus; icon: string }[] = [
-  { label: 'Dashboard', status: 'all', icon: '◈' },
-  { label: 'Downloading', status: 'downloading', icon: '↓' },
-  { label: 'Seeding', status: 'seeding', icon: '↑' },
-  { label: 'Completed', status: 'completed', icon: '✓' },
-  { label: 'Paused', status: 'paused', icon: '‖' },
-  { label: 'Errors', status: 'error', icon: '!' },
+const navItems: { label: string; status: FilterStatus; icon: IconName; tint: string }[] = [
+  { label: 'Library', status: 'all', icon: 'layers', tint: '#a5b4fc' },
+  { label: 'Downloading', status: 'downloading', icon: 'download', tint: '#38bdf8' },
+  { label: 'Seeding', status: 'seeding', icon: 'upload', tint: '#34d399' },
+  { label: 'Completed', status: 'completed', icon: 'check', tint: '#a3e635' },
+  { label: 'Paused', status: 'paused', icon: 'pause', tint: '#fbbf24' },
+  { label: 'Errors', status: 'error', icon: 'alert', tint: '#fb7185' },
 ];
+
+function Meter({ label, icon, percent, detail, warn }: { label: string; icon: IconName; percent: number; detail: string; warn?: boolean }) {
+  const p = Math.min(100, Math.max(0, percent));
+  return (
+    <div>
+      <div className="flex items-center justify-between text-[11px] mb-1.5">
+        <span className="flex items-center gap-1.5 text-white/45"><Icon name={icon} size={12} />{label}</span>
+        <span className="text-white/60 num">{detail}</span>
+      </div>
+      <div className="h-1 rounded-full bg-white/[0.07] overflow-hidden">
+        <motion.div
+          className="h-full rounded-full"
+          style={{ background: warn ? 'linear-gradient(90deg,#fbbf24,#fb7185)' : 'linear-gradient(90deg,#38bdf8,#818cf8)' }}
+          initial={{ width: 0 }}
+          animate={{ width: `${p}%` }}
+          transition={{ duration: 0.9, ease: 'easeOut' }}
+        />
+      </div>
+    </div>
+  );
+}
 
 export function Sidebar() {
   const { filterStatus, setFilterStatus, sidebarCollapsed } = useUIStore();
   const { data: torrents } = useTorrents();
+  const { data: system } = useSystemInfo();
+  const list: Torrent[] = torrents || [];
+  const collapsed = sidebarCollapsed;
 
-  const totalDown = (torrents || []).reduce((s: number, t: Torrent) => s + (t.downloadSpeed || 0), 0);
-  const totalUp = (torrents || []).reduce((s: number, t: Torrent) => s + (t.uploadSpeed || 0), 0);
-
-  const countForStatus = (status: FilterStatus) => {
-    if (!torrents) return 0;
-    if (status === 'all') return torrents.length;
-    if (status === 'completed') return torrents.filter((t: Torrent) => t.status === 'seeding' || t.progress >= 1).length;
-    return torrents.filter((t: Torrent) => t.status === status).length;
+  const countFor = (status: FilterStatus) => {
+    if (status === 'all') return list.length;
+    if (status === 'completed') return list.filter((t) => t.status === 'seeding' || t.progress >= 1).length;
+    return list.filter((t) => t.status === status).length;
   };
 
+  const disk = system?.disk?.[0];
+  const mem = system?.memory;
+
   return (
-    <aside className={cn(
-      'glass h-full flex flex-col border-r border-white/[0.06] transition-all duration-300',
-      sidebarCollapsed ? 'w-16' : 'w-60'
-    )}>
-      {/* Logo */}
-      <div className="p-4 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-indigo to-accent-pink flex items-center justify-center font-bold text-sm">
-          a
+    <aside
+      className={cn(
+        'glass h-full rounded-2xl flex flex-col transition-[width] duration-300 ease-out overflow-hidden',
+        collapsed ? 'w-[68px] max-md:w-[260px]' : 'w-[248px]'
+      )}
+    >
+      {/* Brand */}
+      <div className={cn('flex items-center gap-3 px-4 pt-5 pb-4', collapsed && 'md:justify-center md:px-0')}>
+        <Logo />
+        <div className={cn('leading-tight', collapsed && 'md:hidden')}>
+          <div className="font-semibold text-[17px] tracking-tight">a<span className="gradient-text">Torrent</span></div>
+          <div className="text-[10px] text-white/30 tracking-[0.14em] uppercase">Media engine</div>
         </div>
-        {!sidebarCollapsed && <span className="font-semibold text-lg gradient-text">aTorrent</span>}
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-2 py-2 space-y-0.5">
-        {navItems.map(item => {
-          const count = countForStatus(item.status);
+      <nav className="flex-1 px-2.5 py-1 space-y-0.5 overflow-y-auto">
+        <div className={cn('px-3 pb-1.5 pt-1 text-[10px] font-medium uppercase tracking-[0.14em] text-white/25', collapsed && 'md:hidden')}>Browse</div>
+        {navItems.map((item) => {
+          const count = countFor(item.status);
           const active = filterStatus === item.status;
           return (
             <button
               key={item.status}
-              onClick={() => setFilterStatus(item.status)}
+              onClick={() => {
+                setFilterStatus(item.status);
+                if (window.innerWidth < 768) useUIStore.getState().toggleSidebar();
+              }}
+              title={item.label}
               className={cn(
-                'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-150',
-                active ? 'glass-active text-white' : 'text-white/50 hover:text-white/80 hover:bg-white/[0.03]'
+                'relative w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] transition-colors duration-150 group',
+                collapsed && 'md:justify-center md:px-0',
+                active ? 'text-white' : 'text-white/50 hover:text-white/85 hover:bg-white/[0.04]'
               )}
             >
-              <span className="w-5 text-center font-mono">{item.icon}</span>
-              {!sidebarCollapsed && (
-                <>
-                  <span className="flex-1 text-left">{item.label}</span>
-                  {count > 0 && (
-                    <span className="text-xs text-white/30 font-mono">{count}</span>
+              {active && (
+                <motion.div
+                  layoutId="nav-pill"
+                  className="absolute inset-0 rounded-xl bg-white/[0.07] ring-1 ring-inset ring-white/[0.09]"
+                  transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+                />
+              )}
+              {active && (
+                <motion.div
+                  layoutId="nav-bar"
+                  className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full"
+                  style={{ background: item.tint, boxShadow: `0 0 12px ${item.tint}` }}
+                  transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+                />
+              )}
+              <span className="relative flex-shrink-0 transition-colors" style={{ color: active ? item.tint : undefined }}>
+                <Icon name={item.icon} size={17} />
+              </span>
+              <span className={cn('relative flex-1 text-left', collapsed && 'md:hidden')}>{item.label}</span>
+              {count > 0 && (
+                <span
+                  className={cn(
+                    'relative text-[11px] num px-1.5 py-0.5 rounded-md min-w-[22px] text-center',
+                    collapsed && 'md:hidden',
+                    item.status === 'error' ? 'bg-rose-400/15 text-rose-300' : active ? 'bg-white/10 text-white/80' : 'text-white/35'
                   )}
-                </>
+                >
+                  {count}
+                </span>
               )}
             </button>
           );
         })}
       </nav>
 
-      {/* Speeds */}
-      <div className="p-4 border-t border-white/[0.06]">
-        {!sidebarCollapsed ? (
-          <div className="space-y-1 text-xs font-mono">
-            <div className="flex justify-between text-blue-400">
-              <span>↓ DL</span>
-              <span>{formatSpeed(totalDown)}</span>
-            </div>
-            <div className="flex justify-between text-purple-400">
-              <span>↑ UL</span>
-              <span>{formatSpeed(totalUp)}</span>
-            </div>
-          </div>
+      {/* System health */}
+      <div className={cn('p-3 m-2.5 rounded-xl bg-black/20 border border-white/[0.05] space-y-3', collapsed && 'md:hidden')}>
+        {disk ? (
+          <Meter
+            label="Disk"
+            icon="drive"
+            percent={disk.usePercent}
+            detail={`${formatBytes(disk.available, 0)} free`}
+            warn={disk.usePercent > 90}
+          />
         ) : (
-          <div className="text-xs font-mono text-center space-y-1">
-            <div className="text-blue-400">↓</div>
-            <div className="text-purple-400">↑</div>
-          </div>
+          <div className="text-[11px] text-white/30">System stats unavailable</div>
         )}
+        {mem && <Meter label="Memory" icon="cpu" percent={mem.usePercent} detail={`${Math.round(mem.usePercent)}%`} warn={mem.usePercent > 90} />}
+        {system?.cpu && <Meter label="CPU" icon="zap" percent={system.cpu.loadPercent} detail={`${Math.round(system.cpu.loadPercent)}%`} warn={system.cpu.loadPercent > 90} />}
       </div>
     </aside>
   );

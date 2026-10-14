@@ -10,7 +10,10 @@ class WebSocketClient {
   private maxDelay = WS_MAX_RECONNECT_DELAY_MS;
   private currentDelay = WS_RECONNECT_DELAY_MS;
 
+  private closed = false;
+
   connect() {
+    this.closed = false;
     let wsUrl: string;
     const apiUrl = import.meta.env.VITE_API_URL as string;
     if (apiUrl) {
@@ -36,6 +39,7 @@ class WebSocketClient {
     };
 
     this.ws.onclose = () => {
+      if (this.closed) return;
       setTimeout(() => this.connect(), this.currentDelay);
       this.currentDelay = Math.min(this.currentDelay * 2, this.maxDelay);
     };
@@ -48,10 +52,11 @@ class WebSocketClient {
   on(event: string, fn: Listener) {
     if (!this.listeners.has(event)) this.listeners.set(event, new Set());
     this.listeners.get(event)!.add(fn);
-    return () => this.listeners.get(event)?.delete(fn);
+    return () => { this.listeners.get(event)?.delete(fn); };
   }
 
   disconnect() {
+    this.closed = true;
     this.ws?.close();
   }
 }
