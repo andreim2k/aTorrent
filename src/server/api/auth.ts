@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { db } from '../db/client.js';
 import { users } from '../db/schema.js';
 import { hashPassword, verifyPassword, signToken, verifyToken, needsRehash } from '../services/auth.js';
+import { config } from '../config.js';
 import { eq, count as countFn } from 'drizzle-orm';
 
 export function authRoutes(app: FastifyInstance) {
@@ -21,6 +22,7 @@ export function authRoutes(app: FastifyInstance) {
 
   // Check if setup is needed + whether current session is valid
   app.get('/api/auth/status', async (req) => {
+    if (!config.authRequired) return { setupRequired: false, authenticated: true, username: 'local', authRequired: false };
     const userCount = db.select({ count: countFn() }).from(users).get()?.count ?? 0;
     const setupRequired = userCount === 0;
 
@@ -129,6 +131,7 @@ export function authRoutes(app: FastifyInstance) {
   app.addHook('onRequest', async (req, reply) => {
     if (req.url.startsWith('/api/auth/')) return;
     if (!req.url.startsWith('/api/')) return;
+    if (!config.authRequired) return;
 
     // If no users exist, allow all requests (setup mode)
     const userCount = db.select({ count: countFn() }).from(users).get()?.count ?? 0;

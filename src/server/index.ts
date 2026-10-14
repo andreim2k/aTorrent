@@ -58,12 +58,15 @@ async function main() {
   const clientDist = path.resolve(__dirname, '../client');
   await app.register(fastifyStatic, {
     root: clientDist,
-    wildcard: false,
   });
 
-  // SPA fallback
-  app.setNotFoundHandler((_req, reply) => {
-    reply.sendFile('index.html');
+  // SPA fallback. Missing assets and API routes must 404 rather than return the HTML shell,
+  // otherwise a stale script URL surfaces as a confusing MIME-type error.
+  app.setNotFoundHandler((req, reply) => {
+    if (req.url.startsWith('/api/') || req.url.startsWith('/assets/')) {
+      return reply.status(404).send({ error: 'Not found' });
+    }
+    return reply.sendFile('index.html');
   });
 
   await app.listen({ port: config.port, host: config.host });

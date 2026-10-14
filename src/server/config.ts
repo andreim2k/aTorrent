@@ -12,6 +12,8 @@ if (!jwtSecret) {
 }
 
 export const config = {
+  // Login is off by default (tailscale-only deployment); set AUTH_REQUIRED=true to re-enable
+  authRequired: process.env.AUTH_REQUIRED === 'true',
   port: parseInt(process.env.PORT || '3001', 10),
   host: process.env.HOST || '0.0.0.0',
   torrentPort: parseInt(process.env.TORRENT_PORT || '6881', 10),
