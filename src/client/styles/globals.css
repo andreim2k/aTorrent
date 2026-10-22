@@ -97,7 +97,7 @@
   .btn-ghost:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--hairline-strong); }
 
   .kbd {
-    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-family: 'Geist Mono Variable', ui-monospace, monospace;
     font-size: 10px;
     line-height: 1;
     padding: 3px 5px;

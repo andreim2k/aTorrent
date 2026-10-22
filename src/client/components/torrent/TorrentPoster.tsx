@@ -8,7 +8,6 @@ import { formatBytes, formatSpeed, formatPercent } from '../../lib/formatters.js
 import { parseRelease } from '../../lib/release.js';
 import { getStatus } from '../../lib/status.js';
 import { useUIStore } from '../../stores/uiStore.js';
-import { useVisibleTorrents } from '../../hooks/useTorrents.js';
 import { useTorrentActions, TMDB_IMG, hueFor } from './useTorrentActions.js';
 import type { Torrent } from '../../types/index.js';
 
@@ -31,7 +30,6 @@ function FloatButton({ onClick, title, danger, children }: { onClick: (e: React.
 
 export function TorrentPoster({ torrent }: { torrent: Torrent }) {
   const { selectedTorrent, setSelectedTorrent, selectionMode, selectedTorrents, toggleTorrentSelection, selectRange } = useUIStore();
-  const { torrents: visible } = useVisibleTorrents();
   const actions = useTorrentActions(torrent);
   const isOpen = selectedTorrent === torrent.infoHash;
   const isChecked = selectedTorrents.has(torrent.infoHash);
@@ -42,7 +40,7 @@ export function TorrentPoster({ torrent }: { torrent: Torrent }) {
 
   const handleClick = (e?: React.MouseEvent) => {
     if (selectionMode) {
-      if (e?.shiftKey) selectRange(visible.map((t) => t.infoHash), torrent.infoHash);
+      if (e?.shiftKey) selectRange(useUIStore.getState().visibleHashes, torrent.infoHash);
       else toggleTorrentSelection(torrent.infoHash);
     } else {
       setSelectedTorrent(isOpen ? null : torrent.infoHash);

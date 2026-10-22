@@ -32,6 +32,8 @@ interface UIState {
   selectAllTorrents: (hashes: string[]) => void;
   deselectAllTorrents: () => void;
   lastSelectedTorrent: string | null;
+  visibleHashes: string[];
+  setVisibleHashes: (hashes: string[]) => void;
   selectRange: (hashes: string[], toHash: string) => void;
   setSelectionMode: (on: boolean) => void;
 
@@ -79,6 +81,8 @@ export const useUIStore = create<UIState>((set) => ({
       return { selectedTorrents: next, lastSelectedTorrent: hash };
     }),
   lastSelectedTorrent: null,
+  visibleHashes: [],
+  setVisibleHashes: (hashes) => set((s) => (s.visibleHashes.join() === hashes.join() ? s : { visibleHashes: hashes })),
   // Shift-click: select everything between the last clicked card and this one
   selectRange: (hashes, toHash) =>
     set((s) => {

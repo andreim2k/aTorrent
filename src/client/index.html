@@ -6,12 +6,25 @@
     <meta name="theme-color" content="#07070b" />
     <title>aTorrent</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2338bdf8'/%3E%3Cstop offset='.5' stop-color='%236366f1'/%3E%3Cstop offset='1' stop-color='%23c026d3'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='url(%23g)'/%3E%3Cpath d='M16 7v13m0 0l-5-5m5 5l5-5M9 24h14' fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet" />
+    <style>
+      /* Paint something dark immediately, before the CSS and JS bundles arrive */
+      html, body { margin: 0; background: #07070b; color-scheme: dark; }
+      #splash { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #07070b; }
+      #splash svg { filter: drop-shadow(0 0 28px rgba(99, 102, 241, 0.7)); animation: splash 1.8s ease-in-out infinite; }
+      @keyframes splash { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+      @media (prefers-reduced-motion: reduce) { #splash svg { animation: none; } }
+    </style>
   </head>
   <body class="bg-base text-white antialiased">
-    <div id="root"></div>
+    <div id="root">
+      <div id="splash" aria-label="Loading">
+        <svg width="56" height="56" viewBox="0 0 32 32" fill="none">
+          <defs><linearGradient id="sg" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse"><stop stop-color="#38bdf8"/><stop offset=".5" stop-color="#6366f1"/><stop offset="1" stop-color="#c026d3"/></linearGradient></defs>
+          <rect width="32" height="32" rx="9.5" fill="url(#sg)"/>
+          <path d="M16 7.5v12.5m0 0-5-5m5 5 5-5M9.5 24.5h13" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
     <script type="module" src="./main.tsx"></script>
   </body>
 </html>

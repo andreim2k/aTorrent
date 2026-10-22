@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useUIStore } from '../../stores/uiStore.js';
 import { usePreferencesStore, type SortKey } from '../../stores/preferencesStore.js';
 import { useTorrents } from '../../hooks/useTorrents.js';
-import { useAuth } from '../../hooks/useAuth.js';
 import { Icon } from '../ui/Icon.js';
 
 const titles: Record<string, string> = {
@@ -109,7 +108,6 @@ function ViewToggle() {
 export function TopBar() {
   const { searchQuery, setSearchQuery, setShowAddModal, setShowSettingsModal, toggleSidebar, filterStatus, setShowPalette } = useUIStore();
   const { data: torrents } = useTorrents();
-  const { username, logout } = useAuth();
   const searchRef = useRef<HTMLInputElement>(null);
 
   // "/" focuses search from anywhere
@@ -187,16 +185,6 @@ export function TopBar() {
         >
           <Icon name="sliders" size={17} />
         </button>
-        {username && username !== 'local' && (
-          <button
-            onClick={() => logout()}
-            className="w-9 h-9 flex items-center justify-center rounded-xl text-rose-300/70 hover:text-rose-300 hover:bg-rose-400/10 transition-all"
-            title={`Sign out ${username}`}
-            aria-label="Sign out"
-          >
-            <Icon name="logout" size={16} />
-          </button>
-        )}
       </div>
     </header>
   );

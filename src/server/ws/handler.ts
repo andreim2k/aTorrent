@@ -1,27 +1,11 @@
 import { FastifyInstance } from 'fastify';
 import { WebSocket } from 'ws';
 import { torrentEvents, TorrentEventName } from '../engine/events.js';
-import { config } from '../config.js';
-import { verifyToken } from '../services/auth.js';
-import { parse as parseCookie } from 'cookie';
 
 const clients = new Set<WebSocket>();
 
 export function setupWebSocket(app: FastifyInstance) {
-  app.get('/ws', { websocket: true }, (socket, req) => {
-    if (config.authRequired) {
-      const cookieHeader = req.headers.cookie;
-      if (!cookieHeader) {
-        socket.close(4001, 'Unauthorized');
-        return;
-      }
-      const token = parseCookie(cookieHeader).token;
-      if (!token || !verifyToken(token)) {
-        socket.close(4001, 'Unauthorized');
-        return;
-      }
-    }
-
+  app.get('/ws', { websocket: true }, (socket) => {
     clients.add(socket);
     socket.on('close', () => clients.delete(socket));
     socket.on('error', () => clients.delete(socket));

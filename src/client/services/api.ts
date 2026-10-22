@@ -1,22 +1,41 @@
-import { useAuthStore } from '../stores/authStore.js';
-
 const BASE = (import.meta.env.VITE_API_URL as string) || '/api';
+
+const GET_TIMEOUT_MS = 6000;
+const GET_ATTEMPTS = 3;
+
+/**
+ * Mobile networks can leave a pooled keep-alive connection dead without telling the browser, so a request
+ * on it just hangs. Reads are idempotent: give up after a few seconds and retry, which opens a new connection.
+ */
+async function fetchWithRetry(input: string, init: RequestInit): Promise<Response> {
+  const isRead = !init.method || init.method === 'GET';
+  if (!isRead) return fetch(input, init);
+  let lastError: unknown;
+  for (let attempt = 0; attempt < GET_ATTEMPTS; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), GET_TIMEOUT_MS);
+    try {
+      return await fetch(input, { ...init, signal: controller.signal });
+    } catch (err) {
+      lastError = err;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('Network request failed');
+}
 
 async function request<T>(url: string, opts?: RequestInit): Promise<T> {
   const headers: Record<string, string> = { ...opts?.headers as Record<string, string> };
   if (opts?.body) {
     headers['Content-Type'] = 'application/json';
   }
-  const res = await fetch(BASE + url, {
+  const res = await fetchWithRetry(BASE + url, {
     ...opts,
     credentials: 'include',
     headers,
   });
   if (!res.ok) {
-    if (res.status === 401) {
-      useAuthStore.getState().setStatus('login');
-      useAuthStore.getState().setUsername(null);
-    }
     const body = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(body.error || res.statusText);
   }
@@ -24,16 +43,6 @@ async function request<T>(url: string, opts?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  // Auth
-  authStatus: () => request<{ setupRequired: boolean; authenticated: boolean; username: string | null }>('/auth/status'),
-  setup: (username: string, password: string) =>
-    request('/auth/setup', { method: 'POST', body: JSON.stringify({ username, password }) }),
-  login: (username: string, password: string) =>
-    request('/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) }),
-  logout: () => request('/auth/logout', { method: 'POST' }),
-  changePassword: (currentPassword: string, newPassword: string) =>
-    request('/auth/change-password', { method: 'POST', body: JSON.stringify({ currentPassword, newPassword }) }),
-
   // Torrents
   getTorrents: (params?: { status?: string; category?: string }) => {
     const qs = new URLSearchParams(params as any).toString();

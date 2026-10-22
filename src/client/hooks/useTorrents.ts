@@ -1,23 +1,74 @@
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { api } from '../services/api.js';
 import { useWebSocket } from './useWebSocket.js';
 import { useUIStore } from '../stores/uiStore.js';
 import { usePreferencesStore } from '../stores/preferencesStore.js';
 import { toast } from '../stores/toastStore.js';
 import { parseRelease } from '../lib/release.js';
+import { loadCachedTorrents, saveCachedTorrents } from '../lib/torrentCache.js';
 import type { Torrent } from '../types/index.js';
 
-export function useTorrents() {
-  const qc = useQueryClient();
+/** The torrent list. Pure data access: safe to call from any number of components. */
+// Read once at startup: the last library we saw, shown instantly while the real one loads
+const cached = loadCachedTorrents();
 
-  const query = useQuery({
+export function useTorrents() {
+  return useQuery({
     queryKey: ['torrents'],
     queryFn: () => api.getTorrents(),
     staleTime: Infinity,
+    initialData: cached?.data,
+    initialDataUpdatedAt: cached?.savedAt,
   });
+}
 
-  // WS-driven cache updates
+const REFETCH_DEBOUNCE_MS = 500;
+
+/**
+ * Keeps the torrent cache in sync with the server over the WebSocket.
+ * Mount exactly once (the dashboard does); each mount registers its own handlers, so calling this from
+ * several components would multiply every update and refetch.
+ */
+export function useTorrentSync() {
+  const qc = useQueryClient();
+  const refetchTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  // Added/metadata/identified events arrive in bursts (e.g. all torrents re-adding after a restart), so
+  // coalesce them into one refetch.
+  const scheduleRefetch = useCallback(() => {
+    clearTimeout(refetchTimer.current);
+    refetchTimer.current = setTimeout(() => qc.refetchQueries({ queryKey: ['torrents'] }), REFETCH_DEBOUNCE_MS);
+  }, [qc]);
+
+  useEffect(() => () => clearTimeout(refetchTimer.current), []);
+
+  // Initial data came from the device cache and staleTime is Infinity, so ask for the real list once
+  useEffect(() => {
+    qc.refetchQueries({ queryKey: ['torrents'] });
+  }, [qc]);
+
+  // Persist the library (throttled) for the next visit's instant paint
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const save = () => {
+      timer = undefined;
+      const list = qc.getQueryData<Torrent[]>(['torrents']);
+      if (list) saveCachedTorrents(list);
+    };
+    const unsubscribe = qc.getQueryCache().subscribe((event) => {
+      if (event.type === 'updated' && event.query.queryKey[0] === 'torrents' && event.query.queryKey.length === 1 && !timer) {
+        timer = setTimeout(save, 3000);
+      }
+    });
+    window.addEventListener('pagehide', save);
+    return () => {
+      unsubscribe();
+      window.removeEventListener('pagehide', save);
+      clearTimeout(timer);
+    };
+  }, [qc]);
+
   const handleProgress = useCallback((data: any) => {
     qc.setQueryData<Torrent[]>(['torrents'], (old) => {
       if (!old) return old;
@@ -25,10 +76,6 @@ export function useTorrents() {
         t.infoHash === data.infoHash ? { ...t, ...data, status: t.status === 'paused' ? 'paused' : t.status } : t
       );
     });
-  }, [qc]);
-
-  const handleAdded = useCallback(() => {
-    qc.refetchQueries({ queryKey: ['torrents'] });
   }, [qc]);
 
   const handleRemoved = useCallback((data: any) => {
@@ -45,22 +92,12 @@ export function useTorrents() {
     );
   }, [qc]);
 
-  const handleIdentified = useCallback((_data: any) => {
-    qc.refetchQueries({ queryKey: ['torrents'] });
-  }, [qc]);
-
-  const handleMetadata = useCallback((_data: any) => {
-    qc.refetchQueries({ queryKey: ['torrents'] });
-  }, [qc]);
-
   useWebSocket('torrent:progress', handleProgress);
-  useWebSocket('torrent:added', handleAdded);
+  useWebSocket('torrent:added', scheduleRefetch);
   useWebSocket('torrent:removed', handleRemoved);
   useWebSocket('torrent:done', handleDone);
-  useWebSocket('torrent:metadata', handleMetadata);
-  useWebSocket('torrent:identified', handleIdentified);
-
-  return query;
+  useWebSocket('torrent:metadata', scheduleRefetch);
+  useWebSocket('torrent:identified', scheduleRefetch);
 }
 
 export function useAddTorrent() {

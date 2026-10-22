@@ -60,9 +60,6 @@ mkdir -p "$APP_DIR/data/downloads"
 if [ ! -f "$APP_DIR/.env" ]; then
   echo ">> Generating .env from .env.example..."
   cp "$APP_DIR/.env.example" "$APP_DIR/.env"
-  JWT_SECRET=$(openssl rand -hex 64)
-  sed -i "s/^JWT_SECRET=$/JWT_SECRET=$JWT_SECRET/" "$APP_DIR/.env"
-  echo "   JWT_SECRET generated"
 else
   echo "   .env already exists, skipping"
 fi

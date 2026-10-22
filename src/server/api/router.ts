@@ -1,5 +1,4 @@
 import { FastifyInstance } from 'fastify';
-import { authRoutes } from './auth.js';
 import { torrentRoutes } from './torrents.js';
 import { fileRoutes } from './files.js';
 import { categoryRoutes } from './categories.js';
@@ -8,7 +7,6 @@ import { tmdbRoutes } from './tmdb.js';
 import { systemRoutes } from './system.js';
 
 export function registerRoutes(app: FastifyInstance) {
-  authRoutes(app);
   torrentRoutes(app);
   fileRoutes(app);
   categoryRoutes(app);

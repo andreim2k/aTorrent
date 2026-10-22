@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUIStore } from '../../stores/uiStore.js';
-import { useUpdateTorrent } from '../../hooks/useTorrents.js';
+import { useTorrents, useUpdateTorrent } from '../../hooks/useTorrents.js';
 import { api } from '../../services/api.js';
 import { GlowBadge } from '../ui/GlowBadge.js';
 import { GradientProgress } from '../ui/GradientProgress.js';
@@ -14,7 +14,8 @@ import { hueFor } from './useTorrentActions.js';
 import type { TMDBDetails } from '../../types/index.js';
 
 const TMDB_IMG = 'https://image.tmdb.org/t/p';
-const DETAIL_POLL_INTERVAL_MS = 1000;
+// Live numbers come from the WebSocket-fed list cache; this only refreshes the static details
+const DETAIL_POLL_INTERVAL_MS = 5000;
 const TMDB_STALE_TIME_MS = 5 * 60 * 1000;
 const SWIPE_DISMISS_THRESHOLD_PX = 100;
 const MAX_VISIBLE_CAST = 20;
@@ -191,12 +192,15 @@ export function TorrentDetail() {
   const [tab, setTab] = useState<Tab>('overview');
   const touchStartY = useRef<number | null>(null);
 
-  const { data: torrent } = useQuery({
+  const { data: detail } = useQuery({
     queryKey: ['torrent', selectedTorrent],
     queryFn: () => api.getTorrent(selectedTorrent!),
     enabled: !!selectedTorrent,
     refetchInterval: DETAIL_POLL_INTERVAL_MS,
   });
+  const { data: list } = useTorrents();
+  const live = list?.find((t: any) => t.infoHash === selectedTorrent);
+  const torrent = detail ? { ...detail, ...live } : undefined;
 
   const { data: tmdb } = useQuery<TMDBDetails>({
     queryKey: ['torrent-tmdb', selectedTorrent],

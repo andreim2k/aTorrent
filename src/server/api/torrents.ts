@@ -8,6 +8,12 @@ import { config } from '../config.js';
 import { getTMDBDetails } from '../services/tmdb.js';
 import path from 'path';
 
+// The stored .torrent blob can be hundreds of KB per torrent and the client never reads it
+function withoutBlob<T extends Record<string, any>>(t: T): Omit<T, 'torrentFile'> {
+  const { torrentFile: _omit, ...rest } = t;
+  return rest;
+}
+
 export function torrentRoutes(app: FastifyInstance) {
   // List all torrents
   app.get('/api/torrents', async (req) => {
@@ -15,7 +21,7 @@ export function torrentRoutes(app: FastifyInstance) {
     let all = getAllTorrents();
     if (status) all = all.filter(t => t.status === status);
     if (category) all = all.filter(t => t.categoryId === parseInt(category));
-    return all;
+    return all.map(withoutBlob);
   });
 
   // Get single torrent
@@ -23,7 +29,7 @@ export function torrentRoutes(app: FastifyInstance) {
     const { hash } = req.params as any;
     const torrent = getTorrentStatus(hash);
     if (!torrent) return reply.status(404).send({ error: 'Not found' });
-    return torrent;
+    return withoutBlob(torrent);
   });
 
   // Add torrent (magnet link or .torrent file)

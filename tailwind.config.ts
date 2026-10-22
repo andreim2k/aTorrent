@@ -25,8 +25,8 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Geist', 'Inter Variable', 'Inter', 'system-ui', 'sans-serif'],
-        mono: ['Geist Mono', 'JetBrains Mono', 'ui-monospace', 'monospace'],
+        sans: ['Geist Variable', 'Geist', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+        mono: ['Geist Mono Variable', 'Geist Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
       backdropBlur: { xs: '2px' },
       boxShadow: {

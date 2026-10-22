@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useVisibleTorrents } from '../../hooks/useTorrents.js';
 import { useUIStore } from '../../stores/uiStore.js';
@@ -84,6 +85,12 @@ export function TorrentList() {
   const { filterStatus, searchQuery, selectionMode, setSelectionMode, selectedTorrents, selectAllTorrents, deselectAllTorrents } = useUIStore();
   const viewMode = usePreferencesStore((s) => s.viewMode);
   const grid = viewMode === 'grid';
+  const setVisibleHashes = useUIStore((s) => s.setVisibleHashes);
+
+  // Cards read this on shift-click instead of each recomputing the filtered, sorted list
+  useEffect(() => {
+    setVisibleHashes(filtered.map((t: Torrent) => t.infoHash));
+  }, [filtered, setVisibleHashes]);
 
   if (isLoading) return <Skeleton grid={grid} />;
 
